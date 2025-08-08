@@ -1,93 +1,85 @@
 <!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ITパスポート過去問トレーナー｜Mock 100 (Z-Gen)</title>
-<meta name="theme-color" content="#0a0f1a" />
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ITパスポート過去問トレーナー｜Mock 100 (abs fetch)</title>
 <style>
-  :root{--bg:#0a0f1a;--panel:#0e1626;--panel-2:#101a30;--text:#eaf1ff;--muted:#a6b5d5;--brand1:#6de1ff;--brand2:#9b7bff;--ok:#3be57f;--warn:#ff6574;--line:#1f2a44;--chip:#0e213e;}
-  *{box-sizing:border-box} html,body{height:100%} body{margin:0;font-family:ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:#0a0f1a}
-  .shell{min-height:100%;display:flex;flex-direction:column}
-  header{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(13,18,32,.55);border-bottom:1px solid rgba(255,255,255,.06)}
-  .nav{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
-  .brand{display:flex;gap:10px;align-items:center}.logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:800;color:#06101f;background:conic-gradient(from 210deg,var(--brand1),var(--brand2))}
-  main{flex:1;max-width:1100px;margin:0 auto;padding:18px;display:grid;gap:14px}
-  .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:18px;padding:16px}
-  .settings{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-  .chip{display:flex;align-items:center;gap:8px;min-height:44px;min-width:160px;background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-  .btn{border:1px solid var(--line);border-radius:12px;background:#111b33;color:#fff;padding:12px 14px;cursor:pointer}.btn.primary{background:linear-gradient(135deg,var(--brand1),var(--brand2));border-color:transparent;color:#06101f;font-weight:800}
-  .progress{height:10px;background:#0a1428;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:12px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand1),var(--brand2));transition:width .2s}
-  .pill{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--muted);font-size:14px}
-  .q{font-size:20px;line-height:1.7;margin:8px 0 12px}.choices{display:grid;gap:12px}@media(min-width:700px){.choices{grid-template-columns:1fr 1fr}}
-  .choice{border:1px solid var(--line);background:#0d1426;color:inherit;border-radius:14px;padding:14px;text-align:left;display:flex;gap:10px;align-items:flex-start;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
-  .choice .label{min-width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:#0f223f;border:1px solid var(--line);font-weight:800}
-  .choice.good{border-color:#22c55e;background:linear-gradient(180deg,#0d2a1b,#0f2f20);box-shadow:0 0 0 1px #22c55e inset}
-  .choice.bad{border-color:#e23e57;background:linear-gradient(180deg,#2a0e14,#2f1015);box-shadow:0 0 0 1px #e23e57 inset}
-</style>
-</head>
+  :root{--bg:#0a0f1a;--panel:#0e1626;--panel-2:#101a30;--text:#eaf1ff;--muted:#a6b5d5;--brand1:#6de1ff;--brand2:#9b7bff;--ok:#3be57f;--warn:#ff6574;--line:#1f2a44;--chip:#0e213e}
+  *{box-sizing:border-box}body{margin:0;font-family:ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:#0a0f1a;color:#eaf1ff}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px}
+  .card{background:linear-gradient(180deg,#0e1626,#101a30);border:1px solid #1f2a44;border-radius:16px;padding:16px}
+  .btn{border:1px solid #1f2a44;border-radius:12px;background:#111b33;color:#fff;padding:10px 14px;cursor:pointer}
+  .btn.primary{background:linear-gradient(135deg,#6de1ff,#9b7bff);border-color:transparent;color:#06101f;font-weight:800}
+  .choice{border:1px solid #1f2a44;background:#0d1426;border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;margin:8px 0;cursor:pointer}
+  .choice .k{min-width:28px;height:28px;border:1px solid #1f2a44;border-radius:8px;display:grid;place-items:center;background:#0f223f;font-weight:800}
+  .good{border-color:#22c55e;box-shadow:0 0 0 1px #22c55e inset}
+  .bad{border-color:#e23e57;box-shadow:0 0 0 1px #e23e57 inset}
+</style></head>
 <body>
-  <div class="shell">
-    <header><div class="nav"><div class="brand"><div class="logo">IP</div><b>ITパスポート過去問トレーナー</b></div><div><button id="btnImport" class="btn" type="button">CSV/JSON取込</button></div></div></header>
-    <main>
-      <section class="card" id="home">
-        <h2>本番仕様で 100問 × 120分。1タップで突き進め。</h2>
-        <div class="settings">
-          <span class="chip">出題数 <input type="number" id="examCount" min="1" value="100" style="width:80px;background:transparent;border:none;color:#fff"></span>
-          <span class="chip">制限 <input type="number" id="examMinutes" min="1" value="120" style="width:80px;background:transparent;border:none;color:#fff"> 分</span>
-          <label class="chip"><input type="checkbox" id="lockBack" checked> 戻る禁止</label>
-          <label class="chip"><input type="checkbox" id="shuffle" checked> 出題シャッフル</label>
-          <label class="chip"><input type="checkbox" id="sound"> サウンド</label>
-          <button id="btnStart" class="btn primary" type="button">模試開始</button>
-        </div>
-      </section>
-      <section class="card" id="quiz" style="display:none;">
-        <div class="progress"><div id="bar" class="bar"></div></div>
-        <div style="display:flex;gap:8px;align-items:center"><div id="counter" class="pill">-</div><div id="meta" class="pill">-</div><div id="timer" class="pill" style="margin-left:auto;">--:--</div></div>
-        <p class="q" id="stem">-</p>
-        <div class="choices" id="choices"></div>
-        <div style="display:flex;gap:8px;margin-top:12px"><button id="btnPrev" class="btn" type="button">← 戻る</button><button id="btnFinish" class="btn" type="button">採点</button></div>
-      </section>
-      <section class="card" id="finish" style="display:none;">
-        <h3 id="score">-</h3><div id="review"></div>
-        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button id="btnRestart" class="btn" type="button">トップへ</button><button id="btnWrong" class="btn" type="button">誤答だけ復習</button></div>
-      </section>
-    </main>
+<div class="wrap">
+  <div class="card">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span>出題数 <input id="examCount" type="number" value="100" min="1" style="width:80px;background:transparent;color:#fff;border:none"></span>
+      <span>制限 <input id="examMinutes" type="number" value="120" min="1" style="width:80px;background:transparent;color:#fff;border:none"> 分</span>
+      <label><input id="shuffle" type="checkbox" checked> 出題シャッフル</label>
+      <button id="btnStart" class="btn primary" type="button">模試開始</button>
+      <span id="meta" style="margin-left:auto;opacity:.7"></span>
+    </div>
   </div>
+  <div id="quiz" class="card" style="margin-top:12px;display:none">
+    <div id="counter" style="opacity:.75"></div>
+    <h3 id="stem" style="margin:8px 0 12px">-</h3>
+    <div id="choices"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="btnPrev" class="btn">← 戻る</button>
+      <button id="btnFinish" class="btn">採点</button>
+    </div>
+  </div>
+</div>
 <script>
-const $=(s)=>document.querySelector(s); const h=(t,a={},...k)=>{const e=document.createElement(t);for(const n in a){if(n.startsWith("on"))e.addEventListener(n.slice(2),a[n]);else if(n==="html")e.innerHTML=a[n];else e.setAttribute(n,a[n]);}k.forEach(x=>{if(x==null)return;typeof x==="string"?e.appendChild(document.createTextNode(x)):e.appendChild(x)});return e;}
-const LABELS=["ア","イ","ウ","エ"]; const mapKana=(ch)=>({A:"ア",B:"イ",C:"ウ",D:"エ"}[ch]||""); const ADV=450;
-const tone=(f=880,ms=120)=>{ if(!$('#sound').checked) return; const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(); const g=c.createGain(); o.frequency.value=f;o.connect(g);g.connect(c.destination);o.start();g.gain.setValueAtTime(.08,c.currentTime);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+ms/1000);o.stop(c.currentTime+ms/1000); }
-let Q=[],IDX=0,EXCNT=100,EXMIN=120,LOCK=true,SHUF=true,remain=0,tId=null,ANS={},START=0;
-function makeId(q,i){ return q.id||(q.id=`${q.year??'Y'}-${q.session??'S'}-${q.q_no??(i+1)}-${i}`); }
-async function loadQ(){ try{ const r=await fetch('data/questions.json',{cache:'no-store'}); if(r.ok){ const j=await r.json(); if(Array.isArray(j)&&j.length) return pad(j,100);} }catch(e){} return auto100(); }
-function pad(a,n){ if(a.length>=n) return a.slice(0,n); const out=[...a]; for(let i=a.length+1;i<=n;i++) out.push(dummy(i)); return out; }
-function dummy(n){const y=new Date().getFullYear(); const k=LABELS[(n-1)%4]; return {id:`auto-${n}`,year:y,session:'AUTO',domain:'ダミー',stem:`練習用ダミー問題 ${n}（要約未入力）`,ア:'選択肢ア',イ:'選択肢イ',ウ:'選択肢ウ',エ:'選択肢エ',answer_kana:k};}
-function auto100(){const a=[];for(let i=1;i<=100;i++)a.push(dummy(i));return a;}
-$('#btnStart').onclick=async()=>{EXCNT=+$('#examCount').value||100;EXMIN=+$('#examMinutes').value||120;LOCK=$('#lockBack').checked;SHUF=$('#shuffle').checked;
-  let qs=await loadQ(); if(SHUF) qs=shuffle(qs); Q=qs.slice(0,EXCNT).map(x=>({...x})); ANS={}; IDX=0; remain=EXMIN*60; START=Date.now();
-  $('#home').style.display='none'; $('#finish').style.display='none'; $('#quiz').style.display='block';
-  if(tId) clearInterval(tId); tId=setInterval(()=>{remain--;timer(); if(remain<=0) finish();},1000); render();
+const $=s=>document.querySelector(s), H=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){if(k.startsWith('on')) e.addEventListener(k.slice(2),a[k]);else if(k==='html')e.innerHTML=a[k];else e.setAttribute(k,a[k]);}c.forEach(n=>e.append(n));return e};
+const LABELS=['ア','イ','ウ','エ'];
+const ABS_URL = new URL('data/questions.json?v='+Date.now(), location.href).toString();
+console.log('[trainer] fetch:', ABS_URL);
+async function loadQ(){
+  try{
+    const r=await fetch(ABS_URL,{cache:'no-store'});
+    console.log('[trainer] status:', r.status);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    if(Array.isArray(j)&&j.length){ console.log('[trainer] loaded', j.length); return j; }
+  }catch(e){
+    console.warn('[trainer] failed to load questions.json:', e);
+  }
+  // fallback dummy
+  const out=[]; for(let i=1;i<=100;i++){ const k=LABELS[(i-1)%4]; out.push({year:new Date().getFullYear(),session:'AUTO',q_no:i,stem:'ダミー問題 '+i+'（fallback）',ア:'選択肢ア',イ:'選択肢イ',ウ:'選択肢ウ',エ:'選択肢エ',answer_kana:k}); }
+  return out;
 }
-$('#btnPrev').onclick=()=>{ if(LOCK||IDX<=0) return; delete ANS[makeId(Q[IDX],IDX)]; IDX--; render(); }
-$('#btnFinish').onclick=()=>finish(); $('#btnRestart').onclick=()=>{$('#finish').style.display='none';$('#home').style.display='block';}
-$('#btnWrong').onclick=()=>redoWrong();
-window.addEventListener('keydown',(e)=>{const m={'1':'ア','2':'イ','3':'ウ','4':'エ','Enter':'NEXT','ArrowLeft':'PREV'}; if(!(e.key in m))return; e.preventDefault(); const a=m[e.key]; if(a==='NEXT'){ next(); return;} if(a==='PREV'){ if(!LOCK&&IDX>0){ delete ANS[makeId(Q[IDX],IDX)]; IDX--; render(); } return;} choose(a);});
-function render(){ if(IDX>=Q.length){finish();return;} const q=Q[IDX]; makeId(q,IDX); $('#counter').textContent=`${IDX+1} / ${Q.length}`; $('#meta').textContent=`${q.year??'-'} ${q.session??''}｜${q.domain??'-'}`; $('#stem').textContent=q.stem||'';
-  const wrap=$('#choices'); wrap.innerHTML=''; [q.ア,q.イ,q.ウ,q.エ].forEach((t,i)=>{ const k=LABELS[i]; wrap.appendChild(h('button',{class:'choice',type:'button','data-kana':k},h('div',{class:'label'},k),h('div',{},t||''))); }); $('#btnPrev').disabled=LOCK||IDX===0; wrap.style.pointerEvents='auto'; prog();
+let Q=[],IDX=0,EXCNT=100,LOCK=false,ANS={};
+$('#btnStart').onclick=async()=>{
+  EXCNT=+$('#examCount').value||100;
+  let qs=await loadQ();
+  if($('#shuffle').checked) qs=shuffle(qs);
+  Q=qs.slice(0,EXCNT); ANS={}; IDX=0;
+  $('#quiz').style.display='block';
+  render();
 }
-const wrapEl=document.getElementById('choices'); ['pointerup','click','touchend'].forEach(ev=>wrapEl.addEventListener(ev,(e)=>{const b=e.target.closest('.choice'); if(!b) return; e.preventDefault(); choose(b.dataset.kana,b);} ,{passive:false}));
-function choose(k,btn){ const q=Q[IDX]; if(!q) return; const id=makeId(q,IDX); if(ANS[id]) return; const correct=q.answer_kana||mapKana(q.answer)||''; const wrap=$('#choices'); wrap.style.pointerEvents='none';
-  const okEl=wrap.querySelector(`[data-kana="${correct}"]`); if(okEl) okEl.classList.add('good'); if(k!==correct&&btn) btn.classList.add('bad'); if(k===correct) tone(1046,120); else tone(220,160);
-  ANS[id]=k; setTimeout(next,ADV);
+$('#btnPrev').onclick=()=>{ if(LOCK||IDX<=0) return; IDX--; render(); }
+$('#btnFinish').onclick=()=>alert('finish');
+function render(){
+  const q=Q[IDX]; $('#counter').textContent=(IDX+1)+' / '+Q.length; $('#meta').textContent=(q.year||'-')+' '+(q.session||'')+' | '+(q.domain||'-'); $('#stem').textContent=q.stem||'';
+  const c=$('#choices'); c.innerHTML='';
+  [q.ア,q.イ,q.ウ,q.エ].forEach((t,i)=>{
+    const k=LABELS[i];
+    c.append(H('button',{class:'choice',type:'button','data-kana':k,onclick:()=>choose(k)},H('span',{class:'k'},k),' ',t||''));
+  });
 }
-function next(){ if(IDX<Q.length-1){IDX++; render();} else finish(); }
-function prog(){ const p = Q.length? (IDX/Q.length)*100 : 0; $('#bar').style.width=p+'%'; }
-function timer(){ const m=Math.floor(remain/60), s=remain%60; $('#timer').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
-function tally(){ let ok=0,wrong=0,blank=0,list=[]; for(const [i,q] of Q.entries()){ const id=makeId(q,i); const a=ANS[id]; const c=q.answer_kana||mapKana(q.answer); if(!a){blank++; list.push({q,a:'未回答',c}); continue;} if(a===c) ok++; else { wrong++; list.push({q,a,c}); } } return {ok,wrong,blank,total:Q.length,list}; }
-function finish(){ if(tId) clearInterval(tId); $('#quiz').style.display='none'; $('#finish').style.display='block'; const {ok,blank,total,list}=tally(); $('#score').textContent=`正答 ${ok} / ${total}（未 ${blank}）`; const ul=h('ul'); list.slice(0,40).forEach((w,i)=>ul.appendChild(h('li',{},`Q${i+1}: あなた=${w.a} / 正解=${w.c} ｜ ${(w.q.stem||'').slice(0,40)}`))); $('#review').innerHTML=''; $('#review').appendChild(ul); }
-function redoWrong(){ const {list}=tally(); const nextQ=list.map(w=>w.q); if(!nextQ.length){ alert('誤答はありません'); return;} Q=nextQ; ANS={}; IDX=0; remain=Math.max(5*60,Math.ceil(nextQ.length*60)); if(tId) clearInterval(tId); tId=setInterval(()=>{remain--;timer(); if(remain<=0) finish();},1000); $('#finish').style.display='none'; $('#quiz').style.display='block'; timer(); render(); }
+function choose(k){
+  const q=Q[IDX], c=q.answer_kana||mapKana(q.answer)||'';
+  const wrap=$('#choices'), okEl=wrap.querySelector('[data-kana="'+c+'"]'), meEl=wrap.querySelector('[data-kana="'+k+'"]');
+  if(okEl) okEl.classList.add('good'); if(k!==c&&meEl) meEl.classList.add('bad');
+  setTimeout(()=>{ if(IDX<Q.length-1){IDX++; render();} }, 450);
+}
+function mapKana(ch){ return ({A:'ア',B:'イ',C:'ウ',D:'エ'}[ch]||''); }
 function shuffle(a){const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]];} return b;}
 </script>
-</body>
-</html>
+</body></html>
