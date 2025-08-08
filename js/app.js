@@ -1,84 +1,77 @@
-const DEFAULT_SAMPLE = [
-  {
-    "id":"sample-001","year":2025,"session":"R07","domain":"ストラテジ",
-    "stem":"企業のSWOT分析における『機会』の例として最も適切なのはどれか。",
-    "ア":"競合の強いブランド力","イ":"自社の高い技術力","ウ":"市場拡大の追い風となる法改正","エ":"自社の生産性の低さ",
-    "answer_kana":"ウ","explanation":"外部のプラス要因＝機会。市場拡大などの外部環境が該当。"
-  },
-  {
-    "id":"sample-002","year":2024,"session":"R06","domain":"テクノロジ",
-    "stem":"データベース正規化の主目的はどれか。",
-    "ア":"冗長性の排除と更新異常の防止","イ":"処理性能の最大化","ウ":"セキュリティ強化","エ":"バックアップの削減",
-    "answer_kana":"ア","explanation":"正規化はデータの整合性維持と更新異常の防止が目的。"
-  },
-  {
-    "id":"sample-003","year":2024,"session":"R06","domain":"マネジメント",
-    "stem":"ガントチャートの説明として適切なのはどれか。",
-    "ア":"リスクの発生確率を示す図","イ":"作業の計画・進捗を横棒で示す図","ウ":"要因間の因果を示す図","エ":"品質特性の分布を示す図",
-    "answer_kana":"イ","explanation":"ガントチャートは工程の時間軸表示。"
-  }
-];
+// Auto-100 mode: if data/questions.json 不在 or 0問なら、
+ // 自動で100問のダミーを生成して模試を開始できる
 
 async function loadQuestions() {
+  // 1) try to fetch real questions.json
   try {
     const res = await fetch("data/questions.json", {cache:"no-store"});
     if (res.ok) {
       const json = await res.json();
-      if (Array.isArray(json) && json.length) return json;
+      if (Array.isArray(json) && json.length) return padTo100(json);
     }
   } catch(e) {}
-  return DEFAULT_SAMPLE;
+
+  // 2) fallback: auto-generate 100 dummy questions
+  return makeAuto100();
+}
+
+function padTo100(arr) {
+  if (arr.length >= 100) return arr.slice(0, 100);
+  const out = arr.slice();
+  const need = 100 - arr.length;
+  for (let i=1; i<=need; i++) out.push(makeDummy(arr.length + i));
+  return out;
+}
+
+function makeAuto100() {
+  const arr = [];
+  for (let i=1;i<=100;i++) arr.push(makeDummy(i));
+  return arr;
+}
+
+function makeDummy(n) {
+  const kana = ["ア","イ","ウ","エ"][(n-1)%4];
+  const y = new Date().getFullYear();
+  return {
+    id: `auto-${n}`,
+    year: y, session: "AUTO", domain: "ダミー",
+    stem: `練習用ダミー問題 ${n}（要約未入力）`,
+    ア: "選択肢ア", イ: "選択肢イ", ウ: "選択肢ウ", エ: "選択肢エ",
+    answer_kana: kana
+  };
 }
 
 function bindUI() {
-  const btnStart = document.getElementById("btnStart");
   const btnExam = document.getElementById("btnExam");
   const btnImport = document.getElementById("btnImport");
-  const auto = document.getElementById("autoAdvance");
-  const delay = document.getElementById("delay");
-  const limit = document.getElementById("limit");
-  const exportBtn = document.getElementById("exportBtn");
-  const restartBtn = document.getElementById("restartBtn");
   const examCount = document.getElementById("examCount");
   const examMinutes = document.getElementById("examMinutes");
   const examLockBack = document.getElementById("examLockBack");
 
-  btnStart.addEventListener("click", async () => {
-    const q = await loadQuestions();
-    __QUIZ__.setConfig({auto:auto.checked, delay:delay.value, limit:limit.value,
-                        examCount: examCount.value, examMinutes: examMinutes.value, examLockBack: examLockBack.checked});
-    __QUIZ__.startPractice(q);
-  });
-
   btnExam.addEventListener("click", async () => {
     const q = await loadQuestions();
-    __QUIZ__.setConfig({auto:auto.checked, delay:delay.value, limit:limit.value,
-                        examCount: examCount.value, examMinutes: examMinutes.value, examLockBack: examLockBack.checked});
+    __QUIZ__.setConfig({ examCount: examCount.value || 100, examMinutes: examMinutes.value || 120, examLockBack: !!examLockBack.checked });
     __QUIZ__.startExam(q);
+    window.scrollTo({top:0, behavior:"smooth"});
   });
 
   btnImport.addEventListener("click", () => openImporter());
-  exportBtn.addEventListener("click", exportProgress);
-  restartBtn.addEventListener("click", async () => {
-    const q = await loadQuestions();
-    __QUIZ__.startPractice(q);
-  });
 }
 
-// Simple importer (CSV or JSON)
+// Importer (unchanged from v2)
 function openImporter() {
   const div = document.createElement("div");
   div.style.cssText = "position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:9999;";
   div.innerHTML = `
-    <div style="background:#161b22;border-radius:16px;max-width:700px;width:92%;padding:16px;">
+    <div style="background:#0f1730;border:1px solid #243056;border-radius:16px;max-width:700px;width:92%;padding:16px;">
       <h3 style="margin:0 0 8px">CSV/JSON 取込</h3>
       <p class="small muted">CSVヘッダ：year,session,q_no,stem,ア,イ,ウ,エ,answer_kana,answer_abcd</p>
-      <textarea id="imp" style="width:100%;height:240px;background:#0f141a;color:#e6edf3;border:1px solid #2e3742;border-radius:8px;padding:8px;"></textarea>
+      <textarea id="imp" style="width:100%;height:240px;background:#0b142b;color:#e9eefc;border:1px solid #243056;border-radius:8px;padding:8px;"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;">
-        <button id="parseCsv" class="nav">CSVをJSONに変換</button>
-        <button id="useJson" class="nav">JSONを読み込む</button>
-        <button id="dl" class="ghost">JSONをダウンロード</button>
-        <button id="close" class="ghost">閉じる</button>
+        <button id="parseCsv" class="btn">CSVをJSONに変換</button>
+        <button id="useJson" class="btn">JSONを読み込む</button>
+        <button id="dl" class="btn ghost">JSONをダウンロード</button>
+        <button id="close" class="btn ghost">閉じる</button>
       </div>
       <p class="small muted">※ 変換後は <code>data/questions.json</code> を差し替えて公開してください。</p>
     </div>`;
@@ -90,25 +83,16 @@ function openImporter() {
   const btnClose = div.querySelector("#close");
 
   let currentJson = null;
-
-  btnCsv.onclick = () => {
-    currentJson = csvToJson(ta.value);
-    alert(`変換しました（${currentJson.length}件）`);
-  };
+  btnCsv.onclick = () => { currentJson = csvToJson(ta.value); alert(`変換しました（${currentJson.length}件）`); };
   btnUse.onclick = () => {
-    if (!currentJson) {
-      try { currentJson = JSON.parse(ta.value); } catch(e) { alert("JSONの形式が不正です"); return; }
-    }
-    __QUIZ__.setConfig({auto:true, delay:600, limit:0, examCount:100, examMinutes:120, examLockBack:true});
-    __QUIZ__.startPractice(currentJson);
+    if (!currentJson) { try { currentJson = JSON.parse(ta.value); } catch(e) { alert("JSONの形式が不正です"); return; } }
+    __QUIZ__.setConfig({ examCount: 100, examMinutes: 120, examLockBack: true });
+    __QUIZ__.startExam(currentJson);
   };
   btnDl.onclick = () => {
     if (!currentJson) { alert("先にCSVを変換してください"); return; }
     const blob = new Blob([JSON.stringify(currentJson,null,2)], {type:"application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "questions.json";
-    a.click();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "questions.json"; a.click();
   };
   btnClose.onclick = () => div.remove();
 }
@@ -132,8 +116,7 @@ function csvToJson(csv) {
       ウ: row[idx("ウ")] || "",
       エ: row[idx("エ")] || "",
       answer_kana: row[idx("answer_kana")] || "",
-      answer: row[idx("answer_abcd")] || "",
-      explanation: row.indexOf("explanation")>=0 ? row[idx("explanation")] : ""
+      answer: row[idx("answer_abcd")] || ""
     };
     out.push(obj);
   }
