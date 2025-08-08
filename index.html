@@ -27,13 +27,13 @@
     .answers{display:grid;gap:12px}
     @media(min-width:640px){.answers{grid-template-columns:1fr 1fr}}
     .opt{
-      padding:14px;border:1px solid #2a3347;border-radius:12px;background:#172033;
-      cursor:pointer;text-align:left;color:var(--text); /* ← 文字色を明示 */
+      padding:14px;border:1px solid #2a3347;border-radius:12px;background:#172033;cursor:pointer;text-align:left;
     }
     .opt:hover{border-color:#3a4664}
     .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.08)}
     .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.08)}
     .opt.disabled{opacity:.7;pointer-events:none}
+    .opt, .opt * { color: var(--text) !important; } /* 文字色を強制的に白系に固定 */
     .kana{display:inline-block;min-width:2ch;text-align:center;margin-right:.5rem;color:#b8c2d8}
     .muted{color:var(--muted)}
     .bar{height:10px;background:#222a3a;border-radius:999px;overflow:hidden}
@@ -71,10 +71,10 @@
         <h2>出題数</h2>
         <select id="countSel">
           <option value="10">10問</option>
-          <option value="20" selected>20問</option>
+          <option value="20">20問</option>
           <option value="30">30問</option>
           <option value="50">50問</option>
-          <option value="all">全件</option>
+          <option value="all" selected>全件</option>
         </select>
       </div>
       <div class="col">
@@ -85,7 +85,7 @@
       <div class="col">
         <h2>オプション</h2>
         <label><input type="checkbox" id="autoNext" checked> 正解で自動次へ</label><br>
-        <label><input type="checkbox" id="includeStubs"> 解答のみの問題も含める</label><br>
+        <label><input type="checkbox" id="includeStubs" checked> 解答のみの問題も含める</label><br>
         <label class="small muted">ショートカット：<span class="kbd">1–4</span> 解答 / <span class="kbd">N</span> 次 / <span class="kbd">B</span> 戻</label>
       </div>
     </div>
@@ -128,7 +128,9 @@
         <div id="nav" class="small" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px"></div>
         <div class="hr"></div>
         <button class="btn btn-ghost" id="btnFinish">採点する（模試）/ 終了</button>
-        <div class="small muted" style="margin-top:8px">未回答は灰、正解は緑、不正解は赤。</div>
+        <div class="small muted" style="margin-top:8px">
+          番号は出題順。未回答は灰、正解は緑、不正解は赤。
+        </div>
       </div>
     </div>
   </div>
@@ -150,10 +152,11 @@
 <script>
 const DATA_URL = './data/itpassport_2025r07.json';
 const KANA = ['ア','イ','ウ','エ'];
+const EXAM_LIMIT_SEC = 120 * 60; // 120分
 
 let RAW=[], POOL=[], ORDER=[];
-let CUR=0, MODE='train', AUTONEXT=true, INCLUDE_STUBS=false;
-let START_TIME=0, TIMER_ID=null;
+let CUR=0, MODE='train', AUTONEXT=true, INCLUDE_STUBS=true;
+let START_TIME=0, TIMER_ID=null, remainingSec=0;
 
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
@@ -194,7 +197,16 @@ $('#btnStart').addEventListener('click', () => {
   if(cnt!=='all') ORDER = ORDER.slice(0, Math.min(parseInt(cnt,10), ORDER.length));
 
   POOL.forEach(q=>{ q.selected=null; q.result=null; q.seen=false; });
-  CUR=0; START_TIME=Date.now(); startTimer();
+  CUR=0;
+
+  if(MODE === 'exam'){
+    remainingSec = EXAM_LIMIT_SEC;
+    $('#timer').textContent = fmtTime(remainingSec);
+  }else{
+    remainingSec = 0;
+    START_TIME=Date.now();
+  }
+  startTimer();
 
   $('#screen-start').classList.add('hide');
   $('#screen-result').classList.add('hide');
@@ -204,7 +216,19 @@ $('#btnStart').addEventListener('click', () => {
   renderQuestion(); renderNav();
 });
 
-function startTimer(){ clearInterval(TIMER_ID); TIMER_ID=setInterval(()=>$('#timer').textContent=fmtTime((Date.now()-START_TIME)/1000),500); }
+function startTimer(){
+  clearInterval(TIMER_ID);
+  TIMER_ID = setInterval(()=>{
+    if(MODE === 'exam'){
+      remainingSec = Math.max(0, remainingSec - 1);
+      $('#timer').textContent = fmtTime(remainingSec);
+      if(remainingSec === 0){ clearInterval(TIMER_ID); finish(); }
+    }else{
+      const sec = (Date.now() - START_TIME) / 1000;
+      $('#timer').textContent = fmtTime(sec);
+    }
+  }, 1000);
+}
 
 $('#toggleNav').addEventListener('change', (e)=>{ $('#navWrap').style.display = e.target.checked ? 'none' : ''; });
 
@@ -291,7 +315,7 @@ function finish(){
   const ok = POOL.filter(x=>x.result===true).length;
   const count = POOL.filter(x=>x.choices && Number.isInteger(x.answer_index)).length;
   $('#scoreText').textContent = `正解 ${ok} / ${count}（${Math.round(ok/count*100)||0}%）`;
-  $('#elapsedText').textContent = fmtTime((Date.now()-START_TIME)/1000);
+  $('#elapsedText').textContent = MODE==='exam' ? '120:00 → 0:00' : fmtTime((Date.now()-START_TIME)/1000);
 
   const wrongs = POOL.filter(x=>x.result===false).map(x=>({num:x.number ?? '-', q:x.question || '（本文なし）', ans:x.answer_index, sel:x.selected}));
   const container = $('#review'); container.innerHTML='';
@@ -338,7 +362,7 @@ function renderNav(){
   const nav=$('#nav'); nav.innerHTML='';
   ORDER.forEach((i,idx)=>{
     const q=POOL[i]; const b=document.createElement('button');
-    b.className='btn small'; b.style.padding='6px'; b.textContent = q.number ?? (i+1);
+    b.className='btn small'; b.style.padding='6px'; b.textContent = (idx + 1); // 出題順を表示
     if(q.result===true){ b.style.borderColor='#2e7d32'; b.style.background='rgba(46,125,50,.15)'; }
     else if(q.result===false){ b.style.borderColor='#b23a3a'; b.style.background='rgba(178,58,58,.12)'; }
     else if(q.selected!=null){ b.style.borderColor='#3a4a6b'; } else { b.style.opacity='.75'; }
