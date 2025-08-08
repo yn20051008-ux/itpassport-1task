@@ -6,202 +6,88 @@
 <title>ITパスポート過去問トレーナー｜Mock 100 (Z-Gen)</title>
 <meta name="theme-color" content="#0a0f1a" />
 <style>
-  :root{
-    --bg:#0a0f1a; --panel:#0e1626; --panel-2:#101a30; --text:#eaf1ff; --muted:#a6b5d5;
-    --brand1:#6de1ff; --brand2:#9b7bff; --ok:#3be57f; --warn:#ff6574; --line:#1f2a44;
-    --chip:#0e213e; --glass:rgba(255,255,255,.06);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;font-family: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
-       color:var(--text);background:radial-gradient(1200px 600px at 10% -10%,#152446 0%,rgba(21,36,70,0) 50%),
-       linear-gradient(180deg,#0a0f1a,#0a0f1a 60%)}
-  a{color:inherit}
+  :root{--bg:#0a0f1a;--panel:#0e1626;--panel-2:#101a30;--text:#eaf1ff;--muted:#a6b5d5;--brand1:#6de1ff;--brand2:#9b7bff;--ok:#3be57f;--warn:#ff6574;--line:#1f2a44;--chip:#0e213e;}
+  *{box-sizing:border-box} html,body{height:100%} body{margin:0;font-family:ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:#0a0f1a}
   .shell{min-height:100%;display:flex;flex-direction:column}
-  header{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(13,18,32,.55);
-          border-bottom:1px solid rgba(255,255,255,.06)}
-  .nav{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between}
-  .brand{display:flex;align-items:center;gap:10px}
-  .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;color:#06101f;
-        background:conic-gradient(from 210deg at 50% 50%, var(--brand1), var(--brand2)); box-shadow:0 0 30px rgba(109,225,255,.22)}
-  .title{font-weight:800;letter-spacing:.2px}
-  .actions{display:flex;gap:8px}
+  header{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(13,18,32,.55);border-bottom:1px solid rgba(255,255,255,.06)}
+  .nav{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;gap:10px;align-items:center}.logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:800;color:#06101f;background:conic-gradient(from 210deg,var(--brand1),var(--brand2))}
   main{flex:1;max-width:1100px;margin:0 auto;padding:18px;display:grid;gap:14px}
-  .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 16px 50px rgba(0,0,0,.35)}
-  .hero{display:grid;grid-template-columns:1fr;gap:16px;align-items:center}
-  @media(min-width:940px){ .hero{ grid-template-columns:1.2fr 1fr; } }
-  .hero h1{margin:4px 0 8px;font-size:28px}
-  .muted{color:var(--muted)} .hint{font-size:13px;color:var(--muted)}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:18px;padding:16px}
   .settings{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
   .chip{display:flex;align-items:center;gap:8px;min-height:44px;min-width:160px;background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-  .settings input[type=number]{width:90px;background:transparent;border:none;color:var(--text);font-size:16px;outline:none}
-  .toggle input{accent-color:var(--brand1)}
-  .btn{border:1px solid var(--line);border-radius:12px;background:#111b33;color:var(--text);padding:12px 14px;cursor:pointer;transition:transform .06s ease, box-shadow .2s}
-  .btn:hover{transform:translateY(-1px)} .btn.primary{background:linear-gradient(135deg,var(--brand1),var(--brand2));border-color:transparent;color:#06101f;font-weight:800}
-  .btn.ghost{background:transparent} .btn.lg{padding:14px 18px;font-size:16px}
-  .progress{height:10px;background:#0a1428;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:12px}
-  .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand1),var(--brand2));transition:width .2s ease}
-  .top{display:flex;gap:8px;align-items:center}
+  .btn{border:1px solid var(--line);border-radius:12px;background:#111b33;color:#fff;padding:12px 14px;cursor:pointer}.btn.primary{background:linear-gradient(135deg,var(--brand1),var(--brand2));border-color:transparent;color:#06101f;font-weight:800}
+  .progress{height:10px;background:#0a1428;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:12px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand1),var(--brand2));transition:width .2s}
   .pill{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--muted);font-size:14px}
-  .timer{font-weight:800} .timer.warn{background:#2a1420;color:#ffd6dc;border-color:#5f2b38}
-  .qwrap{margin-top:10px} .q{font-size:20px;line-height:1.7;margin:0 0 12px;word-break:break-word}
-  .choices{display:grid;gap:12px} @media(min-width:700px){.choices{grid-template-columns:1fr 1fr}}
-  .choice{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:rgba(13,20,38,.9);
-          color:inherit;border-radius:14px;padding:14px;text-align:left;display:flex;gap:10px;align-items:flex-start;cursor:pointer;
-          user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+  .q{font-size:20px;line-height:1.7;margin:8px 0 12px}.choices{display:grid;gap:12px}@media(min-width:700px){.choices{grid-template-columns:1fr 1fr}}
+  .choice{border:1px solid var(--line);background:#0d1426;color:inherit;border-radius:14px;padding:14px;text-align:left;display:flex;gap:10px;align-items:flex-start;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
   .choice .label{min-width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:#0f223f;border:1px solid var(--line);font-weight:800}
-  .choice:active{transform:scale(.99)}
-  /* instant feedback */
   .choice.good{border-color:#22c55e;background:linear-gradient(180deg,#0d2a1b,#0f2f20);box-shadow:0 0 0 1px #22c55e inset}
   .choice.bad{border-color:#e23e57;background:linear-gradient(180deg,#2a0e14,#2f1015);box-shadow:0 0 0 1px #e23e57 inset}
-  .controls{display:flex;gap:8px;margin-top:12px;justify-content:space-between}
-  .score{font-size:22px;font-weight:800;margin-bottom:10px}
-  .badges{display:flex;gap:8px;flex-wrap:wrap} .badge{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 10px}
-  .review{margin-top:8px} .review ul{margin:6px 0 0;padding-left:18px}
-  .modal{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:100}
-  .pane{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:16px;max-width:720px;width:92%;padding:16px}
-  textarea{width:100%;height:240px;background:#0c1530;color:#eaf1ff;border:1px solid var(--line);border-radius:10px;padding:10px}
-  @keyframes pop{from{transform:scale(.97);opacity:.5}to{transform:scale(1);opacity:1}} .pop{animation: pop .2s ease}
-  canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:80}
 </style>
 </head>
 <body>
-  <canvas id="fx"></canvas>
   <div class="shell">
-    <header>
-      <div class="nav">
-        <div class="brand"><div class="logo">IP</div><div class="title">ITパスポート過去問トレーナー</div></div>
-        <div class="actions"><button id="btnImport" class="btn ghost" type="button">CSV/JSON取込</button><button id="btnAbout" class="btn ghost" type="button" title="アプリ情報">ℹ︎</button></div>
-      </div>
-    </header>
+    <header><div class="nav"><div class="brand"><div class="logo">IP</div><b>ITパスポート過去問トレーナー</b></div><div><button id="btnImport" class="btn" type="button">CSV/JSON取込</button></div></div></header>
     <main>
-      <section class="card hero" id="home">
-        <div><h1>本番仕様で、100問×120分。<br>1タップで突き進め。</h1>
-          <p class="muted">Z世代向けに設計した集中UI。選択肢は <b>ア/イ/ウ/エ</b>、キーボード <b>1/2/3/4</b>。戻る禁止で“余計なタスクゼロ”。</p>
-          <p class="hint">ショートカット：<b>1-4</b>で解答、<b>Enter</b>で次へ、（許可時）<b>←</b>で戻る</p></div>
+      <section class="card" id="home">
+        <h2>本番仕様で 100問 × 120分。1タップで突き進め。</h2>
         <div class="settings">
-          <span class="chip">出題数 <input type="number" id="examCount" min="1" value="100"></span>
-          <span class="chip">制限 <input type="number" id="examMinutes" min="1" value="120"> 分</span>
-          <label class="chip toggle"><input type="checkbox" id="lockBack" checked><span>戻る禁止</span></label>
-          <label class="chip toggle"><input type="checkbox" id="shuffle" checked><span>出題シャッフル</span></label>
-          <label class="chip toggle"><input type="checkbox" id="sound"><span>サウンド</span></label>
-          <button id="btnStart" class="btn primary lg" type="button">模試開始</button>
+          <span class="chip">出題数 <input type="number" id="examCount" min="1" value="100" style="width:80px;background:transparent;border:none;color:#fff"></span>
+          <span class="chip">制限 <input type="number" id="examMinutes" min="1" value="120" style="width:80px;background:transparent;border:none;color:#fff"> 分</span>
+          <label class="chip"><input type="checkbox" id="lockBack" checked> 戻る禁止</label>
+          <label class="chip"><input type="checkbox" id="shuffle" checked> 出題シャッフル</label>
+          <label class="chip"><input type="checkbox" id="sound"> サウンド</label>
+          <button id="btnStart" class="btn primary" type="button">模試開始</button>
         </div>
       </section>
-      <section class="card pop" id="quiz" style="display:none;">
+      <section class="card" id="quiz" style="display:none;">
         <div class="progress"><div id="bar" class="bar"></div></div>
-        <div class="top"><div id="counter" class="pill">-</div><div id="meta" class="pill">-</div><div id="timer" class="pill timer" style="margin-left:auto;">--:--</div></div>
-        <div class="qwrap"><p class="q" id="stem">-</p><div class="choices" id="choices"></div></div>
-        <div class="controls"><button id="btnPrev" class="btn ghost" type="button">← 戻る</button><button id="btnFinish" class="btn ghost" type="button">採点</button></div>
+        <div style="display:flex;gap:8px;align-items:center"><div id="counter" class="pill">-</div><div id="meta" class="pill">-</div><div id="timer" class="pill" style="margin-left:auto;">--:--</div></div>
+        <p class="q" id="stem">-</p>
+        <div class="choices" id="choices"></div>
+        <div style="display:flex;gap:8px;margin-top:12px"><button id="btnPrev" class="btn" type="button">← 戻る</button><button id="btnFinish" class="btn" type="button">採点</button></div>
       </section>
-      <section class="card pop" id="finish" style="display:none;">
-        <div class="score" id="score">-</div><div class="badges"><span class="badge" id="badgeTime">-</span><span class="badge" id="badgeAnswered">-</span></div>
-        <div class="review" id="review"></div>
-        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap"><button id="btnRestart" class="btn" type="button">トップへ</button><button id="btnWrong" class="btn" type="button">誤答だけ復習</button><button id="btnExport" class="btn ghost" type="button">結果JSON保存</button></div>
+      <section class="card" id="finish" style="display:none;">
+        <h3 id="score">-</h3><div id="review"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button id="btnRestart" class="btn" type="button">トップへ</button><button id="btnWrong" class="btn" type="button">誤答だけ復習</button></div>
       </section>
     </main>
-    <footer class="nav muted" style="justify-content:center;gap:8px"><span>ホーム画面に追加でアプリ化（PWA相当）。データは端末に保存されます。</span></footer>
   </div>
 <script>
-const $ = (s) => document.querySelector(s);
-const h = (tag, attrs={}, ...kids) => { const el = document.createElement(tag); for(const k in attrs){ if(k.startsWith("on")) el.addEventListener(k.slice(2), attrs[k]); else if(k==="html") el.innerHTML = attrs[k]; else el.setAttribute(k, attrs[k]); } kids.forEach(k=>{ if(k==null) return; if(typeof k==="string") el.appendChild(document.createTextNode(k)); else el.appendChild(k);}); return el; };
-const LABELS = ["ア","イ","ウ","エ"];
-const mapKanaFromABCD = (ch)=>({A:"ア",B:"イ",C:"ウ",D:"エ"}[ch]||"");
-const tone = (f=880,ms=120)=>{ if(!$('#sound').checked) return; const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.frequency.value=f; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.setValueAtTime(.08,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+ms/1000); o.stop(ctx.currentTime+ms/1000); };
-const vibrate = (p=[10])=>('vibrate'in navigator)&&navigator.vibrate(p);
-const ADVANCE_MS = 450; // ← 色表示してから次へ進むまでの待ち時間
-
-function makeId(q,i){ return q.id || (q.id = `${q.year??'Y'}-${q.session??'S'}-${q.q_no??(i+1)}-${i}`); }
-async function loadQuestions() {
-  const inline = document.getElementById('qs');
-  if (inline) { try { const j = JSON.parse(inline.textContent); if (Array.isArray(j) && j.length) return padTo(j, 100); } catch(_){} }
-  try { const r = await fetch('data/questions.json', {cache:'no-store'}); if(r.ok){ const j = await r.json(); if(Array.isArray(j)&&j.length) return padTo(j, 100);} } catch(_){ }
-  return auto100();
+const $=(s)=>document.querySelector(s); const h=(t,a={},...k)=>{const e=document.createElement(t);for(const n in a){if(n.startsWith("on"))e.addEventListener(n.slice(2),a[n]);else if(n==="html")e.innerHTML=a[n];else e.setAttribute(n,a[n]);}k.forEach(x=>{if(x==null)return;typeof x==="string"?e.appendChild(document.createTextNode(x)):e.appendChild(x)});return e;}
+const LABELS=["ア","イ","ウ","エ"]; const mapKana=(ch)=>({A:"ア",B:"イ",C:"ウ",D:"エ"}[ch]||""); const ADV=450;
+const tone=(f=880,ms=120)=>{ if(!$('#sound').checked) return; const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(); const g=c.createGain(); o.frequency.value=f;o.connect(g);g.connect(c.destination);o.start();g.gain.setValueAtTime(.08,c.currentTime);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+ms/1000);o.stop(c.currentTime+ms/1000); }
+let Q=[],IDX=0,EXCNT=100,EXMIN=120,LOCK=true,SHUF=true,remain=0,tId=null,ANS={},START=0;
+function makeId(q,i){ return q.id||(q.id=`${q.year??'Y'}-${q.session??'S'}-${q.q_no??(i+1)}-${i}`); }
+async function loadQ(){ try{ const r=await fetch('data/questions.json',{cache:'no-store'}); if(r.ok){ const j=await r.json(); if(Array.isArray(j)&&j.length) return pad(j,100);} }catch(e){} return auto100(); }
+function pad(a,n){ if(a.length>=n) return a.slice(0,n); const out=[...a]; for(let i=a.length+1;i<=n;i++) out.push(dummy(i)); return out; }
+function dummy(n){const y=new Date().getFullYear(); const k=LABELS[(n-1)%4]; return {id:`auto-${n}`,year:y,session:'AUTO',domain:'ダミー',stem:`練習用ダミー問題 ${n}（要約未入力）`,ア:'選択肢ア',イ:'選択肢イ',ウ:'選択肢ウ',エ:'選択肢エ',answer_kana:k};}
+function auto100(){const a=[];for(let i=1;i<=100;i++)a.push(dummy(i));return a;}
+$('#btnStart').onclick=async()=>{EXCNT=+$('#examCount').value||100;EXMIN=+$('#examMinutes').value||120;LOCK=$('#lockBack').checked;SHUF=$('#shuffle').checked;
+  let qs=await loadQ(); if(SHUF) qs=shuffle(qs); Q=qs.slice(0,EXCNT).map(x=>({...x})); ANS={}; IDX=0; remain=EXMIN*60; START=Date.now();
+  $('#home').style.display='none'; $('#finish').style.display='none'; $('#quiz').style.display='block';
+  if(tId) clearInterval(tId); tId=setInterval(()=>{remain--;timer(); if(remain<=0) finish();},1000); render();
 }
-function padTo(arr, n){ if(arr.length>=n) return arr.slice(0,n); const out=[...arr]; for(let i=arr.length+1;i<=n;i++) out.push(makeDummy(i)); return out; }
-function auto100(){ const a=[]; for(let i=1;i<=100;i++) a.push(makeDummy(i)); return a; }
-function makeDummy(n){ const kana = LABELS[(n-1)%4]; const y = new Date().getFullYear(); return { id:`auto-${n}`, year:y, session:'AUTO', domain:'ダミー', stem:`練習用ダミー問題 ${n}（要約未入力）`, ア:'選択肢ア', イ:'選択肢イ', ウ:'選択肢ウ', エ:'選択肢エ', answer_kana:kana }; }
-let QUESTIONS=[]; let IDX=0; let EXAM_COUNT=100; let EXAM_MIN=120; let LOCK_BACK=true; let SHUFFLE=true;
-let remainSec=0; let timerId=null; const ANSWERS={}; const START_AT={t:0};
-$('#btnStart').onclick = async ()=>{ EXAM_COUNT=+$('#examCount').value||100; EXAM_MIN=+$('#examMinutes').value||120; LOCK_BACK=$('#lockBack').checked; SHUFFLE=$('#shuffle').checked;
-  let q = await loadQuestions(); if (SHUFFLE) q = shuffle(q); QUESTIONS = q.slice(0, EXAM_COUNT).map(x=>({...x}));
-  for (const k in ANSWERS) delete ANSWERS[k]; IDX=0; remainSec=EXAM_MIN*60; updateTimer(); if(timerId) clearInterval(timerId);
-  timerId=setInterval(()=>{ remainSec--; updateTimer(); if(remainSec<=0) finish();},1000);
-  $('#home').style.display='none'; $('#finish').style.display='none'; $('#quiz').style.display='block'; START_AT.t=Date.now(); render(); };
-$('#btnImport').onclick = () => openImporter();
-$('#btnAbout').onclick = () => alert('ITパスポート過去問トレーナー\\nZ世代向け・1タップ集中UI / キー1-4 / 120分タイマー / 誤答復習 / CSV&JSON取込 / ローカル保存');
-$('#btnPrev').onclick = ()=>{ if(LOCK_BACK||IDX<=0) return; delete ANSWERS[ makeId(QUESTIONS[IDX], IDX) ]; IDX--; render(); };
-$('#btnFinish').onclick = ()=> finish();
-$('#btnRestart').onclick = ()=>{ $('#finish').style.display='none'; $('#home').style.display='grid'; window.scrollTo({top:0,behavior:'smooth'}); };
-$('#btnWrong').onclick = ()=> redoWrong();
-$('#btnExport').onclick = ()=> exportResult();
-window.addEventListener('keydown', (e)=>{
-  const k=e.key; const map={ '1':'ア','2':'イ','3':'ウ','4':'エ','Enter':'NEXT','ArrowLeft':'PREV' };
-  if(!(k in map)) return; e.preventDefault(); const act=map[k];
-  if(act==='NEXT'){ next(); return; }
-  if(act==='PREV'){ if(!LOCK_BACK && IDX>0){ delete ANSWERS[ makeId(QUESTIONS[IDX], IDX) ]; IDX--; render(); } return; }
-  choose(act);
-});
-function render(){ if(IDX>=QUESTIONS.length){ finish(); return; } const q=QUESTIONS[IDX];
-  makeId(q, IDX);
-  $('#counter').textContent=`${IDX+1} / ${QUESTIONS.length}`; $('#meta').textContent=`${q.year??'-'} ${q.session??''}｜${q.domain??q.category??'-'}`; $('#stem').textContent=q.stem||'';
-  const opts=[q.ア,q.イ,q.ウ,q.エ]; const wrap=$('#choices'); wrap.innerHTML='';
-  opts.forEach((text,i)=>{ const label=LABELS[i]; const btn=h('button',{class:'choice',type:'button','data-kana':label,role:'button','aria-label':`選択肢${label}`}, h('div',{class:'label'},label), h('div',{class:'text'}, text||'')); wrap.appendChild(btn); });
-  $('#btnPrev').disabled = LOCK_BACK || IDX===0;
-  wrap.style.pointerEvents='auto';
-  updateProgress();
+$('#btnPrev').onclick=()=>{ if(LOCK||IDX<=0) return; delete ANS[makeId(Q[IDX],IDX)]; IDX--; render(); }
+$('#btnFinish').onclick=()=>finish(); $('#btnRestart').onclick=()=>{$('#finish').style.display='none';$('#home').style.display='block';}
+$('#btnWrong').onclick=()=>redoWrong();
+window.addEventListener('keydown',(e)=>{const m={'1':'ア','2':'イ','3':'ウ','4':'エ','Enter':'NEXT','ArrowLeft':'PREV'}; if(!(e.key in m))return; e.preventDefault(); const a=m[e.key]; if(a==='NEXT'){ next(); return;} if(a==='PREV'){ if(!LOCK&&IDX>0){ delete ANS[makeId(Q[IDX],IDX)]; IDX--; render(); } return;} choose(a);});
+function render(){ if(IDX>=Q.length){finish();return;} const q=Q[IDX]; makeId(q,IDX); $('#counter').textContent=`${IDX+1} / ${Q.length}`; $('#meta').textContent=`${q.year??'-'} ${q.session??''}｜${q.domain??'-'}`; $('#stem').textContent=q.stem||'';
+  const wrap=$('#choices'); wrap.innerHTML=''; [q.ア,q.イ,q.ウ,q.エ].forEach((t,i)=>{ const k=LABELS[i]; wrap.appendChild(h('button',{class:'choice',type:'button','data-kana':k},h('div',{class:'label'},k),h('div',{},t||''))); }); $('#btnPrev').disabled=LOCK||IDX===0; wrap.style.pointerEvents='auto'; prog();
 }
-// iOSでも確実に拾うため、pointerup / click / touchend で委譲
-const onPick = (e)=>{ const b=e.target.closest('.choice'); if(!b) return; e.preventDefault(); choose(b.dataset.kana, b); };
-const choicesEl = document.getElementById('choices');
-['pointerup','click','touchend'].forEach(ev=> choicesEl.addEventListener(ev, onPick, {passive:false}));
-
-function choose(kana, btnEl){ const q=QUESTIONS[IDX]; if(!q) return; const id = makeId(q, IDX); if(ANSWERS[id]) return; // 連打防止
-  const correct = q.answer_kana || mapKanaFromABCD(q.answer) || '';
-  const wrap = $('#choices'); wrap.style.pointerEvents='none';
-  const correctEl = wrap.querySelector(`[data-kana="${correct}"]`);
-  if(correctEl) correctEl.classList.add('good');
-  if(kana !== correct && btnEl) btnEl.classList.add('bad');
-  // 音・バイブ
-  if(kana === correct){ tone(1046,120); } else { tone(220,160); vibrate([10,40,10]); }
-  // 記録して少し待ってから次へ
-  ANSWERS[id]=kana;
-  setTimeout(next, ADVANCE_MS);
+const wrapEl=document.getElementById('choices'); ['pointerup','click','touchend'].forEach(ev=>wrapEl.addEventListener(ev,(e)=>{const b=e.target.closest('.choice'); if(!b) return; e.preventDefault(); choose(b.dataset.kana,b);} ,{passive:false}));
+function choose(k,btn){ const q=Q[IDX]; if(!q) return; const id=makeId(q,IDX); if(ANS[id]) return; const correct=q.answer_kana||mapKana(q.answer)||''; const wrap=$('#choices'); wrap.style.pointerEvents='none';
+  const okEl=wrap.querySelector(`[data-kana="${correct}"]`); if(okEl) okEl.classList.add('good'); if(k!==correct&&btn) btn.classList.add('bad'); if(k===correct) tone(1046,120); else tone(220,160);
+  ANS[id]=k; setTimeout(next,ADV);
 }
-
-function next(){ if(IDX<QUESTIONS.length-1){ IDX++; render(); } else { finish(); } }
-function updateProgress(){ const pct = QUESTIONS.length? (IDX/QUESTIONS.length)*100 : 0; $('#bar').style.width=pct+'%'; }
-function updateTimer(){ const m=Math.floor(remainSec/60), s=remainSec%60; const t=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; const el=$('#timer'); el.textContent=t; if(remainSec<=300) el.classList.add('timer','warn'); else el.classList.remove('warn'); }
-function tally(){ let ok=0, wrong=0, blank=0; const wrongList=[]; for(const [i,q] of QUESTIONS.entries()){ const id = makeId(q,i); const a=ANSWERS[id]; const correct=q.answer_kana||mapKanaFromABCD(q.answer); if(!a){ blank++; wrongList.push({q,a:'未回答',correct}); continue; } if(a===correct) ok++; else { wrong++; wrongList.push({q,a,correct}); } } return {ok,wrong,blank,total:QUESTIONS.length, wrongList}; }
-function finish(){ if(timerId) clearInterval(timerId); $('#quiz').style.display='none'; $('#finish').style.display='block';
-  const spent = Math.round((Date.now()-START_AT.t)/1000); const {ok,wrong,blank,total,wrongList}=tally(); const rate= total? Math.round(ok/total*100):0;
-  $('#score').textContent = `正答 ${ok} / ${total}（正答率 ${rate}%）`;
-  $('#badgeTime').textContent = `経過 ${fmtMinSec(spent)}`; $('#badgeAnswered').textContent=`回答 ${total-blank}・未 ${blank}`;
-  buildReview(wrongList);
-  if(rate>=65) confetti();
-}
-function redoWrong(){ const {wrongList} = tally(); if(!wrongList.length){ alert('誤答はありません'); return; }
-  const nextQ = wrongList.map(w=>w.q); for(const k in ANSWERS) delete ANSWERS[k]; QUESTIONS = nextQ; IDX=0; remainSec = Math.max(5*60, Math.ceil( (nextQ.length * 60) )); if(timerId) clearInterval(timerId); timerId=setInterval(()=>{ remainSec--; updateTimer(); if(remainSec<=0) finish(); },1000);
-  $('#finish').style.display='none'; $('#quiz').style.display='block'; updateTimer(); render();
-}
-function buildReview(list){ const box=$('#review'); box.innerHTML=''; if(!list.length){ box.innerHTML='<p class="muted">全問正解！</p>'; return; }
-  const ul=h('ul'); list.slice(0,40).forEach((w,i)=>{ ul.appendChild(h('li',{},`Q${i+1}: あなた=${w.a} / 正解=${w.correct} ｜ ${(w.q.stem||'').slice(0,40)}`)); }); if(list.length>40) ul.appendChild(h('li',{class:'muted'},`… 他 ${list.length-40}問`)); box.appendChild(ul);
-}
-function exportResult(){ const data={ timestamp:Date.now(), total:QUESTIONS.length, answers:ANSWERS, settings:{EXAM_COUNT,EXAM_MIN,LOCK_BACK}, meta:{ ua:navigator.userAgent } }; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const a=h('a',{href:URL.createObjectURL(blob),download:'ipass_result.json'}); document.body.appendChild(a); a.click(); a.remove(); }
-function openImporter(){ const modal=h('div',{class:'modal'}, h('div',{class:'pane'}, h('h3',{},'CSV/JSON 取込'), h('p',{class:'muted'}, 'CSVヘッダ：year,session,q_no,stem,ア,イ,ウ,エ,answer_kana,answer_abcd'),
-  h('textarea',{id:'imp'}), h('div',{style:'display:flex;gap:8px;margin-top:8px;flex-wrap:wrap'},
-    h('button',{class:'btn', type:'button', onClick:()=>{ const v=$('#imp').value.trim(); const arr = csvToJson(v); alert(`変換しました（${arr.length}件）`); $('#imp').value = JSON.stringify(arr, null, 2); }},'CSV→JSON'),
-    h('button',{class:'btn', type:'button', onClick:()=>{ try{ const arr = JSON.parse($('#imp').value); QUESTIONS=padTo(arr,100); for(const k in ANSWERS) delete ANSWERS[k]; alert('読み込みました。トップで模試開始してください'); }catch(e){ alert('JSONの形式が不正です'); } }},'JSON読み込み'),
-    h('button',{class:'btn ghost', type:'button', onClick:()=>{ const arr = auto100(); $('#imp').value = JSON.stringify(arr, null, 2); }},'ダミー100生成'),
-    h('button',{class:'btn ghost', type:'button', onClick:()=>modal.remove()},'閉じる')
-  ))); document.body.appendChild(modal); }
-function csvToJson(csv){ const lines = csv.split(/\r?\n/).filter(Boolean); if(!lines.length) return []; const header = splitCsvLine(lines[0]); const idx=(n)=>header.indexOf(n); const out=[]; for(let i=1;i<lines.length;i++){ const row=splitCsvLine(lines[i]); const obj={ id:`${row[idx('year')]}-${row[idx('session')]}-${row[idx('q_no')]}`,
-  year:Number(row[idx('year')])||null, session:row[idx('session')]||'', domain:'', stem:row[idx('stem')]||'', ア:row[idx('ア')]||'', イ:row[idx('イ')]||'', ウ:row[idx('ウ')]||'', エ:row[idx('エ')]||'', answer_kana:row[idx('answer_kana')]||'', answer:row[idx('answer_abcd')]||'' }; out.push(obj);} return out; }
-function splitCsvLine(line){ const res=[]; let cur='', inQ=false; for(let i=0;i<line.length;i++){ const c=line[i]; if(c=='\"'){ inQ=!inQ; continue;} if(c===',' && !inQ){ res.push(cur); cur=''; continue;} cur+=c; } res.push(cur); return res; }
-function shuffle(a){ const arr=[...a]; for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
-function fmtMinSec(s){ const m=Math.floor(s/60), r=s%60; return `${m}分${r}秒`; }
-function confetti(){ const c=document.getElementById('fx'); const ctx=c.getContext('2d'); const w=c.width=innerWidth, h=c.height=innerHeight; const N=140; const parts=Array.from({length:N},()=>({ x:Math.random()*w, y: -20-Math.random()*h, r: 3+Math.random()*4, vx:(Math.random()-.5)*2, vy: 2+Math.random()*2, col:`hsl(${Math.random()*360},100%,70%)` })); let t=0; const step=()=>{ ctx.clearRect(0,0,w,h); parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=.02; ctx.fillStyle=p.col; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); }); t++; if(t<160) requestAnimationFrame(step); else ctx.clearRect(0,0,w,h); }; step(); }
+function next(){ if(IDX<Q.length-1){IDX++; render();} else finish(); }
+function prog(){ const p = Q.length? (IDX/Q.length)*100 : 0; $('#bar').style.width=p+'%'; }
+function timer(){ const m=Math.floor(remain/60), s=remain%60; $('#timer').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+function tally(){ let ok=0,wrong=0,blank=0,list=[]; for(const [i,q] of Q.entries()){ const id=makeId(q,i); const a=ANS[id]; const c=q.answer_kana||mapKana(q.answer); if(!a){blank++; list.push({q,a:'未回答',c}); continue;} if(a===c) ok++; else { wrong++; list.push({q,a,c}); } } return {ok,wrong,blank,total:Q.length,list}; }
+function finish(){ if(tId) clearInterval(tId); $('#quiz').style.display='none'; $('#finish').style.display='block'; const {ok,blank,total,list}=tally(); $('#score').textContent=`正答 ${ok} / ${total}（未 ${blank}）`; const ul=h('ul'); list.slice(0,40).forEach((w,i)=>ul.appendChild(h('li',{},`Q${i+1}: あなた=${w.a} / 正解=${w.c} ｜ ${(w.q.stem||'').slice(0,40)}`))); $('#review').innerHTML=''; $('#review').appendChild(ul); }
+function redoWrong(){ const {list}=tally(); const nextQ=list.map(w=>w.q); if(!nextQ.length){ alert('誤答はありません'); return;} Q=nextQ; ANS={}; IDX=0; remain=Math.max(5*60,Math.ceil(nextQ.length*60)); if(tId) clearInterval(tId); tId=setInterval(()=>{remain--;timer(); if(remain<=0) finish();},1000); $('#finish').style.display='none'; $('#quiz').style.display='block'; timer(); render(); }
+function shuffle(a){const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]];} return b;}
 </script>
-<script id="qs" type="application/json">[]</script>
 </body>
 </html>
