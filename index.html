@@ -106,6 +106,7 @@ const LABELS = ["ア","イ","ウ","エ"];
 const mapKanaFromABCD = (ch)=>({A:"ア",B:"イ",C:"ウ",D:"エ"}[ch]||"");
 const tone = (f=880,ms=120)=>{ if(!$('#sound').checked) return; const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.frequency.value=f; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.setValueAtTime(.1,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+ms/1000); o.stop(ctx.currentTime+ms/1000); };
 const vibrate = (p=[10])=>('vibrate'in navigator)&&navigator.vibrate(p);
+function makeId(q,i){ return q.id || (q.id = `${q.year??'Y'}-${q.session??'S'}-${q.q_no??(i+1)}-${i}`); }
 async function loadQuestions() {
   const inline = document.getElementById('qs');
   if (inline) { try { const j = JSON.parse(inline.textContent); if (Array.isArray(j) && j.length) return padTo(j, 100); } catch(_){} }
@@ -124,7 +125,7 @@ $('#btnStart').onclick = async ()=>{ EXAM_COUNT=+$('#examCount').value||100; EXA
   $('#home').style.display='none'; $('#finish').style.display='none'; $('#quiz').style.display='block'; START_AT.t=Date.now(); render(); };
 $('#btnImport').onclick = () => openImporter();
 $('#btnAbout').onclick = () => alert('ITパスポート過去問トレーナー\\nZ世代向け・1タップ集中UI / キー1-4 / 120分タイマー / 誤答復習 / CSV&JSON取込 / ローカル保存');
-$('#btnPrev').onclick = ()=>{ if(LOCK_BACK||IDX<=0) return; delete ANSWERS[QUESTIONS[IDX].id]; IDX--; render(); };
+$('#btnPrev').onclick = ()=>{ if(LOCK_BACK||IDX<=0) return; delete ANSWERS[ makeId(QUESTIONS[IDX], IDX) ]; IDX--; render(); };
 $('#btnFinish').onclick = ()=> finish();
 $('#btnRestart').onclick = ()=>{ $('#finish').style.display='none'; $('#home').style.display='grid'; window.scrollTo({top:0,behavior:'smooth'}); };
 $('#btnWrong').onclick = ()=> redoWrong();
@@ -133,26 +134,26 @@ window.addEventListener('keydown', (e)=>{
   const k=e.key; const map={ '1':'ア','2':'イ','3':'ウ','4':'エ','Enter':'NEXT','ArrowLeft':'PREV' };
   if(!(k in map)) return; e.preventDefault(); const act=map[k];
   if(act==='NEXT'){ next(); return; }
-  if(act==='PREV'){ if(!LOCK_BACK && IDX>0){ delete ANSWERS[QUESTIONS[IDX].id]; IDX--; render(); } return; }
+  if(act==='PREV'){ if(!LOCK_BACK && IDX>0){ delete ANSWERS[ makeId(QUESTIONS[IDX], IDX) ]; IDX--; render(); } return; }
   choose(act);
 });
 function render(){ if(IDX>=QUESTIONS.length){ finish(); return; } const q=QUESTIONS[IDX];
+  makeId(q, IDX);
   $('#counter').textContent=`${IDX+1} / ${QUESTIONS.length}`; $('#meta').textContent=`${q.year??'-'} ${q.session??''}｜${q.domain??q.category??'-'}`; $('#stem').textContent=q.stem||'';
   const opts=[q.ア,q.イ,q.ウ,q.エ]; const wrap=$('#choices'); wrap.innerHTML='';
-  opts.forEach((text,i)=>{ const label=LABELS[i]; const btn=h('button',{class:'choice',type:'button','data-kana':label}, h('div',{class:'label'},label), h('div',{class:'text'}, text||'')); wrap.appendChild(btn); });
+  opts.forEach((text,i)=>{ const label=LABELS[i]; const btn=h('button',{class:'choice',type:'button','data-kana':label,role:'button','aria-label':`選択肢${label}`}, h('div',{class:'label'},label), h('div',{class:'text'}, text||'')); wrap.appendChild(btn); });
   $('#btnPrev').disabled = LOCK_BACK || IDX===0;
   updateProgress();
 }
-// tap/click delegation (iOS Safari safe)
+// iOSでも確実に拾うため、pointerup / click / touchend で委譲
+const onPick = (e)=>{ const b=e.target.closest('.choice'); if(!b) return; e.preventDefault(); choose(b.dataset.kana); };
 const choicesEl = document.getElementById('choices');
-choicesEl.addEventListener('click', (e)=>{ const b=e.target.closest('.choice'); if(!b) return; choose(b.dataset.kana); });
-choicesEl.addEventListener('touchstart', (e)=>{ const b=e.target.closest('.choice'); if(!b) return; e.preventDefault(); choose(b.dataset.kana); }, {passive:false});
-
-function choose(kana){ const q=QUESTIONS[IDX]; if(!q) return; if(ANSWERS[q.id]) return; ANSWERS[q.id]=kana; tone(880,80); vibrate(10); next(); }
+['pointerup','click','touchend'].forEach(ev=> choicesEl.addEventListener(ev, onPick, {passive:false}));
+function choose(kana){ const q=QUESTIONS[IDX]; if(!q) return; const id = makeId(q, IDX); if(ANSWERS[id]) return; ANSWERS[id]=kana; tone(880,80); vibrate(10); next(); }
 function next(){ if(IDX<QUESTIONS.length-1){ IDX++; render(); } else { finish(); } }
 function updateProgress(){ const pct = QUESTIONS.length? (IDX/QUESTIONS.length)*100 : 0; $('#bar').style.width=pct+'%'; }
 function updateTimer(){ const m=Math.floor(remainSec/60), s=remainSec%60; const t=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; const el=$('#timer'); el.textContent=t; if(remainSec<=300) el.classList.add('timer','warn'); else el.classList.remove('warn'); }
-function tally(){ let ok=0, wrong=0, blank=0; const wrongList=[]; for(const q of QUESTIONS){ const a=ANSWERS[q.id]; const correct=q.answer_kana||mapKanaFromABCD(q.answer); if(!a){ blank++; wrongList.push({q,a:'未回答',correct}); continue; } if(a===correct) ok++; else { wrong++; wrongList.push({q,a,correct}); } } return {ok,wrong,blank,total:QUESTIONS.length, wrongList}; }
+function tally(){ let ok=0, wrong=0, blank=0; const wrongList=[]; for(const [i,q] of QUESTIONS.entries()){ const id = makeId(q,i); const a=ANSWERS[id]; const correct=q.answer_kana||mapKanaFromABCD(q.answer); if(!a){ blank++; wrongList.push({q,a:'未回答',correct}); continue; } if(a===correct) ok++; else { wrong++; wrongList.push({q,a,correct}); } } return {ok,wrong,blank,total:QUESTIONS.length, wrongList}; }
 function finish(){ if(timerId) clearInterval(timerId); $('#quiz').style.display='none'; $('#finish').style.display='block';
   const spent = Math.round((Date.now()-START_AT.t)/1000); const {ok,wrong,blank,total,wrongList}=tally(); const rate= total? Math.round(ok/total*100):0;
   $('#score').textContent = `正答 ${ok} / ${total}（正答率 ${rate}%）`;
