@@ -15,20 +15,29 @@
       <h1>ITパスポート 過去問トレーナー</h1>
       <div class="actions">
         <button id="btnStart" class="nav">練習開始</button>
+        <button id="btnExam" class="nav">模試開始</button>
         <button id="btnImport" class="ghost">CSV/JSON 取込</button>
       </div>
     </header>
 
     <section class="card">
-      <h2>モード</h2>
+      <h2>モード設定</h2>
       <div class="row">
-        <label><input type="checkbox" id="autoAdvance" checked> 回答後 <b>自動で次へ</b>（Enter不要）</label>
+        <label><input type="checkbox" id="autoAdvance" checked> 練習：回答後 <b>自動で次へ</b>（Enter不要 / 即時判定）</label>
       </div>
       <div class="row">
-        <label>自動で次へ進むまで： <input type="number" id="delay" min="200" step="100" value="600"> ms</label>
+        <label>練習：自動で次へ進むまで： <input type="number" id="delay" min="200" step="100" value="600"> ms</label>
       </div>
       <div class="row">
-        <label>出題数（0で全件）： <input type="number" id="limit" min="0" value="0"></label>
+        <label>練習：出題数（0で全件）： <input type="number" id="limit" min="0" value="0"></label>
+      </div>
+      <hr style="border:none;border-top:1px solid #2e3742;margin:12px 0">
+      <div class="row">
+        <label>模試：出題数 <input type="number" id="examCount" min="1" value="100" style="width:80px"> 問</label>
+      </div>
+      <div class="row">
+        <label>模試：制限時間 <input type="number" id="examMinutes" min="1" value="120" style="width:80px"> 分</label>
+        <label style="margin-left:12px"><input type="checkbox" id="examLockBack" checked> 戻るボタンを無効（1タップ集中）</label>
       </div>
       <p class="hint">キー操作：<span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span>/<span class="kbd">4</span>（<b>ア/イ/ウ/エ</b>） <span class="kbd">→</span> 次へ <span class="kbd">←</span> 戻る</p>
     </section>
@@ -38,6 +47,7 @@
         <div id="counter" class="pill">-</div>
         <div id="score" class="pill">正答 0</div>
         <div id="meta" class="pill">-</div>
+        <div id="timer" class="pill" style="margin-left:auto;display:none;">--:--</div>
       </div>
       <p class="q" id="stem">-</p>
       <div class="choices" id="choices"></div>
@@ -45,13 +55,18 @@
       <div class="controls">
         <button class="nav" id="prevBtn">← 戻る</button>
         <button class="nav" id="nextBtn">次へ →</button>
+        <button class="ghost" id="finishBtn" style="margin-left:auto;">採点</button>
       </div>
     </section>
 
     <section class="card" id="finish" style="display:none;">
       <div class="result" id="summary"></div>
-      <button class="nav" id="restartBtn">最初から</button>
-      <button class="ghost" id="exportBtn">学習履歴をJSON保存</button>
+      <div id="review" class="small"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="nav" id="restartBtn">最初から</button>
+        <button class="ghost" id="exportBtn">学習履歴をJSON保存</button>
+        <button class="ghost" id="retryWrongBtn">誤答だけ復習</button>
+      </div>
     </section>
 
     <footer class="small muted">

@@ -32,24 +32,36 @@ async function loadQuestions() {
 
 function bindUI() {
   const btnStart = document.getElementById("btnStart");
+  const btnExam = document.getElementById("btnExam");
   const btnImport = document.getElementById("btnImport");
   const auto = document.getElementById("autoAdvance");
   const delay = document.getElementById("delay");
   const limit = document.getElementById("limit");
   const exportBtn = document.getElementById("exportBtn");
   const restartBtn = document.getElementById("restartBtn");
+  const examCount = document.getElementById("examCount");
+  const examMinutes = document.getElementById("examMinutes");
+  const examLockBack = document.getElementById("examLockBack");
 
   btnStart.addEventListener("click", async () => {
     const q = await loadQuestions();
-    setConfig({auto:auto.checked, delay:delay.value, limit:limit.value});
-    startQuiz(q);
+    __QUIZ__.setConfig({auto:auto.checked, delay:delay.value, limit:limit.value,
+                        examCount: examCount.value, examMinutes: examMinutes.value, examLockBack: examLockBack.checked});
+    __QUIZ__.startPractice(q);
+  });
+
+  btnExam.addEventListener("click", async () => {
+    const q = await loadQuestions();
+    __QUIZ__.setConfig({auto:auto.checked, delay:delay.value, limit:limit.value,
+                        examCount: examCount.value, examMinutes: examMinutes.value, examLockBack: examLockBack.checked});
+    __QUIZ__.startExam(q);
   });
 
   btnImport.addEventListener("click", () => openImporter());
   exportBtn.addEventListener("click", exportProgress);
   restartBtn.addEventListener("click", async () => {
     const q = await loadQuestions();
-    startQuiz(q);
+    __QUIZ__.startPractice(q);
   });
 }
 
@@ -87,8 +99,8 @@ function openImporter() {
     if (!currentJson) {
       try { currentJson = JSON.parse(ta.value); } catch(e) { alert("JSONの形式が不正です"); return; }
     }
-    setConfig({auto:true, delay:600, limit:0});
-    startQuiz(currentJson);
+    __QUIZ__.setConfig({auto:true, delay:600, limit:0, examCount:100, examMinutes:120, examLockBack:true});
+    __QUIZ__.startPractice(currentJson);
   };
   btnDl.onclick = () => {
     if (!currentJson) { alert("先にCSVを変換してください"); return; }
@@ -128,7 +140,7 @@ function csvToJson(csv) {
   return out;
 }
 
-// naive CSV split (no quotes support). For safety, try to handle simple quotes.
+// naive CSV split (handles simple quotes)
 function safeSplit(line) {
   const arr = [];
   let cur = "", inQ = false;
