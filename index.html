@@ -31,40 +31,30 @@
   .hero{display:grid;grid-template-columns:1fr;gap:16px;align-items:center}
   @media(min-width:940px){ .hero{ grid-template-columns:1.2fr 1fr; } }
   .hero h1{margin:4px 0 8px;font-size:28px}
-  .muted{color:var(--muted)}
-  .hint{font-size:13px;color:var(--muted)}
-  /* settings: use flex-wrap to avoid tall vertical chips */
+  .muted{color:var(--muted)} .hint{font-size:13px;color:var(--muted)}
   .settings{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-  .chip{display:flex;align-items:center;gap:8px;min-height:44px;min-width:160px;
-        background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .chip{display:flex;align-items:center;gap:8px;min-height:44px;min-width:160px;background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
   .settings input[type=number]{width:90px;background:transparent;border:none;color:var(--text);font-size:16px;outline:none}
   .toggle input{accent-color:var(--brand1)}
-  .btn{border:1px solid var(--line);border-radius:12px;background:#111b33;color:var(--text);
-       padding:12px 14px;cursor:pointer;transition:transform .06s ease, box-shadow .2s}
-  .btn:hover{transform:translateY(-1px)}
-  .btn.primary{background:linear-gradient(135deg,var(--brand1),var(--brand2));border-color:transparent;color:#06101f;font-weight:800}
-  .btn.ghost{background:transparent}
-  .btn.lg{padding:14px 18px;font-size:16px}
+  .btn{border:1px solid var(--line);border-radius:12px;background:#111b33;color:var(--text);padding:12px 14px;cursor:pointer;transition:transform .06s ease, box-shadow .2s}
+  .btn:hover{transform:translateY(-1px)} .btn.primary{background:linear-gradient(135deg,var(--brand1),var(--brand2));border-color:transparent;color:#06101f;font-weight:800}
+  .btn.ghost{background:transparent} .btn.lg{padding:14px 18px;font-size:16px}
   .progress{height:10px;background:#0a1428;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:12px}
   .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand1),var(--brand2));transition:width .2s ease}
   .top{display:flex;gap:8px;align-items:center}
   .pill{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--muted);font-size:14px}
-  .timer{font-weight:800}
-  .timer.warn{background:#2a1420;color:#ffd6dc;border-color:#5f2b38}
-  .qwrap{margin-top:10px}
-  .q{font-size:20px;line-height:1.7;margin:0 0 12px;word-break:break-word}
-  .choices{display:grid;gap:12px}
-  @media(min-width:700px){.choices{grid-template-columns:1fr 1fr}}
-  .choice{appearance:none;border:1px solid var(--line);background:rgba(13,20,38,.9);
-          color:inherit;border-radius:14px;padding:14px;text-align:left;display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+  .timer{font-weight:800} .timer.warn{background:#2a1420;color:#ffd6dc;border-color:#5f2b38}
+  .qwrap{margin-top:10px} .q{font-size:20px;line-height:1.7;margin:0 0 12px;word-break:break-word}
+  .choices{display:grid;gap:12px} @media(min-width:700px){.choices{grid-template-columns:1fr 1fr}}
+  .choice{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:rgba(13,20,38,.9);
+          color:inherit;border-radius:14px;padding:14px;text-align:left;display:flex;gap:10px;align-items:flex-start;cursor:pointer;
+          user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
   .choice .label{min-width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:#0f223f;border:1px solid var(--line);font-weight:800}
   .choice:active{transform:scale(.99)}
   .controls{display:flex;gap:8px;margin-top:12px;justify-content:space-between}
   .score{font-size:22px;font-weight:800;margin-bottom:10px}
-  .badges{display:flex;gap:8px;flex-wrap:wrap}
-  .badge{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 10px}
-  .review{margin-top:8px}
-  .review ul{margin:6px 0 0;padding-left:18px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap} .badge{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 10px}
+  .review{margin-top:8px} .review ul{margin:6px 0 0;padding-left:18px}
   .modal{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:100}
   .pane{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:16px;max-width:720px;width:92%;padding:16px}
   textarea{width:100%;height:240px;background:#0c1530;color:#eaf1ff;border:1px solid var(--line);border-radius:10px;padding:10px}
@@ -78,7 +68,7 @@
     <header>
       <div class="nav">
         <div class="brand"><div class="logo">IP</div><div class="title">ITパスポート過去問トレーナー</div></div>
-        <div class="actions"><button id="btnImport" class="btn ghost">CSV/JSON取込</button><button id="btnAbout" class="btn ghost" title="アプリ情報">ℹ︎</button></div>
+        <div class="actions"><button id="btnImport" class="btn ghost" type="button">CSV/JSON取込</button><button id="btnAbout" class="btn ghost" type="button" title="アプリ情報">ℹ︎</button></div>
       </div>
     </header>
     <main>
@@ -92,19 +82,19 @@
           <label class="chip toggle"><input type="checkbox" id="lockBack" checked><span>戻る禁止</span></label>
           <label class="chip toggle"><input type="checkbox" id="shuffle" checked><span>出題シャッフル</span></label>
           <label class="chip toggle"><input type="checkbox" id="sound"><span>サウンド</span></label>
-          <button id="btnStart" class="btn primary lg">模試開始</button>
+          <button id="btnStart" class="btn primary lg" type="button">模試開始</button>
         </div>
       </section>
       <section class="card pop" id="quiz" style="display:none;">
         <div class="progress"><div id="bar" class="bar"></div></div>
         <div class="top"><div id="counter" class="pill">-</div><div id="meta" class="pill">-</div><div id="timer" class="pill timer" style="margin-left:auto;">--:--</div></div>
         <div class="qwrap"><p class="q" id="stem">-</p><div class="choices" id="choices"></div></div>
-        <div class="controls"><button id="btnPrev" class="btn ghost">← 戻る</button><button id="btnFinish" class="btn ghost">採点</button></div>
+        <div class="controls"><button id="btnPrev" class="btn ghost" type="button">← 戻る</button><button id="btnFinish" class="btn ghost" type="button">採点</button></div>
       </section>
       <section class="card pop" id="finish" style="display:none;">
         <div class="score" id="score">-</div><div class="badges"><span class="badge" id="badgeTime">-</span><span class="badge" id="badgeAnswered">-</span></div>
         <div class="review" id="review"></div>
-        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap"><button id="btnRestart" class="btn">トップへ</button><button id="btnWrong" class="btn">誤答だけ復習</button><button id="btnExport" class="btn ghost">結果JSON保存</button></div>
+        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap"><button id="btnRestart" class="btn" type="button">トップへ</button><button id="btnWrong" class="btn" type="button">誤答だけ復習</button><button id="btnExport" class="btn ghost" type="button">結果JSON保存</button></div>
       </section>
     </main>
     <footer class="nav muted" style="justify-content:center;gap:8px"><span>ホーム画面に追加でアプリ化（PWA相当）。データは端末に保存されます。</span></footer>
@@ -149,10 +139,15 @@ window.addEventListener('keydown', (e)=>{
 function render(){ if(IDX>=QUESTIONS.length){ finish(); return; } const q=QUESTIONS[IDX];
   $('#counter').textContent=`${IDX+1} / ${QUESTIONS.length}`; $('#meta').textContent=`${q.year??'-'} ${q.session??''}｜${q.domain??q.category??'-'}`; $('#stem').textContent=q.stem||'';
   const opts=[q.ア,q.イ,q.ウ,q.エ]; const wrap=$('#choices'); wrap.innerHTML='';
-  opts.forEach((text,i)=>{ const label=LABELS[i]; const btn=h('button',{class:'choice',onClick:()=>choose(label)} , h('div',{class:'label'},label), h('div',{class:'text'}, text||'')); wrap.appendChild(btn); });
+  opts.forEach((text,i)=>{ const label=LABELS[i]; const btn=h('button',{class:'choice',type:'button','data-kana':label}, h('div',{class:'label'},label), h('div',{class:'text'}, text||'')); wrap.appendChild(btn); });
   $('#btnPrev').disabled = LOCK_BACK || IDX===0;
   updateProgress();
 }
+// tap/click delegation (iOS Safari safe)
+const choicesEl = document.getElementById('choices');
+choicesEl.addEventListener('click', (e)=>{ const b=e.target.closest('.choice'); if(!b) return; choose(b.dataset.kana); });
+choicesEl.addEventListener('touchstart', (e)=>{ const b=e.target.closest('.choice'); if(!b) return; e.preventDefault(); choose(b.dataset.kana); }, {passive:false});
+
 function choose(kana){ const q=QUESTIONS[IDX]; if(!q) return; if(ANSWERS[q.id]) return; ANSWERS[q.id]=kana; tone(880,80); vibrate(10); next(); }
 function next(){ if(IDX<QUESTIONS.length-1){ IDX++; render(); } else { finish(); } }
 function updateProgress(){ const pct = QUESTIONS.length? (IDX/QUESTIONS.length)*100 : 0; $('#bar').style.width=pct+'%'; }
@@ -175,10 +170,10 @@ function buildReview(list){ const box=$('#review'); box.innerHTML=''; if(!list.l
 function exportResult(){ const data={ timestamp:Date.now(), total:QUESTIONS.length, answers:ANSWERS, settings:{EXAM_COUNT,EXAM_MIN,LOCK_BACK}, meta:{ ua:navigator.userAgent } }; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const a=h('a',{href:URL.createObjectURL(blob),download:'ipass_result.json'}); document.body.appendChild(a); a.click(); a.remove(); }
 function openImporter(){ const modal=h('div',{class:'modal'}, h('div',{class:'pane'}, h('h3',{},'CSV/JSON 取込'), h('p',{class:'muted'}, 'CSVヘッダ：year,session,q_no,stem,ア,イ,ウ,エ,answer_kana,answer_abcd'),
   h('textarea',{id:'imp'}), h('div',{style:'display:flex;gap:8px;margin-top:8px;flex-wrap:wrap'},
-    h('button',{class:'btn', onClick:()=>{ const v=$('#imp').value.trim(); const arr = csvToJson(v); alert(`変換しました（${arr.length}件）`); $('#imp').value = JSON.stringify(arr, null, 2); }},'CSV→JSON'),
-    h('button',{class:'btn', onClick:()=>{ try{ const arr = JSON.parse($('#imp').value); QUESTIONS=padTo(arr,100); for(const k in ANSWERS) delete ANSWERS[k]; alert('読み込みました。トップで模試開始してください'); }catch(e){ alert('JSONの形式が不正です'); } }},'JSON読み込み'),
-    h('button',{class:'btn ghost', onClick:()=>{ const arr = auto100(); $('#imp').value = JSON.stringify(arr, null, 2); }},'ダミー100生成'),
-    h('button',{class:'btn ghost', onClick:()=>modal.remove()},'閉じる')
+    h('button',{class:'btn', type:'button', onClick:()=>{ const v=$('#imp').value.trim(); const arr = csvToJson(v); alert(`変換しました（${arr.length}件）`); $('#imp').value = JSON.stringify(arr, null, 2); }},'CSV→JSON'),
+    h('button',{class:'btn', type:'button', onClick:()=>{ try{ const arr = JSON.parse($('#imp').value); QUESTIONS=padTo(arr,100); for(const k in ANSWERS) delete ANSWERS[k]; alert('読み込みました。トップで模試開始してください'); }catch(e){ alert('JSONの形式が不正です'); } }},'JSON読み込み'),
+    h('button',{class:'btn ghost', type:'button', onClick:()=>{ const arr = auto100(); $('#imp').value = JSON.stringify(arr, null, 2); }},'ダミー100生成'),
+    h('button',{class:'btn ghost', type:'button', onClick:()=>modal.remove()},'閉じる')
   ))); document.body.appendChild(modal); }
 function csvToJson(csv){ const lines = csv.split(/\r?\n/).filter(Boolean); if(!lines.length) return []; const header = splitCsvLine(lines[0]); const idx=(n)=>header.indexOf(n); const out=[]; for(let i=1;i<lines.length;i++){ const row=splitCsvLine(lines[i]); const obj={ id:`${row[idx('year')]}-${row[idx('session')]}-${row[idx('q_no')]}`,
   year:Number(row[idx('year')])||null, session:row[idx('session')]||'', domain:'', stem:row[idx('stem')]||'', ア:row[idx('ア')]||'', イ:row[idx('イ')]||'', ウ:row[idx('ウ')]||'', エ:row[idx('エ')]||'', answer_kana:row[idx('answer_kana')]||'', answer:row[idx('answer_abcd')]||'' }; out.push(obj);} return out; }
