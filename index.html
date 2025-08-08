@@ -51,6 +51,9 @@
           user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
   .choice .label{min-width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:#0f223f;border:1px solid var(--line);font-weight:800}
   .choice:active{transform:scale(.99)}
+  /* instant feedback */
+  .choice.good{border-color:#22c55e;background:linear-gradient(180deg,#0d2a1b,#0f2f20);box-shadow:0 0 0 1px #22c55e inset}
+  .choice.bad{border-color:#e23e57;background:linear-gradient(180deg,#2a0e14,#2f1015);box-shadow:0 0 0 1px #e23e57 inset}
   .controls{display:flex;gap:8px;margin-top:12px;justify-content:space-between}
   .score{font-size:22px;font-weight:800;margin-bottom:10px}
   .badges{display:flex;gap:8px;flex-wrap:wrap} .badge{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 10px}
@@ -104,8 +107,10 @@ const $ = (s) => document.querySelector(s);
 const h = (tag, attrs={}, ...kids) => { const el = document.createElement(tag); for(const k in attrs){ if(k.startsWith("on")) el.addEventListener(k.slice(2), attrs[k]); else if(k==="html") el.innerHTML = attrs[k]; else el.setAttribute(k, attrs[k]); } kids.forEach(k=>{ if(k==null) return; if(typeof k==="string") el.appendChild(document.createTextNode(k)); else el.appendChild(k);}); return el; };
 const LABELS = ["ア","イ","ウ","エ"];
 const mapKanaFromABCD = (ch)=>({A:"ア",B:"イ",C:"ウ",D:"エ"}[ch]||"");
-const tone = (f=880,ms=120)=>{ if(!$('#sound').checked) return; const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.frequency.value=f; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.setValueAtTime(.1,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+ms/1000); o.stop(ctx.currentTime+ms/1000); };
+const tone = (f=880,ms=120)=>{ if(!$('#sound').checked) return; const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.frequency.value=f; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.setValueAtTime(.08,ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+ms/1000); o.stop(ctx.currentTime+ms/1000); };
 const vibrate = (p=[10])=>('vibrate'in navigator)&&navigator.vibrate(p);
+const ADVANCE_MS = 450; // ← 色表示してから次へ進むまでの待ち時間
+
 function makeId(q,i){ return q.id || (q.id = `${q.year??'Y'}-${q.session??'S'}-${q.q_no??(i+1)}-${i}`); }
 async function loadQuestions() {
   const inline = document.getElementById('qs');
@@ -143,13 +148,27 @@ function render(){ if(IDX>=QUESTIONS.length){ finish(); return; } const q=QUESTI
   const opts=[q.ア,q.イ,q.ウ,q.エ]; const wrap=$('#choices'); wrap.innerHTML='';
   opts.forEach((text,i)=>{ const label=LABELS[i]; const btn=h('button',{class:'choice',type:'button','data-kana':label,role:'button','aria-label':`選択肢${label}`}, h('div',{class:'label'},label), h('div',{class:'text'}, text||'')); wrap.appendChild(btn); });
   $('#btnPrev').disabled = LOCK_BACK || IDX===0;
+  wrap.style.pointerEvents='auto';
   updateProgress();
 }
 // iOSでも確実に拾うため、pointerup / click / touchend で委譲
-const onPick = (e)=>{ const b=e.target.closest('.choice'); if(!b) return; e.preventDefault(); choose(b.dataset.kana); };
+const onPick = (e)=>{ const b=e.target.closest('.choice'); if(!b) return; e.preventDefault(); choose(b.dataset.kana, b); };
 const choicesEl = document.getElementById('choices');
 ['pointerup','click','touchend'].forEach(ev=> choicesEl.addEventListener(ev, onPick, {passive:false}));
-function choose(kana){ const q=QUESTIONS[IDX]; if(!q) return; const id = makeId(q, IDX); if(ANSWERS[id]) return; ANSWERS[id]=kana; tone(880,80); vibrate(10); next(); }
+
+function choose(kana, btnEl){ const q=QUESTIONS[IDX]; if(!q) return; const id = makeId(q, IDX); if(ANSWERS[id]) return; // 連打防止
+  const correct = q.answer_kana || mapKanaFromABCD(q.answer) || '';
+  const wrap = $('#choices'); wrap.style.pointerEvents='none';
+  const correctEl = wrap.querySelector(`[data-kana="${correct}"]`);
+  if(correctEl) correctEl.classList.add('good');
+  if(kana !== correct && btnEl) btnEl.classList.add('bad');
+  // 音・バイブ
+  if(kana === correct){ tone(1046,120); } else { tone(220,160); vibrate([10,40,10]); }
+  // 記録して少し待ってから次へ
+  ANSWERS[id]=kana;
+  setTimeout(next, ADVANCE_MS);
+}
+
 function next(){ if(IDX<QUESTIONS.length-1){ IDX++; render(); } else { finish(); } }
 function updateProgress(){ const pct = QUESTIONS.length? (IDX/QUESTIONS.length)*100 : 0; $('#bar').style.width=pct+'%'; }
 function updateTimer(){ const m=Math.floor(remainSec/60), s=remainSec%60; const t=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; const el=$('#timer'); el.textContent=t; if(remainSec<=300) el.classList.add('timer','warn'); else el.classList.remove('warn'); }
