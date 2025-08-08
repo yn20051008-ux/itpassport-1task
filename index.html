@@ -20,22 +20,27 @@
   .shell{min-height:100%;display:flex;flex-direction:column}
   header{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(13,18,32,.55);
           border-bottom:1px solid rgba(255,255,255,.06)}
-  .nav{max-width:1000px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+  .nav{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between}
   .brand{display:flex;align-items:center;gap:10px}
   .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;color:#06101f;
         background:conic-gradient(from 210deg at 50% 50%, var(--brand1), var(--brand2)); box-shadow:0 0 30px rgba(109,225,255,.22)}
   .title{font-weight:800;letter-spacing:.2px}
   .actions{display:flex;gap:8px}
-  main{flex:1;max-width:1000px;margin:0 auto;padding:18px;display:grid;gap:14px}
+  main{flex:1;max-width:1100px;margin:0 auto;padding:18px;display:grid;gap:14px}
   .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 16px 50px rgba(0,0,0,.35)}
-  .hero{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:center}
+  .hero{display:grid;grid-template-columns:1fr;gap:16px;align-items:center}
+  @media(min-width:940px){ .hero{ grid-template-columns:1.2fr 1fr; } }
   .hero h1{margin:4px 0 8px;font-size:28px}
-  .muted{color:var(--muted)} .hint{font-size:13px;color:var(--muted)}
-  .settings{display:grid;grid-template-columns:repeat(6,auto);gap:10px;align-items:center}
-  .chip{background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .muted{color:var(--muted)}
+  .hint{font-size:13px;color:var(--muted)}
+  /* settings: use flex-wrap to avoid tall vertical chips */
+  .settings{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .chip{display:flex;align-items:center;gap:8px;min-height:44px;min-width:160px;
+        background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
   .settings input[type=number]{width:90px;background:transparent;border:none;color:var(--text);font-size:16px;outline:none}
-  .toggle{display:flex;align-items:center;gap:8px}
-  .btn{border:1px solid var(--line);border-radius:12px;background:#111b33;color:var(--text);padding:12px 14px;cursor:pointer;transition:transform .06s ease, box-shadow .2s}
+  .toggle input{accent-color:var(--brand1)}
+  .btn{border:1px solid var(--line);border-radius:12px;background:#111b33;color:var(--text);
+       padding:12px 14px;cursor:pointer;transition:transform .06s ease, box-shadow .2s}
   .btn:hover{transform:translateY(-1px)}
   .btn.primary{background:linear-gradient(135deg,var(--brand1),var(--brand2));border-color:transparent;color:#06101f;font-weight:800}
   .btn.ghost{background:transparent}
@@ -44,16 +49,22 @@
   .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand1),var(--brand2));transition:width .2s ease}
   .top{display:flex;gap:8px;align-items:center}
   .pill{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--muted);font-size:14px}
-  .timer{font-weight:800} .timer.warn{background:#2a1420;color:#ffd6dc;border-color:#5f2b38}
-  .qwrap{margin-top:10px} .q{font-size:20px;line-height:1.7;margin:0 0 12px}
-  .choices{display:grid;gap:12px} @media(min-width:700px){.choices{grid-template-columns:1fr 1fr}}
-  .choice{display:flex;gap:10px;align-items:flex-start;padding:14px;border:1px solid var(--line);background:rgba(13,20,38,.9);border-radius:14px;cursor:pointer}
+  .timer{font-weight:800}
+  .timer.warn{background:#2a1420;color:#ffd6dc;border-color:#5f2b38}
+  .qwrap{margin-top:10px}
+  .q{font-size:20px;line-height:1.7;margin:0 0 12px;word-break:break-word}
+  .choices{display:grid;gap:12px}
+  @media(min-width:700px){.choices{grid-template-columns:1fr 1fr}}
+  .choice{appearance:none;border:1px solid var(--line);background:rgba(13,20,38,.9);
+          color:inherit;border-radius:14px;padding:14px;text-align:left;display:flex;gap:10px;align-items:flex-start;cursor:pointer}
   .choice .label{min-width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:#0f223f;border:1px solid var(--line);font-weight:800}
   .choice:active{transform:scale(.99)}
   .controls{display:flex;gap:8px;margin-top:12px;justify-content:space-between}
   .score{font-size:22px;font-weight:800;margin-bottom:10px}
-  .badges{display:flex;gap:8px;flex-wrap:wrap} .badge{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 10px}
-  .review{margin-top:8px} .review ul{margin:6px 0 0;padding-left:18px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap}
+  .badge{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:999px;padding:6px 10px}
+  .review{margin-top:8px}
+  .review ul{margin:6px 0 0;padding-left:18px}
   .modal{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:100}
   .pane{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:16px;max-width:720px;width:92%;padding:16px}
   textarea{width:100%;height:240px;background:#0c1530;color:#eaf1ff;border:1px solid var(--line);border-radius:10px;padding:10px}
@@ -72,8 +83,17 @@
     </header>
     <main>
       <section class="card hero" id="home">
-        <div><h1>本番仕様で、100問×120分。<br>1タップで突き進め。</h1><p class="muted">Z世代向けに設計した集中UI。選択肢は <b>ア/イ/ウ/エ</b>、キーボード <b>1/2/3/4</b>。戻る禁止で“余計なタスクゼロ”。</p><p class="hint">ショートカット：<b>1-4</b>で解答、<b>Enter</b>で次へ、（許可時）<b>←</b>で戻る</p></div>
-        <div class="settings"><span class="chip">出題数 <input type="number" id="examCount" min="1" value="100"></span><span class="chip">制限 <input type="number" id="examMinutes" min="1" value="120"> 分</span><label class="chip toggle"><input type="checkbox" id="lockBack" checked><span>戻る禁止</span></label><label class="chip toggle"><input type="checkbox" id="shuffle" checked><span>出題シャッフル</span></label><label class="chip toggle"><input type="checkbox" id="sound"><span>サウンド</span></label><button id="btnStart" class="btn primary lg">模試開始</button></div>
+        <div><h1>本番仕様で、100問×120分。<br>1タップで突き進め。</h1>
+          <p class="muted">Z世代向けに設計した集中UI。選択肢は <b>ア/イ/ウ/エ</b>、キーボード <b>1/2/3/4</b>。戻る禁止で“余計なタスクゼロ”。</p>
+          <p class="hint">ショートカット：<b>1-4</b>で解答、<b>Enter</b>で次へ、（許可時）<b>←</b>で戻る</p></div>
+        <div class="settings">
+          <span class="chip">出題数 <input type="number" id="examCount" min="1" value="100"></span>
+          <span class="chip">制限 <input type="number" id="examMinutes" min="1" value="120"> 分</span>
+          <label class="chip toggle"><input type="checkbox" id="lockBack" checked><span>戻る禁止</span></label>
+          <label class="chip toggle"><input type="checkbox" id="shuffle" checked><span>出題シャッフル</span></label>
+          <label class="chip toggle"><input type="checkbox" id="sound"><span>サウンド</span></label>
+          <button id="btnStart" class="btn primary lg">模試開始</button>
+        </div>
       </section>
       <section class="card pop" id="quiz" style="display:none;">
         <div class="progress"><div id="bar" class="bar"></div></div>
