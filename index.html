@@ -26,7 +26,10 @@
     .btn-ghost{background:transparent}
     .answers{display:grid;gap:12px}
     @media(min-width:640px){.answers{grid-template-columns:1fr 1fr}}
-    .opt{padding:14px;border:1px solid #2a3347;border-radius:12px;background:#172033;cursor:pointer;text-align:left}
+    .opt{
+      padding:14px;border:1px solid #2a3347;border-radius:12px;background:#172033;
+      cursor:pointer;text-align:left;color:var(--text); /* ← 文字色を明示 */
+    }
     .opt:hover{border-color:#3a4664}
     .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.08)}
     .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.08)}
@@ -49,21 +52,12 @@
     .hide{display:none}
     .small{font-size:13px}
     .hr{height:1px;background:#262d40;margin:12px 0}
-    .opt{ color: var(--text); }
-.opt{
-  padding:14px;
-  border:1px solid #2a3347;
-  border-radius:12px;
-  background:#172033;
-  cursor:pointer;
-  text-align:left;
-  color: var(--text); /* ← この1行が追加点 */
-}
-
+    .right{display:flex;gap:8px;align-items:center;justify-content:flex-end}
   </style>
 </head>
 <body>
 <div class="wrap">
+  <!-- スタート画面 -->
   <div class="card pad" id="screen-start">
     <h1>ITパスポート 過去問トレーナー <span class="tag">2025r07 OCR</span></h1>
     <p class="muted s">データ：<code>data/itpassport_2025r07.json</code>（OCR抽出。欠損は順次補完）</p>
@@ -104,12 +98,16 @@
     <div class="small muted" id="datasetInfo">読み込み中…</div>
   </div>
 
+  <!-- 出題画面 -->
   <div class="card pad hide" id="screen-quiz">
     <div class="split">
       <div class="grow">
         <div class="footer">
           <div><strong id="titleNum">問-</strong> / <span id="totalNum">-</span>　<span class="tag" id="modeTag">TRAIN</span></div>
-          <div class="chip"><span id="timer">--:--</span></div>
+          <div class="right">
+            <label class="small"><input type="checkbox" id="toggleNav"> ナビを隠す</label>
+            <div class="chip"><span id="timer">--:--</span></div>
+          </div>
         </div>
         <div class="bar" style="margin:10px 0 16px"><i id="bar"></i></div>
         <div id="qText" style="font-size:18px;margin:8px 0 12px;white-space:pre-wrap"></div>
@@ -125,7 +123,7 @@
           <div class="muted small">正解：<span class="ok" id="statOk">0</span>　不正解：<span class="warn" id="statNg">0</span></div>
         </div>
       </div>
-      <div class="side">
+      <div class="side" id="navWrap">
         <h2 style="margin-top:0">ナビ</h2>
         <div id="nav" class="small" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px"></div>
         <div class="hr"></div>
@@ -135,6 +133,7 @@
     </div>
   </div>
 
+  <!-- 結果画面 -->
   <div class="card pad hide" id="screen-result">
     <h1>結果</h1>
     <p><strong id="scoreText">-</strong>　<span class="muted">所要：<span id="elapsedText">-</span></span></p>
@@ -149,31 +148,24 @@
 </div>
 
 <script>
-const DATA_URL = './data/itpassport_2025r07.json'; // ここを必要に応じて変更
+const DATA_URL = './data/itpassport_2025r07.json';
 const KANA = ['ア','イ','ウ','エ'];
 
-let RAW = [];  // 全問題
-let POOL = []; // 出題対象
-let ORDER = [];
-let CUR = 0;
-let MODE = 'train';
-let AUTONEXT = true;
-let INCLUDE_STUBS = false;
-let START_TIME = 0;
-let TIMER_ID = null;
+let RAW=[], POOL=[], ORDER=[];
+let CUR=0, MODE='train', AUTONEXT=true, INCLUDE_STUBS=false;
+let START_TIME=0, TIMER_ID=null;
 
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
-
-function fmtTime(sec){ const s=Math.max(0,Math.floor(sec)); const m=String(Math.floor(s/60)).padStart(2,'0'); const r=String(s%60).padStart(2,'0'); return `${m}:${r}`; }
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
+const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
 async function loadData(){
   $('#datasetInfo').textContent = '読み込み中…';
   try{
-    const res = await fetch(DATA_URL,{cache:'no-store'});
-    if(!res.ok) throw new Error(res.status+' '+res.statusText);
-    const data = await res.json();
+    const r = await fetch(DATA_URL,{cache:'no-store'});
+    if(!r.ok) throw new Error(r.status+' '+r.statusText);
+    const data = await r.json();
     RAW = (data.questions||[]).map(q=>({...q, selected:null, result:null, seen:false}));
     const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
     const stub = RAW.filter(q => !(q.question && q.choices && q.choices.length===4));
@@ -193,18 +185,16 @@ $('#btnStart').addEventListener('click', () => {
   const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
   const stubs = RAW.filter(q => !(q.question && q.choices && q.choices.length===4));
   POOL = INCLUDE_STUBS ? [...full, ...stubs] : full;
-
   if(POOL.length===0){ alert('出題できる問題がありません。JSON配置を確認してください。'); return; }
 
-  const orderSel = $$( 'input[name="order"]').find(r=>r.checked)?.value || 'random';
+  const orderSel = $$('input[name="order"]').find(r=>r.checked)?.value || 'random';
   ORDER = [...Array(POOL.length).keys()];
   if(orderSel==='random') shuffle(ORDER);
-
   const cnt = $('#countSel').value;
   if(cnt!=='all') ORDER = ORDER.slice(0, Math.min(parseInt(cnt,10), ORDER.length));
 
   POOL.forEach(q=>{ q.selected=null; q.result=null; q.seen=false; });
-  CUR = 0; START_TIME = Date.now(); startTimer();
+  CUR=0; START_TIME=Date.now(); startTimer();
 
   $('#screen-start').classList.add('hide');
   $('#screen-result').classList.add('hide');
@@ -214,7 +204,9 @@ $('#btnStart').addEventListener('click', () => {
   renderQuestion(); renderNav();
 });
 
-function startTimer(){ clearInterval(TIMER_ID); TIMER_ID = setInterval(()=>$('#timer').textContent = fmtTime((Date.now()-START_TIME)/1000), 500); }
+function startTimer(){ clearInterval(TIMER_ID); TIMER_ID=setInterval(()=>$('#timer').textContent=fmtTime((Date.now()-START_TIME)/1000),500); }
+
+$('#toggleNav').addEventListener('change', (e)=>{ $('#navWrap').style.display = e.target.checked ? 'none' : ''; });
 
 function renderQuestion(){
   const idx = ORDER[CUR], q = POOL[idx];
