@@ -1,12 +1,8 @@
 cd /Users/airm3/itpassport-1task
-git pull
 
-# クリップボードのコードで index.html を上書き
+# クリップボードの「HTMLコード」で上書き（さっきはコマンド文を貼ってしまった）
 pbpaste > index.html
 
-# 旧PWA一式は削除（古いService Workerの干渉を避ける）
-rm -rf css js data icons manifest.json sw.js
-
-git add -A
-git commit -m "Rebuild: single-file Z-gen UI (exam-only)"
+git add index.html
+git commit -m "fix: replace with actual HTML"
 git push
