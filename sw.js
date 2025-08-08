@@ -1,4 +1,4 @@
-const CACHE = "itpass-pwa-exam-v1";
+const CACHE = "itpass-pwa-1754656350";
 const ASSETS = [
   "./",
   "./index.html",
