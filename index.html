@@ -1,151 +1,170 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <title>ITパスポート 過去問トレーナー（2025r07）</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    :root{
-      --bg:#0f1115; --panel:#151924; --accent:#4cc9f0; --ok:#4caf50; --ng:#ef5350; --muted:#99a2b2; --text:#e6eaf2;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,#0f1115,#0d1220);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    a{color:var(--accent)}
-    .wrap{max-width:980px;margin:0 auto;padding:24px}
-    .card{background:var(--panel);border:1px solid #1f2533;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    .pad{padding:20px}
-    h1{font-size:22px;margin:0 0 12px}
-    h2{font-size:18px;margin:0 0 10px}
-    .row{display:flex;gap:14px;flex-wrap:wrap}
-    .col{flex:1 1 240px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:12px 16px;border:1px solid #283044;border-radius:12px;background:#1a2130;color:var(--text);cursor:pointer;font-weight:600}
-    .btn:hover{border-color:#34405a}
-    .btn[disabled]{opacity:.5;cursor:not-allowed}
-    .btn-primary{background:linear-gradient(180deg,#1c2a46,#15233c);border-color:#2d3a55}
-    .btn-accent{background:linear-gradient(180deg,#13364a,#0f2e42);border-color:#1f546c;color:#bfeaff}
-    .btn-ghost{background:transparent}
-    .answers{display:grid;gap:12px}
-    @media(min-width:640px){.answers{grid-template-columns:1fr 1fr}}
-    .opt{
-      padding:14px;border:1px solid #2a3347;border-radius:12px;background:#172033;cursor:pointer;text-align:left;
-    }
-    .opt:hover{border-color:#3a4664}
-    .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.08)}
-    .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.08)}
-    .opt.disabled{opacity:.7;pointer-events:none}
-    .opt, .opt * { color: var(--text) !important; } /* 文字色を強制的に白系に固定 */
-    .kana{display:inline-block;min-width:2ch;text-align:center;margin-right:.5rem;color:#b8c2d8}
-    .muted{color:var(--muted)}
-    .bar{height:10px;background:#222a3a;border-radius:999px;overflow:hidden}
-    .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#8bd7ff);width:0%}
-    .footer{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:16px}
-    .chip{display:inline-flex;gap:.4rem;align-items:center;padding:6px 10px;border:1px solid #2a3246;border-radius:999px;background:#121829}
-    .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;border:1px solid #3a4563;border-radius:6px;padding:1px 6px;background:#0f1423;color:#c7d2ee}
-    .list{margin:0;padding-left:18px}
-    .s{opacity:.85}
-    .tag{display:inline-block;padding:2px 8px;border:1px solid #32405a;border-radius:999px;margin-left:.5rem;font-size:12px;color:#b7c5df}
-    .warn{color:#ffb4b4}
-    .ok{color:#b7ffb7}
-    .split{display:flex;gap:14px;flex-wrap:wrap}
-    .split>.grow{flex:1 1 520px}
-    .split>.side{flex:1 1 260px}
-    .hide{display:none}
-    .small{font-size:13px}
-    .hr{height:1px;background:#262d40;margin:12px 0}
-    .right{display:flex;gap:8px;align-items:center;justify-content:flex-end}
-  </style>
+<meta charset="utf-8">
+<title>Trainer Minimal</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --bg:#0b0d14; --panel:#121623; --accent:#52b2ff; --text:#eef3ff; --muted:#91a0bd;
+  --ok:#4caf50; --ng:#ef5350; --line:#20273a;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+.app{max-width:920px;margin:0 auto;padding:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.pad{padding:16px 16px 18px}
+h1,h2,p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.hide{display:none}
+
+/* header */
+.top{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.top .left{display:flex;align-items:center;gap:10px}
+.badge{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:#bcd2ff}
+.timer{font-variant-numeric:tabular-nums}
+.counters{display:flex;gap:10px}
+.counter{font-variant-numeric:tabular-nums}
+.counter.ok{color:#b7ffb7}
+.counter.ng{color:#ffb4b4}
+
+/* progress */
+.bar{height:10px;background:#1a2132;border-radius:999px;overflow:hidden;margin:10px 0 14px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#95d0ff);width:0%}
+
+/* q & answers */
+.q{font-size:18px;white-space:pre-wrap}
+.answers{display:grid;gap:10px;margin-top:12px}
+@media(min-width:720px){.answers{grid-template-columns:1fr 1fr}}
+.opt{padding:14px;border:1px solid #27314a;background:#151c2c;border-radius:12px;cursor:pointer;text-align:left}
+.opt:hover{border-color:#33415f}
+.opt, .opt *{color:var(--text)!important} /* 文字を必ず白系に */
+.opt.correct{border-color:var(--ok);background:rgba(76,175,80,.10)}
+.opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.10)}
+.opt.disabled{opacity:.65;pointer-events:none}
+.kana{display:inline-block;min-width:2ch;text-align:center;margin-right:.6rem;color:#b9c6e6}
+
+/* foot controls */
+.ctrl{display:flex;gap:8px;justify-content:space-between;margin-top:12px}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:10px 14px;border:1px solid #2a3349;border-radius:12px;background:#151c2b;color:var(--text);cursor:pointer}
+.btn:hover{border-color:#384766}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.primary{background:linear-gradient(180deg,#1b2b48,#15243d);border-color:#2e3d5c}
+.ghost{background:transparent}
+
+/* floating nav trigger */
+.fab{position:fixed;right:16px;bottom:16px;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.fab span{font-size:20px;line-height:1}
+.fab:active{transform:translateY(1px)}
+
+/* overlay nav */
+.overlay{position:fixed;inset:0;background:rgba(6,10,20,.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px}
+.ov-card{width:min(860px,92vw);max-height:80vh;overflow:auto;background:#0f1426;border:1px solid #2b3653;border-radius:14px;padding:14px}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.navbtn{padding:8px;border:1px solid #2a3553;background:#121a33;color:#cdd7f3;border-radius:10px;cursor:pointer}
+.navbtn:hover{border-color:#3c4c75}
+.navbtn.cur{outline:2px solid var(--accent)}
+.navbtn.ok{border-color:#2e7d32;background:rgba(46,125,50,.15)}
+.navbtn.ng{border-color:#b23a3a;background:rgba(178,58,58,.12)}
+.xrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.close{padding:6px 10px;border:1px solid #2a3553;border-radius:999px;background:#121a33;color:#cdd7f3;cursor:pointer}
+
+/* start & result */
+.center{display:grid;place-items:center;min-height:50vh}
+.selects{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.tag{border:1px solid var(--line);padding:4px 8px;border-radius:999px}
+.review{margin-top:10px}
+.review ol{margin:0;padding-left:18px}
+</style>
 </head>
 <body>
-<div class="wrap">
-  <!-- スタート画面 -->
-  <div class="card pad" id="screen-start">
-    <h1>ITパスポート 過去問トレーナー <span class="tag">2025r07 OCR</span></h1>
-    <p class="muted s">データ：<code>data/itpassport_2025r07.json</code>（OCR抽出。欠損は順次補完）</p>
-    <div class="row">
-      <div class="col">
-        <h2>出題モード</h2>
-        <label><input type="radio" name="mode" value="train" checked> 学習（その場採点）</label><br>
-        <label><input type="radio" name="mode" value="exam"> 模試（最後に採点）</label>
-      </div>
-      <div class="col">
-        <h2>出題数</h2>
-        <select id="countSel">
-          <option value="10">10問</option>
-          <option value="20">20問</option>
-          <option value="30">30問</option>
-          <option value="50">50問</option>
-          <option value="all" selected>全件</option>
-        </select>
-      </div>
-      <div class="col">
-        <h2>出題順</h2>
-        <label><input type="radio" name="order" value="random" checked> ランダム</label><br>
-        <label><input type="radio" name="order" value="asc"> 昇順</label>
-      </div>
-      <div class="col">
-        <h2>オプション</h2>
-        <label><input type="checkbox" id="autoNext" checked> 正解で自動次へ</label><br>
-        <label><input type="checkbox" id="includeStubs" checked> 解答のみの問題も含める</label><br>
-        <label class="small muted">ショートカット：<span class="kbd">1–4</span> 解答 / <span class="kbd">N</span> 次 / <span class="kbd">B</span> 戻</label>
-      </div>
-    </div>
-    <div class="hr"></div>
-    <div class="row">
-      <div class="col"><button class="btn btn-primary" id="btnStart">開始する</button></div>
-      <div class="col"><button class="btn btn-ghost" id="btnReload">データ再読込</button></div>
-    </div>
-    <div class="hr"></div>
-    <div class="small muted" id="datasetInfo">読み込み中…</div>
-  </div>
-
-  <!-- 出題画面 -->
-  <div class="card pad hide" id="screen-quiz">
-    <div class="split">
-      <div class="grow">
-        <div class="footer">
-          <div><strong id="titleNum">問-</strong> / <span id="totalNum">-</span>　<span class="tag" id="modeTag">TRAIN</span></div>
-          <div class="right">
-            <label class="small"><input type="checkbox" id="toggleNav"> ナビを隠す</label>
-            <div class="chip"><span id="timer">--:--</span></div>
-          </div>
+<div class="app">
+  <!-- start -->
+  <div id="start" class="card pad">
+    <div class="center">
+      <div>
+        <h1>Trainer <span class="tag">Minimal</span></h1>
+        <p class="muted small" id="info">データ読込中…</p>
+        <div class="selects">
+          <label><input type="radio" name="mode" value="train" checked> 学習</label>
+          <label><input type="radio" name="mode" value="exam"> 模試</label>
+          <label><input type="checkbox" id="stubs" checked> スタブ含む</label>
+          <label>出題数
+            <select id="count">
+              <option value="10">10</option><option value="20">20</option>
+              <option value="30">30</option><option value="50">50</option>
+              <option value="all" selected>全件</option>
+            </select>
+          </label>
         </div>
-        <div class="bar" style="margin:10px 0 16px"><i id="bar"></i></div>
-        <div id="qText" style="font-size:18px;margin:8px 0 12px;white-space:pre-wrap"></div>
-        <div class="answers" id="answers"></div>
-        <div id="explain" class="small muted" style="margin-top:10px"></div>
-        <div class="footer">
-          <div class="row" style="gap:8px">
-            <button class="btn" id="prevBtn" title="B">← 戻る</button>
-            <button class="btn btn-accent" id="revealBtn">解答を表示</button>
-            <button class="btn" id="skipBtn">スキップ</button>
-            <button class="btn btn-primary" id="nextBtn" title="N">次へ →</button>
-          </div>
-          <div class="muted small">正解：<span class="ok" id="statOk">0</span>　不正解：<span class="warn" id="statNg">0</span></div>
-        </div>
-      </div>
-      <div class="side" id="navWrap">
-        <h2 style="margin-top:0">ナビ</h2>
-        <div id="nav" class="small" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px"></div>
-        <div class="hr"></div>
-        <button class="btn btn-ghost" id="btnFinish">採点する（模試）/ 終了</button>
-        <div class="small muted" style="margin-top:8px">
-          番号は出題順。未回答は灰、正解は緑、不正解は赤。
+        <div style="margin-top:12px">
+          <button id="go" class="btn primary">開始</button>
+          <button id="reload" class="btn ghost">再読込</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 結果画面 -->
-  <div class="card pad hide" id="screen-result">
-    <h1>結果</h1>
-    <p><strong id="scoreText">-</strong>　<span class="muted">所要：<span id="elapsedText">-</span></span></p>
-    <div class="row" style="margin:10px 0 16px">
-      <button class="btn btn-primary" id="retryWrong">不正解だけ復習</button>
-      <button class="btn" id="retryAll">もう一度はじめる</button>
-      <button class="btn" id="exportCsv">CSVを書き出し</button>
-      <button class="btn btn-ghost" id="backHome">設定に戻る</button>
+  <!-- quiz -->
+  <div id="quiz" class="card pad hide">
+    <div class="top">
+      <div class="left">
+        <span class="badge" id="modeTag">TRAIN</span>
+        <strong id="pos">Q - / -</strong>
+      </div>
+      <div class="counters">
+        <span class="counter ok">OK <span id="ok">0</span></span>
+        <span class="counter ng">NG <span id="ng">0</span></span>
+        <span class="badge timer" id="timer">--:--</span>
+      </div>
     </div>
-    <div id="review"></div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="q" id="qText"></div>
+    <div class="answers" id="answers"></div>
+    <div class="ctrl">
+      <div>
+        <button id="prev" class="btn">← 戻る</button>
+        <button id="reveal" class="btn">解答表示</button>
+      </div>
+      <div>
+        <button id="skip" class="btn">スキップ</button>
+        <button id="next" class="btn primary">次へ →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- result -->
+  <div id="result" class="card pad hide">
+    <div class="top">
+      <h2>結果</h2>
+      <div class="counters">
+        <span class="counter ok">OK <span id="rok">0</span></span>
+        <span class="counter ng">NG <span id="rng">0</span></span>
+        <span class="badge" id="elapsed">--:--</span>
+      </div>
+    </div>
+    <div class="review" id="review"></div>
+    <div class="ctrl" style="margin-top:12px">
+      <button id="retryWrong" class="btn primary">不正解だけ復習</button>
+      <div>
+        <button id="retryAll" class="btn">もう一度</button>
+        <button id="exportCsv" class="btn ghost">CSV</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- floating nav -->
+<button class="fab" id="navFab" title="ナビ"><span>≡</span></button>
+<div class="overlay" id="overlay">
+  <div class="ov-card">
+    <div class="xrow">
+      <strong>ナビ（出題順）</strong>
+      <button class="close" id="closeOv">閉じる</button>
+    </div>
+    <div class="grid" id="navGrid"></div>
   </div>
 </div>
 
@@ -155,7 +174,7 @@ const KANA = ['ア','イ','ウ','エ'];
 const EXAM_LIMIT_SEC = 120 * 60; // 120分
 
 let RAW=[], POOL=[], ORDER=[];
-let CUR=0, MODE='train', AUTONEXT=true, INCLUDE_STUBS=true;
+let CUR=0, MODE='train', INCLUDE_STUBS=true;
 let START_TIME=0, TIMER_ID=null, remainingSec=0;
 
 const $ = s => document.querySelector(s);
@@ -164,7 +183,7 @@ const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(M
 const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
 async function loadData(){
-  $('#datasetInfo').textContent = '読み込み中…';
+  $('#info').textContent = 'データ読込中…';
   try{
     const r = await fetch(DATA_URL,{cache:'no-store'});
     if(!r.ok) throw new Error(r.status+' '+r.statusText);
@@ -172,29 +191,27 @@ async function loadData(){
     RAW = (data.questions||[]).map(q=>({...q, selected:null, result:null, seen:false}));
     const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
     const stub = RAW.filter(q => !(q.question && q.choices && q.choices.length===4));
-    $('#datasetInfo').innerHTML = `問題総数：<strong>${RAW.length}</strong>　完全抽出：<strong>${full.length}</strong>　スタブ：<strong>${stub.length}</strong>`;
+    $('#info').innerHTML = `総数 <strong>${RAW.length}</strong> ／ 完全 <strong>${full.length}</strong> ／ スタブ <strong>${stub.length}</strong>`;
   }catch(e){
-    $('#datasetInfo').innerHTML = `読み込み失敗：<span class="warn">${e.message}</span><br>パス <code>${DATA_URL}</code> と公開状態をご確認ください。`;
+    $('#info').innerHTML = `読み込み失敗：${e.message}`;
   }
 }
 loadData();
-$('#btnReload').addEventListener('click', loadData);
+$('#reload').addEventListener('click', loadData);
 
-$('#btnStart').addEventListener('click', () => {
+$('#go').addEventListener('click', () => {
   MODE = $$('input[name="mode"]').find(r=>r.checked)?.value || 'train';
-  AUTONEXT = $('#autoNext').checked;
-  INCLUDE_STUBS = $('#includeStubs').checked;
+  INCLUDE_STUBS = $('#stubs').checked;
+  const cntSel = $('#count').value;
 
   const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
   const stubs = RAW.filter(q => !(q.question && q.choices && q.choices.length===4));
   POOL = INCLUDE_STUBS ? [...full, ...stubs] : full;
-  if(POOL.length===0){ alert('出題できる問題がありません。JSON配置を確認してください。'); return; }
+  if(POOL.length===0){ alert('出題できる問題がありません。'); return; }
 
-  const orderSel = $$('input[name="order"]').find(r=>r.checked)?.value || 'random';
   ORDER = [...Array(POOL.length).keys()];
-  if(orderSel==='random') shuffle(ORDER);
-  const cnt = $('#countSel').value;
-  if(cnt!=='all') ORDER = ORDER.slice(0, Math.min(parseInt(cnt,10), ORDER.length));
+  shuffle(ORDER);
+  if(cntSel!=='all') ORDER = ORDER.slice(0, Math.min(parseInt(cntSel,10), ORDER.length));
 
   POOL.forEach(q=>{ q.selected=null; q.result=null; q.seen=false; });
   CUR=0;
@@ -204,16 +221,15 @@ $('#btnStart').addEventListener('click', () => {
     $('#timer').textContent = fmtTime(remainingSec);
   }else{
     remainingSec = 0;
-    START_TIME=Date.now();
+    START_TIME = Date.now();
   }
   startTimer();
 
-  $('#screen-start').classList.add('hide');
-  $('#screen-result').classList.add('hide');
-  $('#screen-quiz').classList.remove('hide');
   $('#modeTag').textContent = MODE.toUpperCase();
+  $('#start').classList.add('hide');
+  $('#quiz').classList.remove('hide');
 
-  renderQuestion(); renderNav();
+  render();
 });
 
 function startTimer(){
@@ -224,30 +240,25 @@ function startTimer(){
       $('#timer').textContent = fmtTime(remainingSec);
       if(remainingSec === 0){ clearInterval(TIMER_ID); finish(); }
     }else{
-      const sec = (Date.now() - START_TIME) / 1000;
-      $('#timer').textContent = fmtTime(sec);
+      $('#timer').textContent = fmtTime((Date.now()-START_TIME)/1000);
     }
   }, 1000);
 }
 
-$('#toggleNav').addEventListener('change', (e)=>{ $('#navWrap').style.display = e.target.checked ? 'none' : ''; });
-
-function renderQuestion(){
+function render(){
   const idx = ORDER[CUR], q = POOL[idx];
-  $('#titleNum').textContent = `問${q.number ?? (idx+1)}`;
-  $('#totalNum').textContent = ORDER.length;
-  $('#bar').style.width = `${((CUR)/Math.max(1,ORDER.length-1))*100}%`;
-
-  const disabled = !!(q.result!==null || MODE==='exam');
-  $('#qText').textContent = q.question ? q.question : '（本文未抽出：解答のみ保持のスタブ問題）';
+  $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
+  $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
 
   const answersEl = $('#answers'); answersEl.innerHTML='';
+  $('#qText').textContent = q.question ? q.question : '（本文未抽出：解答のみ保持のスタブ）';
+
   if(q.choices && q.choices.length===4){
     q.choices.forEach((text,i)=>{
-      const btn = document.createElement('button');
-      btn.className = 'opt';
-      btn.dataset.index = i;
+      const btn=document.createElement('button');
+      btn.className='opt';
       btn.innerHTML = `<span class="kana">${KANA[i]}</span>${escapeHtml(text)}`;
+      const disabled = (q.result!==null || MODE==='exam');
       if(disabled && q.selected===null) btn.classList.add('disabled');
       if(q.result!==null){
         if(i===q.answer_index) btn.classList.add('correct');
@@ -257,48 +268,64 @@ function renderQuestion(){
       answersEl.appendChild(btn);
     });
   }else{
-    const stub = document.createElement('div');
-    stub.className='muted';
-    stub.textContent='選択肢未収録のため、この設問は採点対象外です。';
+    const stub=document.createElement('div');
+    stub.className='muted small';
+    stub.textContent='選択肢未収録：この設問は採点対象外';
     answersEl.appendChild(stub);
   }
 
-  $('#explain').textContent = q.explanation ? `解説：${q.explanation}` : '';
-  $('#prevBtn').disabled = CUR===0;
-  $('#nextBtn').disabled = CUR>=ORDER.length-1;
-  $('#revealBtn').disabled = !(MODE==='exam' && q.choices && Number.isInteger(q.answer_index));
-  $('#skipBtn').disabled = false;
+  $('#prev').disabled = CUR===0;
+  $('#next').disabled = CUR>=ORDER.length-1;
+  $('#reveal').disabled = !(MODE==='exam' && q.choices && Number.isInteger(q.answer_index));
 
-  const ok = POOL.filter(x=>x.result===true).length;
-  const ng = POOL.filter(x=>x.result===false).length;
-  $('#statOk').textContent = ok; $('#statNg').textContent = ng;
-  q.seen=true;
+  updateCounters();
+  buildNav();
 }
 
 function selectChoice(i){
   const idx = ORDER[CUR], q = POOL[idx];
   if(!q.choices || !Number.isInteger(q.answer_index)) return;
+
   if(MODE==='exam'){
-    q.selected = i; renderNav();
-    if(CUR<ORDER.length-1){ CUR++; renderQuestion(); }
+    q.selected = i;
+    if(CUR<ORDER.length-1){ CUR++; render(); }
     return;
   }
-  q.selected = i; q.result = (i===q.answer_index);
-  renderQuestion(); renderNav();
-  if(AUTONEXT && q.result && CUR<ORDER.length-1){ setTimeout(()=>{ CUR++; renderQuestion(); }, 150); }
+  // 学習：即採点
+  q.selected = i;
+  q.result = (i===q.answer_index);
+  render();
 }
 
-$('#prevBtn').addEventListener('click', ()=>{ if(CUR>0){ CUR--; renderQuestion(); }});
-$('#nextBtn').addEventListener('click', ()=>{ if(CUR<ORDER.length-1){ CUR++; renderQuestion(); }});
-$('#skipBtn').addEventListener('click', ()=>{ if(CUR<ORDER.length-1){ CUR++; renderQuestion(); }});
-$('#revealBtn').addEventListener('click', ()=>{
+$('#prev').addEventListener('click', ()=>{ if(CUR>0){ CUR--; render(); }});
+$('#next').addEventListener('click', ()=>{ if(CUR<ORDER.length-1){ CUR++; render(); }});
+$('#skip').addEventListener('click', ()=>{ if(CUR<ORDER.length-1){ CUR++; render(); }});
+$('#reveal').addEventListener('click', ()=>{
   const idx = ORDER[CUR], q = POOL[idx];
   if(!q.choices || !Number.isInteger(q.answer_index)) return;
   if(q.selected==null){ alert('まずどれか選択してください。'); return; }
   q.result = (q.selected===q.answer_index);
-  renderQuestion(); renderNav();
+  render();
 });
-$('#btnFinish').addEventListener('click', finish);
+
+$('#navFab').addEventListener('click', ()=> $('#overlay').style.display='flex');
+$('#closeOv').addEventListener('click', ()=> $('#overlay').style.display='none');
+
+function buildNav(){
+  const g = $('#navGrid'); g.innerHTML='';
+  ORDER.forEach((i,idx)=>{
+    const q=POOL[i];
+    const b=document.createElement('button');
+    b.className='navbtn';
+    b.textContent = (idx+1); // 出題順
+    if(q.result===true) b.classList.add('ok');
+    else if(q.result===false) b.classList.add('ng');
+    else if(q.selected!=null) b.style.borderColor='#3a4a6b';
+    if(idx===CUR) b.classList.add('cur');
+    b.addEventListener('click',()=>{ CUR=idx; $('#overlay').style.display='none'; render(); });
+    g.appendChild(b);
+  });
+}
 
 function finish(){
   clearInterval(TIMER_ID);
@@ -309,81 +336,72 @@ function finish(){
       }
     }
   }
-  $('#screen-quiz').classList.add('hide');
-  $('#screen-result').classList.remove('hide');
+  $('#quiz').classList.add('hide');
+  $('#result').classList.remove('hide');
 
   const ok = POOL.filter(x=>x.result===true).length;
-  const count = POOL.filter(x=>x.choices && Number.isInteger(x.answer_index)).length;
-  $('#scoreText').textContent = `正解 ${ok} / ${count}（${Math.round(ok/count*100)||0}%）`;
-  $('#elapsedText').textContent = MODE==='exam' ? '120:00 → 0:00' : fmtTime((Date.now()-START_TIME)/1000);
+  const ng = POOL.filter(x=>x.result===false).length;
+  $('#rok').textContent = ok;
+  $('#rng').textContent = ng;
+  $('#elapsed').textContent = MODE==='exam' ? '120:00→0:00' : $('#timer').textContent;
 
-  const wrongs = POOL.filter(x=>x.result===false).map(x=>({num:x.number ?? '-', q:x.question || '（本文なし）', ans:x.answer_index, sel:x.selected}));
-  const container = $('#review'); container.innerHTML='';
-  if(wrongs.length===0){ container.innerHTML = '<p class="ok">全問正解！</p>'; }
+  // 履歴（レビュー）：不正解だけ一覧
+  const wrongs = POOL.filter(x=>x.result===false).map(x=>({
+    num: x.number ?? '-',
+    q: x.question || '（本文なし）',
+    ans: x.answer_index, sel: x.selected
+  }));
+  const box = $('#review'); box.innerHTML='';
+  if(wrongs.length===0){ box.innerHTML='<p class="small">全問正解！</p>'; }
   else{
-    const ol = document.createElement('ol'); ol.className='list';
+    const ol=document.createElement('ol');
     wrongs.forEach(w=>{
-      const li = document.createElement('li');
-      const ck = w.ans!=null ? KANA[w.ans] : '-';
-      const sk = w.sel!=null ? KANA[w.sel] : '-';
-      li.innerHTML = `<strong>問${w.num}</strong>　<small class="muted">正解:${ck} / 回答:${sk}</small><br>${escapeHtml(w.q)}`;
+      const li=document.createElement('li');
+      const ck = Number.isInteger(w.ans) ? KANA[w.ans] : '-';
+      const sk = Number.isInteger(w.sel) ? KANA[w.sel] : '-';
+      li.innerHTML = `<small class="muted">正解:${ck}／あなた:${sk}</small><br>${escapeHtml(w.q)}`;
       ol.appendChild(li);
     });
-    container.appendChild(ol);
+    box.appendChild(ol);
   }
 }
 
 $('#retryWrong').addEventListener('click', ()=>{
-  const wrongIdx = ORDER.filter(i => { const q=POOL[i]; return q.result===false && q.choices && Number.isInteger(q.answer_index); });
+  const wrongIdx = ORDER.filter(i => {
+    const q=POOL[i]; return q.result===false && q.choices && Number.isInteger(q.answer_index);
+  });
   if(wrongIdx.length===0){ alert('不正解がありません。'); return; }
-  ORDER = wrongIdx; ORDER.forEach(i=>{ POOL[i].selected=null; POOL[i].result=null; });
-  CUR=0; START_TIME=Date.now(); startTimer();
-  $('#screen-result').classList.add('hide'); $('#screen-quiz').classList.remove('hide');
-  renderQuestion(); renderNav();
+  ORDER = wrongIdx;
+  ORDER.forEach(i=>{ POOL[i].selected=null; POOL[i].result=null; });
+  CUR=0; START_TIME=Date.now(); if(MODE==='exam'){ MODE='train'; } startTimer();
+  $('#result').classList.add('hide'); $('#quiz').classList.remove('hide'); $('#modeTag').textContent='TRAIN';
+  render();
 });
 
-$('#retryAll').addEventListener('click', ()=>{ $('#screen-result').classList.add('hide'); $('#screen-start').classList.remove('hide'); });
+$('#retryAll').addEventListener('click', ()=>{
+  $('#result').classList.add('hide'); $('#start').classList.remove('hide');
+});
+
 $('#exportCsv').addEventListener('click', ()=>{
-  const rows = [['number','selectedKana','correctKana','result']];
-  ORDER.forEach(i=>{
+  const rows = [['index','number','selectedKana','correctKana','result']];
+  ORDER.forEach((i,idx)=>{
     const q=POOL[i];
     const sel = q.selected!=null ? KANA[q.selected] : '';
     const cor = Number.isInteger(q.answer_index) ? KANA[q.answer_index] : '';
     const res = q.result==null ? '' : (q.result?'OK':'NG');
-    rows.push([q.number, sel, cor, res]);
+    rows.push([idx+1, q.number ?? '', sel, cor, res]);
   });
   const csv = rows.map(r=>r.map(s=>`"${String(s??'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='itpassport_result.csv'; a.click(); URL.revokeObjectURL(a.href);
 });
-$('#backHome').addEventListener('click', ()=>{ $('#screen-result').classList.add('hide'); $('#screen-start').classList.remove('hide'); });
 
-function renderNav(){
-  const nav=$('#nav'); nav.innerHTML='';
-  ORDER.forEach((i,idx)=>{
-    const q=POOL[i]; const b=document.createElement('button');
-    b.className='btn small'; b.style.padding='6px'; b.textContent = (idx + 1); // 出題順を表示
-    if(q.result===true){ b.style.borderColor='#2e7d32'; b.style.background='rgba(46,125,50,.15)'; }
-    else if(q.result===false){ b.style.borderColor='#b23a3a'; b.style.background='rgba(178,58,58,.12)'; }
-    else if(q.selected!=null){ b.style.borderColor='#3a4a6b'; } else { b.style.opacity='.75'; }
-    if(idx===CUR){ b.style.outline='2px solid var(--accent)'; }
-    b.addEventListener('click',()=>{ CUR=idx; renderQuestion(); });
-    nav.appendChild(b);
-  });
+function updateCounters(){
+  const ok = POOL.filter(x=>x.result===true).length;
+  const ng = POOL.filter(x=>x.result===false).length;
+  $('#ok').textContent = ok;
+  $('#ng').textContent = ng;
 }
-
-window.addEventListener('keydown', (e)=>{
-  if($('#screen-quiz').classList.contains('hide')) return;
-  if(e.key>='1' && e.key<='4'){
-    const i = parseInt(e.key,10)-1;
-    const idx = ORDER[CUR]; const q = POOL[idx];
-    if(q.choices && Number.isInteger(q.answer_index)) selectChoice(i);
-  }else if(e.key==='n' || e.key==='N'){
-    if(CUR<ORDER.length-1){ CUR++; renderQuestion(); }
-  }else if(e.key==='b' || e.key==='B'){
-    if(CUR>0){ CUR--; renderQuestion(); }
-  }
-});
 
 function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 </script>
