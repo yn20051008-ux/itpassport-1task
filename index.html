@@ -24,7 +24,7 @@ h1,h2,p{margin:0}
 .top{display:flex;align-items:center;gap:12px;justify-content:space-between}
 .top .left{display:flex;align-items:center;gap:10px}
 .badge{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:#bcd2ff}
-.timer{font-variant-numeric:tabular-nums}
+.timer{font-variant-numeric:tabular-nums; padding:0; border:0; background:transparent;}
 .counters{display:flex;gap:10px}
 .counter{font-variant-numeric:tabular-nums}
 .counter.ok{color:#b7ffb7}
@@ -32,7 +32,7 @@ h1,h2,p{margin:0}
 .bar{height:10px;background:#1a2132;border-radius:999px;overflow:hidden;margin:8px 0 0}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#95d0ff);width:0%}
 
-/* stem & answers */
+/* stem & answers（コンパクト） */
 .q{font-size:clamp(15px,3.9vw,18px);line-height:1.6;white-space:pre-wrap}
 .answers{display:grid;gap:12px;margin-top:10px}
 @media(min-width:720px){.answers{grid-template-columns:1fr 1fr}}
@@ -112,7 +112,7 @@ h1,h2,p{margin:0}
         <div class="counters">
           <span class="counter ok">正解 <span id="ok">0</span></span>
           <span class="counter ng">不正解 <span id="ng">0</span></span>
-          <span class="badge timer" id="timer">120:00</span>
+          <span class="timer" id="timer">120:00</span>
         </div>
       </div>
       <div class="bar"><i id="bar"></i></div>
@@ -214,6 +214,19 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
 const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
+/* ===== プレースホルダ判定＆除去 ===== */
+function isPlaceholderChoice(t=''){
+  return /本文から読込/.test(String(t));
+}
+function stripPlaceholder(t=''){
+  let s = String(t);
+  s = s.replace(/^[（(]\s*本文から読込\s*[)）]\s*/,''); // 先頭の（本文から読込）
+  s = s.replace(/本文から読込/g,'');               // どこかに残っても除去
+  s = s.trim();
+  if(/^[アイウエ]$/.test(s)) s = '';                // かな1文字だけなら空に
+  return s;
+}
+
 /* 選択肢頭の「ア/イ/ウ/エ + 記号」を除去 */
 function cleanseChoiceHead(t=''){
   return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim();
@@ -235,6 +248,10 @@ function splitStemAndChoices(text=''){
   }
   const extracted = picked.map(s=>s.trim()).map(s=>s? s:null);
   return { stem: out.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
+}
+/* 本文の軽い正規化 */
+function tidyStem(s=''){
+  return String(s).replace(/%%/g,'%').replace(/\n{3,}/g,'\n\n').trim();
 }
 
 /* ===== データロード ===== */
@@ -283,17 +300,38 @@ function render(){
   $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
   $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
 
+  // 本文と本文内選択肢（抽出は参考）
   const { stem, extracted } = splitStemAndChoices(q.question || '');
-  $('#qText').textContent = stem || (q.question || '');
+  $('#qText').textContent = tidyStem(stem || (q.question || ''));
 
-  let choices = q.choices?.length===4 ? q.choices.map(cleanseChoiceHead) : null;
-  if(extracted.filter(Boolean).length===4){ choices = extracted; }
+  // --- 選択肢の優先順位 ---
+  // 1) JSONの choices を基本として使う
+  let choices = Array.isArray(q.choices) && q.choices.length===4 ? q.choices.slice() : null;
 
+  // 2) それが全てプレースホルダだった場合のみ、
+  //    本文から4件揃って抽出できたときに限り置換
+  const extractedFull = extracted.filter(Boolean).length===4;
+  const allPlaceholder = choices && choices.every(isPlaceholderChoice);
+  if (allPlaceholder && extractedFull) {
+    choices = extracted.slice();
+  }
+  // （choicesが無い場合は、抽出できていればそれを使う）
+  if (!choices && extractedFull) {
+    choices = extracted.slice();
+  }
+
+  // 3) 表示前の整形：プレースホルダ文言と頭の「ア/イ/ウ/エ」を除去
+  if (choices) {
+    choices = choices.map(t => stripPlaceholder(cleanseChoiceHead(t)));
+  }
+
+  // --- 描画 ---
   const answersEl = $('#answers'); answersEl.innerHTML='';
   if(choices){
     choices.forEach((text,i)=>{
       const btn=document.createElement('button');
       btn.className='opt';
+      // プレースホルダ対策：本文が空でも、左のかなとボックスは出す
       btn.innerHTML = `<span class="kana">${KANA[i]}</span><p>${escapeHtml(text)}</p>`;
 
       // 採点済み：正解は緑、誤答は赤（同時表示）
