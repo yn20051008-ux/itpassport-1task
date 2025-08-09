@@ -31,9 +31,7 @@ h1,h2,p{margin:0}
 .q{font-size:18px;white-space:pre-wrap}
 .answers{display:grid;gap:14px;margin-top:14px}
 @media(min-width:720px){.answers{grid-template-columns:1fr 1fr}}
-
-.opt{display:flex;align-items:flex-start;gap:.7rem;padding:16px;border:1px solid #27314a;background:#151c2c;border-radius:14px;cursor:pointer;text-align:left;line-height:1.7;
-     box-shadow:0 8px 24px rgba(0,0,0,.22);}
+.opt{display:flex;align-items:flex-start;gap:.7rem;padding:16px;border:1px solid #27314a;background:#151c2c;border-radius:14px;cursor:pointer;text-align:left;line-height:1.7;box-shadow:0 8px 24px rgba(0,0,0,.22);}
 .opt:hover{border-color:#33415f}
 .opt, .opt *{color:var(--text)!important}
 .kana{flex:0 0 2.2ch;display:inline-block;text-align:center;margin-top:.1rem;color:#b9c6e6}
@@ -63,7 +61,7 @@ h1,h2,p{margin:0}
 .xrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .close{padding:6px 10px;border:1px solid #2a3553;border-radius:999px;background:#121a33;color:#cdd7f3;cursor:pointer}
 
-/* START (exam only) */
+/* START */
 .center{display:grid;place-items:center;min-height:70vh}
 .hero{text-align:center;padding:20px 14px}
 .title{font-size:28px;letter-spacing:.5px}
@@ -81,8 +79,10 @@ h1,h2,p{margin:0}
   <div id="start" class="card pad">
     <div class="hero center">
       <div>
-        <div class="title">Trainer <span class="tag">Minimal</span></div>
-        <div class="sub small" id="info">データ読込中…</div>
+        <div class="title" id="dsTitle">Dataset</div>
+        <div class="sub small">Trainer Minimal</div>
+
+        <div class="sub small" id="info" style="margin-top:10px;">データ読込中…</div>
         <div class="inline small">
           <label>出題 <select id="count">
             <option value="10">10</option><option value="20">20</option>
@@ -169,7 +169,23 @@ h1,h2,p{margin:0}
 </div>
 
 <script>
-const DATA_URL = './data/itpassport_2025r07.json';
+/* ========== データURL解決（?data=xxx で切替 / デフォルトは 2025r07） ========== */
+function resolveDataUrl() {
+  const p = new URLSearchParams(location.search).get('data');
+  if (!p) return './data/itpassport_2025r07.json';
+  if (p.startsWith('http')) return p;
+  const name = p.endsWith('.json') ? p : `${p}.json`;
+  return `./data/${name}`;
+}
+const DATA_URL = resolveDataUrl();
+
+/* タイトル＝JSONファイル名（拡張子なし） */
+const datasetFile = DATA_URL.split('/').pop();
+const datasetName = datasetFile.replace(/\.json$/,'');
+document.title = `${datasetName} | Trainer Minimal`;
+document.querySelector('#dsTitle').textContent = datasetName;
+
+/* ========== 共通ユーティリティ ========== */
 const KANA = ['ア','イ','ウ','エ'];
 const LIMIT_SEC = 120 * 60; // 120分
 let RAW=[], POOL=[], ORDER=[];
@@ -179,13 +195,13 @@ let TIMER_ID=null, remainingSec=LIMIT_SEC;
 const $  = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
-const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.random()* (i+1) | 0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
-/* 先頭に付いた「ア/イ/ウ/エ + 記号」を除去 */
+/* 選択肢先頭の「ア/イ/ウ/エ + 記号」を除去 */
 function cleanseChoiceHead(t=''){
   return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim();
 }
-/* 問題文中の選択肢（ア/イ/ウ/エ …）を抽出し、本文から除去 */
+/* 問題文から「ア/イ/ウ/エ …」を抽出して本文から除去（複数行連結対応） */
 function splitStemAndChoices(text=''){
   const lines = String(text).split(/\r?\n/);
   const out = [];
@@ -196,22 +212,15 @@ function splitStemAndChoices(text=''){
   for(const raw of lines){
     const ln = raw.trim();
     const m = ln.match(headRe);
-    if(m && map[m[1]]!=null){
-      started = true; cur = map[m[1]];
-      picked[cur] += (picked[cur] ? ' ' : '') + m[2].trim();
-      continue;
-    }
-    if(started && cur>=0){
-      if(ln==='') continue; // 空行はスキップ
-      picked[cur] += ' ' + ln;
-    }else{
-      out.push(raw);
-    }
+    if(m && map[m[1]]!=null){ started = true; cur = map[m[1]]; picked[cur] += (picked[cur] ? ' ' : '') + m[2].trim(); continue; }
+    if(started && cur>=0){ if(ln==='') continue; picked[cur] += ' ' + ln; }
+    else out.push(raw);
   }
   const extracted = picked.map(s=>s.trim()).map(s=>s? s:null);
   return { stem: out.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
 }
 
+/* ========== データロード ========== */
 async function loadData(){
   $('#info').textContent = 'データ読込中…';
   try{
@@ -229,7 +238,7 @@ async function loadData(){
 loadData();
 $('#reload').addEventListener('click', loadData);
 
-/* Start Exam */
+/* ========== 模試開始 ========== */
 $('#go').addEventListener('click', () => {
   INCLUDE_STUBS = $('#stubs').checked;
   const cntSel = $('#count').value;
@@ -254,16 +263,15 @@ $('#go').addEventListener('click', () => {
   render();
 });
 
+/* ========== 画面レンダリング ========== */
 function render(){
   const idx = ORDER[CUR], q = POOL[idx];
   $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
   $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
 
-  // 問題文から選択肢を抽出
   const { stem, extracted } = splitStemAndChoices(q.question || '');
   $('#qText').textContent = stem || (q.question || '');
 
-  // 使う選択肢：JSON→先頭ラベル除去、抽出4本揃いなら抽出を優先
   let choices = null;
   if(q.choices && q.choices.length===4){ choices = q.choices.map(cleanseChoiceHead); }
   if(extracted.filter(Boolean).length===4){ choices = extracted; }
@@ -288,18 +296,15 @@ function render(){
   buildNav();
 }
 
-function selectChoice(i){
-  const idx = ORDER[CUR], q = POOL[idx];
-  q.selected = i; // 記録のみ（採点は finish で）
-  advance();
-}
+/* 回答選択→即次へ */
+function selectChoice(i){ const idx = ORDER[CUR], q = POOL[idx]; q.selected = i; advance(); }
 function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
 
 $('#prev').addEventListener('click', ()=>{ if(CUR>0){ CUR--; render(); }});
 $('#next').addEventListener('click', ()=> advance());
 $('#skip').addEventListener('click', ()=> advance());
 
-/* overlay nav */
+/* ナビ */
 $('#navFab').addEventListener('click', ()=> $('#overlay').style.display='flex');
 $('#closeOv').addEventListener('click', ()=> $('#overlay').style.display='none');
 function buildNav(){
@@ -317,9 +322,9 @@ function buildNav(){
   });
 }
 
+/* 採点＆結果 */
 function finish(){
   clearInterval(TIMER_ID);
-  // 採点
   for(const q of POOL){
     if(Number.isInteger(q.answer_index) && q.selected!=null){
       q.result = (q.selected===q.answer_index);
@@ -332,7 +337,6 @@ function finish(){
   $('#rok').textContent = ok; $('#rng').textContent = ng;
   $('#elapsed').textContent = `残り ${fmtTime(remainingSec)}`;
 
-  // レビュー（不正解のみ）
   const wrongs = POOL.filter(x=>x.result===false).map(x=>({num:x.number ?? '-', q:x.question || '（本文なし）', ans:x.answer_index, sel:x.selected}));
   const box = $('#review'); box.innerHTML='';
   if(wrongs.length===0){ box.innerHTML='<p class="small">全問正解！</p>'; }
@@ -349,6 +353,7 @@ function finish(){
   }
 }
 
+/* 結果画面の操作 */
 $('#retryWrong').addEventListener('click', ()=>{
   const wrongIdx = ORDER.filter(i => { const q=POOL[i]; return q.result===false && Number.isInteger(q.answer_index); });
   if(wrongIdx.length===0){ alert('不正解がありません。'); return; }
@@ -360,28 +365,25 @@ $('#retryWrong').addEventListener('click', ()=>{
   $('#result').classList.add('hide'); $('#quiz').classList.remove('hide');
   render();
 });
-
 $('#retryAll').addEventListener('click', ()=>{ $('#result').classList.add('hide'); $('#start').classList.remove('hide'); });
 
+/* CSV出力 */
 $('#exportCsv').addEventListener('click', ()=>{
-  const rows = [['index','number','selectedKana','correctKana','result']];
+  const rows = [['dataset','index','number','selectedKana','correctKana','result']];
   ORDER.forEach((i,idx)=>{
     const q=POOL[i];
     const sel = q.selected!=null ? KANA[q.selected] : '';
     const cor = Number.isInteger(q.answer_index) ? KANA[q.answer_index] : '';
     const res = q.result==null ? '' : (q.result?'OK':'NG');
-    rows.push([idx+1, q.number ?? '', sel, cor, res]);
+    rows.push([datasetName, idx+1, q.number ?? '', sel, cor, res]);
   });
   const csv = rows.map(r=>r.map(s=>`"${String(s??'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='itpassport_result.csv'; a.click(); URL.revokeObjectURL(a.href);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${datasetName}_result.csv`; a.click(); URL.revokeObjectURL(a.href);
 });
 
-function updateCounters(){
-  const ok = POOL.filter(x=>x.result===true).length;
-  const ng = POOL.filter(x=>x.result===false).length;
-  $('#ok').textContent = ok; $('#ng').textContent = ng;
-}
+/* 小物 */
+function updateCounters(){ $('#ok').textContent = POOL.filter(x=>x.result===true).length; $('#ng').textContent = POOL.filter(x=>x.result===false).length; }
 function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 </script>
 </body>
