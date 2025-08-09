@@ -36,6 +36,9 @@ h1,h2,p{margin:0}
 .opt, .opt *{color:var(--text)!important}
 .kana{flex:0 0 2.2ch;display:inline-block;text-align:center;margin-top:.1rem;color:#b9c6e6}
 .opt p{margin:0;white-space:pre-wrap}
+/* highlight */
+.opt.correct{border-color:var(--ok);background:rgba(76,175,80,.10)}
+.opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.10)}
 
 /* controls */
 .ctrl{display:flex;gap:8px;justify-content:space-between;margin-top:16px}
@@ -179,15 +182,29 @@ function resolveDataUrl() {
 }
 const DATA_URL = resolveDataUrl();
 
-/* タイトル＝JSONファイル名（拡張子なし） */
+/* 見た目を整える：ファイル名 -> きれいなタイトル */
+function prettifyDatasetName(name){
+  let s = String(name).replace(/\.json$/,'');
+  s = s.replace(/[_\-]+/g,' ').trim();                       // 区切りはスペースへ
+  s = s.replace(/(\d{4})\s*r\s*(\d{1,2})/i,(_,y,m)=>`${y}-${String(m).padStart(2,'0')}`); // 2025r07→2025-07
+  const dict = { itpassport:'ITパスポート', fe:'基本情報', ap:'応用情報' };
+  s = s.split(/\s+/).map(w=>{
+    const k=w.toLowerCase();
+    if(dict[k]) return dict[k];
+    return /^[a-z]/i.test(w) ? w[0].toUpperCase()+w.slice(1) : w;
+  }).join(' ');
+  return s;
+}
 const datasetFile = DATA_URL.split('/').pop();
 const datasetName = datasetFile.replace(/\.json$/,'');
-document.title = `${datasetName} | Trainer Minimal`;
-document.querySelector('#dsTitle').textContent = datasetName;
+const prettyName  = prettifyDatasetName(datasetName);
+document.title = `${prettyName} | Trainer Minimal`;
+document.querySelector('#dsTitle').textContent = prettyName;
 
 /* ========== 共通ユーティリティ ========== */
 const KANA = ['ア','イ','ウ','エ'];
-const LIMIT_SEC = 120 * 60; // 120分
+const LIMIT_SEC = 120 * 60;           // 120分
+const ADVANCE_DELAY_MS = 240;         // ハイライト表示時間
 let RAW=[], POOL=[], ORDER=[];
 let CUR=0, INCLUDE_STUBS=true;
 let TIMER_ID=null, remainingSec=LIMIT_SEC;
@@ -195,7 +212,7 @@ let TIMER_ID=null, remainingSec=LIMIT_SEC;
 const $  = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
-const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.random()* (i+1) | 0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
 /* 選択肢先頭の「ア/イ/ウ/エ + 記号」を除去 */
 function cleanseChoiceHead(t=''){
@@ -208,12 +225,12 @@ function splitStemAndChoices(text=''){
   const picked = ['','','',''];
   const map = {'ア':0,'イ':1,'ｲ':1,'ウ':2,'ｳ':2,'エ':3,'ｴ':3};
   const headRe = /^\s*([アイウエｲｳｴ])\s*[\)\]）．。･・、:：.\-]?\s*(.*)$/;
-  let cur = -1, started = false;
+  let cur=-1, started=false;
   for(const raw of lines){
     const ln = raw.trim();
     const m = ln.match(headRe);
-    if(m && map[m[1]]!=null){ started = true; cur = map[m[1]]; picked[cur] += (picked[cur] ? ' ' : '') + m[2].trim(); continue; }
-    if(started && cur>=0){ if(ln==='') continue; picked[cur] += ' ' + ln; }
+    if(m && map[m[1]]!=null){ started=true; cur=map[m[1]]; picked[cur]+=(picked[cur]?' ':'')+m[2].trim(); continue; }
+    if(started && cur>=0){ if(ln==='') continue; picked[cur]+=' '+ln; }
     else out.push(raw);
   }
   const extracted = picked.map(s=>s.trim()).map(s=>s? s:null);
@@ -282,6 +299,14 @@ function render(){
       const btn=document.createElement('button');
       btn.className='opt';
       btn.innerHTML = `<span class="kana">${KANA[i]}</span><p>${escapeHtml(text)}</p>`;
+
+      // 直前の判定結果があればハイライト
+      if (Number.isInteger(q.answer_index) && q.result !== null){
+        if (i === q.answer_index) btn.classList.add('correct');
+        if (q.selected === i && q.selected !== q.answer_index) btn.classList.add('wrong');
+        btn.style.pointerEvents = 'none';
+      }
+
       btn.addEventListener('click',()=>selectChoice(i));
       answersEl.appendChild(btn);
     });
@@ -296,8 +321,18 @@ function render(){
   buildNav();
 }
 
-/* 回答選択→即次へ */
-function selectChoice(i){ const idx = ORDER[CUR], q = POOL[idx]; q.selected = i; advance(); }
+/* 回答選択→ハイライト→即次へ */
+function selectChoice(i){
+  const idx = ORDER[CUR], q = POOL[idx];
+  q.selected = i;
+  if (Number.isInteger(q.answer_index)){
+    q.result = (i === q.answer_index);
+  }else{
+    q.result = null;
+  }
+  render();                               // ハイライト表示
+  setTimeout(advance, ADVANCE_DELAY_MS);  // 短い遅延で次へ
+}
 function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
 
 $('#prev').addEventListener('click', ()=>{ if(CUR>0){ CUR--; render(); }});
@@ -375,7 +410,7 @@ $('#exportCsv').addEventListener('click', ()=>{
     const sel = q.selected!=null ? KANA[q.selected] : '';
     const cor = Number.isInteger(q.answer_index) ? KANA[q.answer_index] : '';
     const res = q.result==null ? '' : (q.result?'OK':'NG');
-    rows.push([datasetName, idx+1, q.number ?? '', sel, cor, res]);
+    rows.push([prettyName, idx+1, q.number ?? '', sel, cor, res]);
   });
   const csv = rows.map(r=>r.map(s=>`"${String(s??'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'});
