@@ -1,0 +1,216 @@
+<!-- tools/fix.html : ITパスポートOCR整形クリーナー（単一HTML, 依存なし） -->
+<!doctype html><meta charset="utf-8">
+<title>iTP Data Cleaner</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{font:14px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:#0b0f1a;color:#eaf2ff;margin:0}
+.wrap{max-width:900px;margin:24px auto;padding:0 16px}
+h1{font-size:22px;margin:.2rem 0 1rem}
+.card{background:#121a2a;border:1px solid #223052;border-radius:12px;padding:14px;margin:12px 0}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+input[type=text]{width:420px;max-width:100%;padding:8px;border-radius:8px;border:1px solid #33476f;background:#0f1628;color:#dfe8ff}
+button{padding:8px 12px;border-radius:8px;background:#1b2a4a;border:1px solid #35507f;color:#dfe8ff;cursor:pointer}
+button:hover{border-color:#4b74bb}
+pre,code{white-space:pre-wrap}
+small.m{opacity:.7}
+.table{display:grid;grid-template-columns:1fr 3fr;gap:6px}
+.bad{color:#ffb4b4}
+.good{color:#b7ffb7}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+footer{opacity:.7;margin:14px 0}
+</style>
+<div class="wrap">
+  <h1>ITパスポート OCR整形クリーナー</h1>
+
+  <div class="card">
+    <div class="row">
+      <button id="loadRepo">/data/itpassport_2025r07.json を読み込み</button>
+      <span class="small m">または</span>
+      <input id="url" type="text" placeholder="任意の JSON URL（同一ドメイン推奨）">
+      <button id="loadUrl">URLを読込</button>
+      <span class="small m">または</span>
+      <input id="file" type="file" accept="application/json">
+    </div>
+    <div id="meta" class="small m" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="run">整形してプレビュー</button>
+      <button id="download" disabled>整形結果をダウンロード</button>
+    </div>
+    <div id="stats" class="table" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <strong>プレビュー（先頭3件）</strong>
+    <pre id="preview" class="mono" style="margin:8px 0 0;max-height:40vh;overflow:auto;"></pre>
+  </div>
+
+  <footer class="small m">ルール: ①JSONの <code>choices</code> を優先 ②全てプレースホルダ時は本文から抽出 ③本文の選択肢行は除去 ④%%→%、連続改行圧縮 等</footer>
+</div>
+
+<script>
+// ---------- 共通ユーティリティ ----------
+const KANA = ['ア','イ','ウ','エ'];
+const isInt = n => Number.isInteger(n);
+const escape = s => String(s??'');
+
+// プレースホルダ検出/除去
+const isPH = t => /本文から読込/.test(String(t));
+function stripPH(t=''){
+  let s=String(t);
+  s=s.replace(/^[（(]?\s*本文から読込\s*[)）]?\s*/,'').replace(/本文から読込/g,'').trim();
+  if(/^[アイウエ]$/.test(s)) s='';
+  return s;
+}
+// 先頭の「ア/イ/ウ/エ + 記号」除去
+function stripHeadKana(t=''){
+  return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim();
+}
+// 本文→(stem, 4択) 抽出
+function splitStemAndChoices(text=''){
+  const lines = String(text).split(/\r?\n/);
+  const out = [];
+  const picked = ['','','',''];
+  const map = {'ア':0,'イ':1,'ｲ':1,'ウ':2,'ｳ':2,'エ':3,'ｴ':3};
+  const headRe = /^\s*([アイウエｲｳｴ])\s*[\)\]）．。･・、:：.\-]?\s*(.*)$/;
+  let cur=-1, started=false;
+  for(const raw of lines){
+    const ln = raw.trim();
+    const m = ln.match(headRe);
+    if(m && map[m[1]]!=null){ started=true; cur=map[m[1]]; picked[cur]+=(picked[cur]?' ':'')+m[2].trim(); continue; }
+    if(started && cur>=0){ if(ln==='') continue; picked[cur]+=' '+ln; }
+    else out.push(raw);
+  }
+  const extracted = picked.map(s=>s.trim()).map(s=>s? s:null);
+  return { stem: out.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
+}
+// 本文整形
+function tidyStem(s=''){
+  return String(s)
+    .replace(/%%/g,'%')
+    .replace(/[，､]/g,'、')
+    .replace(/[．。]\s*/g,'。')
+    .replace(/\s+\n/g,'\n')
+    .replace(/\n{3,}/g,'\n\n')
+    .trim();
+}
+
+// ---------- クリーニング本体 ----------
+function cleanOne(q){
+  const out = { ...q };
+  const { stem, extracted } = splitStemAndChoices(out.question || '');
+  let choices = Array.isArray(out.choices) && out.choices.length===4 ? out.choices.slice() : null;
+  const extractedFull = extracted.filter(Boolean).length===4;
+  const allPH = choices ? choices.every(isPH) : false;
+
+  // 優先順位：JSON choices → (全部PHなら) 抽出 → (choices欠損なら) 抽出
+  if (allPH && extractedFull) choices = extracted.slice();
+  if (!choices && extractedFull) choices = extracted.slice();
+
+  // 整形
+  if (choices) choices = choices.map(t => stripPH(stripHeadKana(t)));
+  out.question = tidyStem(stem || out.question || '');
+  out.choices  = choices || out.choices;
+
+  const warn = [];
+  if(!Array.isArray(out.choices) || out.choices.length!==4) warn.push('choices!=4');
+  if(Array.isArray(out.choices) && out.choices.some(c=>!c || !String(c).trim())) warn.push('empty choice');
+  if(!isInt(out.answer_index) || out.answer_index<0 || out.answer_index>3) warn.push('answer_index');
+  return { q: out, warn };
+}
+
+function cleanAll(data){
+  const src = Array.isArray(data?.questions) ? data.questions : [];
+  const dst = [];
+  let kept=0, fixed=0, filled=0, skipped=0, warnCount=0;
+
+  for(const row of src){
+    const hadChoices = Array.isArray(row.choices) && row.choices.length===4;
+    const allPH = hadChoices ? row.choices.every(isPH) : false;
+
+    const { q, warn } = cleanOne(row);
+    const ok = Array.isArray(q.choices) && q.choices.length===4 && isInt(q.answer_index) && q.answer_index>=0 && q.answer_index<=3;
+
+    if (!ok){ skipped++; warnCount += warn.length; continue; }
+    if (hadChoices && !allPH) kept++;
+    else if (hadChoices && allPH) fixed++;
+    else if (!hadChoices) filled++;
+    warnCount += warn.length ? 1 : 0;
+
+    dst.push({ number:q.number, question:q.question, choices:q.choices, answer_index:q.answer_index });
+  }
+  return { result:{questions:dst}, stats:{total:src.length, kept, fixedFromPH:fixed, filledFromExtract:filled, skipped, warn:warnCount} };
+}
+
+// ---------- UI ----------
+let RAW=null, CLEAN=null;
+const $ = s=>document.querySelector(s);
+
+function showStats(o){
+  const el = $('#stats'); el.innerHTML='';
+  const add = (k,v,cls='')=>{
+    el.insertAdjacentHTML('beforeend', `<div>${k}</div><div class="${cls}">${v}</div>`);
+  };
+  const s=o.stats;
+  add('総件数', s.total);
+  add('そのまま採用 (choices OK)', s.kept, 'good');
+  add('抽出で置換 (choicesが全部プレースホルダ)', s.fixedFromPH);
+  add('抽出で補完 (choices欠損)', s.filledFromExtract);
+  add('スキップ (不完全)', s.skipped, s.skipped? 'bad':'');
+  add('警告/要注意', s.warn || 0, s.warn? 'bad':'');
+}
+
+function showPreview(cleaned){
+  const arr = cleaned.result.questions.slice(0,3);
+  const lines = arr.map((q,i)=>[
+    `#${i+1} number:${q.number ?? ''}`,
+    q.question,
+    `ア ${q.choices[0]}`, `イ ${q.choices[1]}`, `ウ ${q.choices[2]}`, `エ ${q.choices[3]}`,
+    `answer_index: ${q.answer_index}（${KANA[q.answer_index]}）`,
+    '-'.repeat(40)
+  ].join('\n')).join('\n');
+  $('#preview').textContent = lines || '(プレビューなし)';
+}
+
+async function fetchJson(url){
+  const r = await fetch(url, {cache:'no-store'});
+  if(!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+  return await r.json();
+}
+
+// 既定の /data を読む
+$('#loadRepo').onclick = async ()=>{
+  try{
+    RAW = await fetchJson('../data/itpassport_2025r07.json');
+    $('#meta').textContent = '読み込み完了: /data/itpassport_2025r07.json';
+  }catch(e){ $('#meta').textContent = '読込エラー: '+e.message; }
+};
+$('#loadUrl').onclick = async ()=>{
+  const u = $('#url').value.trim();
+  if(!u) return;
+  try{ RAW = await fetchJson(u); $('#meta').textContent = '読み込み完了: '+u; }
+  catch(e){ $('#meta').textContent = '読込エラー: '+e.message; }
+};
+$('#file').onchange = async (ev)=>{
+  const f = ev.target.files[0]; if(!f) return;
+  const txt = await f.text(); RAW = JSON.parse(txt);
+  $('#meta').textContent = '読み込み完了: '+f.name;
+};
+
+$('#run').onclick = ()=>{
+  if(!RAW){ alert('先にJSONを読み込んでください'); return; }
+  CLEAN = cleanAll(RAW);
+  showStats(CLEAN);
+  showPreview(CLEAN);
+  $('#download').disabled = false;
+};
+
+$('#download').onclick = ()=>{
+  if(!CLEAN) return;
+  const name='itpassport_2025r07_fixed.json';
+  const blob = new Blob([JSON.stringify(CLEAN.result,null,2)], {type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
+};
+</script>
