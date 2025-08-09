@@ -24,7 +24,7 @@ h1,h2,p{margin:0}
 .top{display:flex;align-items:center;gap:12px;justify-content:space-between}
 .top .left{display:flex;align-items:center;gap:10px}
 .badge{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:#bcd2ff}
-.timer{font-variant-numeric:tabular-nums; padding:0; border:0; background:transparent;}
+.timer{font-variant-numeric:tabular-nums;padding:0;border:0;background:transparent;}
 .counters{display:flex;gap:10px}
 .counter{font-variant-numeric:tabular-nums}
 .counter.ok{color:#b7ffb7}
@@ -32,22 +32,24 @@ h1,h2,p{margin:0}
 .bar{height:10px;background:#1a2132;border-radius:999px;overflow:hidden;margin:8px 0 0}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#95d0ff);width:0%}
 
-/* stem & answers（コンパクト） */
+/* 問題表示（コンパクト） */
 .q{font-size:clamp(15px,3.9vw,18px);line-height:1.6;white-space:pre-wrap}
-.answers{display:grid;gap:12px;margin-top:10px}
-@media(min-width:720px){.answers{grid-template-columns:1fr 1fr}}
+.choice-list{margin-top:10px;display:grid;grid-template-columns:1fr;gap:8px}
+.choice-line{display:flex;gap:.6rem;align-items:flex-start}
+.choice-line .kana{flex:0 0 2.2ch;text-align:center;color:#b9c6e6}
+.choice-line p{margin:0;white-space:pre-wrap}
+
+/* ボタン：1行4列・かなのみ */
+.answers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
 .opt{
-  display:flex;align-items:flex-start;gap:.7rem;padding:14px;border:1px solid #27314a;background:#151c2c;
-  border-radius:14px;cursor:pointer;text-align:left;line-height:1.6;box-shadow:0 8px 24px rgba(0,0,0,.22);
-  touch-action:manipulation;
+  display:flex;align-items:center;justify-content:center;min-height:44px;
+  padding:10px;border:1px solid #27314a;background:#151c2c;border-radius:12px;
+  cursor:pointer;user-select:none;touch-action:manipulation;box-shadow:0 6px 18px rgba(0,0,0,.22);
+  font-size:18px;letter-spacing:.1em;
 }
 .opt:hover{border-color:#33415f}
-.opt, .opt *{color:var(--text)!important}
-.kana{flex:0 0 2.2ch;display:inline-block;text-align:center;margin-top:.1rem;color:#b9c6e6}
-.opt p{margin:0;white-space:pre-wrap}
-/* ハイライト */
-.opt.correct{border-color:var(--ok);background:rgba(76,175,80,.10)}
-.opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.10)}
+.opt.correct{border-color:var(--ok);background:rgba(76,175,80,.12)}
+.opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.12)}
 
 /* floating nav */
 .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:50}
@@ -83,7 +85,6 @@ h1,h2,p{margin:0}
     <div class="hero center">
       <div>
         <div class="title" id="dsTitle">Dataset</div>
-
         <div class="sub small" id="info" style="margin-top:10px;">データ読込中…</div>
         <div class="inline small">
           <label>出題 <select id="count">
@@ -121,11 +122,12 @@ h1,h2,p{margin:0}
     <!-- 問題 -->
     <div class="card pad" style="margin-bottom:12px">
       <div class="q" id="qText"></div>
+      <!-- 選択文はここに出す -->
+      <div id="choicesList" class="choice-list"></div>
     </div>
 
-    <!-- 選択肢 -->
+    <!-- ボタン（1行4列／かなのみ） -->
     <div class="answers" id="answers"></div>
-    <!-- ※フルオート：フッターボタンはありません -->
   </div>
 
   <!-- RESULT -->
@@ -215,15 +217,13 @@ const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(M
 const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
 /* ===== プレースホルダ判定＆除去 ===== */
-function isPlaceholderChoice(t=''){
-  return /本文から読込/.test(String(t));
-}
+function isPlaceholderChoice(t=''){ return /本文から読込/.test(String(t)); }
 function stripPlaceholder(t=''){
   let s = String(t);
-  s = s.replace(/^[（(]\s*本文から読込\s*[)）]\s*/,''); // 先頭の（本文から読込）
-  s = s.replace(/本文から読込/g,'');               // どこかに残っても除去
+  s = s.replace(/^[（(]\s*本文から読込\s*[)）]\s*/,'');
+  s = s.replace(/本文から読込/g,'');
   s = s.trim();
-  if(/^[アイウエ]$/.test(s)) s = '';                // かな1文字だけなら空に
+  if(/^[アイウエ]$/.test(s)) s = '';
   return s;
 }
 
@@ -250,9 +250,7 @@ function splitStemAndChoices(text=''){
   return { stem: out.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
 }
 /* 本文の軽い正規化 */
-function tidyStem(s=''){
-  return String(s).replace(/%%/g,'%').replace(/\n{3,}/g,'\n\n').trim();
-}
+function tidyStem(s=''){ return String(s).replace(/%%/g,'%').replace(/\n{3,}/g,'\n\n').trim(); }
 
 /* ===== データロード ===== */
 async function loadData(){
@@ -274,9 +272,8 @@ $('#reload').addEventListener('click', loadData);
 /* ===== 開始 ===== */
 $('#go').addEventListener('click', () => {
   const cntSel = $('#count').value;
-
   const full  = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
-  POOL = full;  // 完全問題のみ
+  POOL = full;
   if(POOL.length===0){ alert('出題できる問題がありません。'); return; }
 
   ORDER = [...Array(POOL.length).keys()];
@@ -300,53 +297,48 @@ function render(){
   $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
   $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
 
-  // 本文と本文内選択肢（抽出は参考）
+  // 本文と本文内の抽出
   const { stem, extracted } = splitStemAndChoices(q.question || '');
   $('#qText').textContent = tidyStem(stem || (q.question || ''));
 
-  // --- 選択肢の優先順位 ---
-  // 1) JSONの choices を基本として使う
+  // 選択肢の優先順位：JSON choices優先 → 全てプレースホルダのときだけ抽出に置換
   let choices = Array.isArray(q.choices) && q.choices.length===4 ? q.choices.slice() : null;
-
-  // 2) それが全てプレースホルダだった場合のみ、
-  //    本文から4件揃って抽出できたときに限り置換
   const extractedFull = extracted.filter(Boolean).length===4;
   const allPlaceholder = choices && choices.every(isPlaceholderChoice);
-  if (allPlaceholder && extractedFull) {
-    choices = extracted.slice();
-  }
-  // （choicesが無い場合は、抽出できていればそれを使う）
-  if (!choices && extractedFull) {
-    choices = extracted.slice();
-  }
+  if (allPlaceholder && extractedFull) choices = extracted.slice();
+  if (!choices && extractedFull) choices = extracted.slice();
+  if (choices) choices = choices.map(t => stripPlaceholder(cleanseChoiceHead(t)));
 
-  // 3) 表示前の整形：プレースホルダ文言と頭の「ア/イ/ウ/エ」を除去
-  if (choices) {
-    choices = choices.map(t => stripPlaceholder(cleanseChoiceHead(t)));
-  }
-
-  // --- 描画 ---
-  const answersEl = $('#answers'); answersEl.innerHTML='';
-  if(choices){
-    choices.forEach((text,i)=>{
-      const btn=document.createElement('button');
-      btn.className='opt';
-      // プレースホルダ対策：本文が空でも、左のかなとボックスは出す
-      btn.innerHTML = `<span class="kana">${KANA[i]}</span><p>${escapeHtml(text)}</p>`;
-
-      // 採点済み：正解は緑、誤答は赤（同時表示）
-      if (Number.isInteger(q.answer_index) && q.result !== null){
-        if (i === q.answer_index) btn.classList.add('correct');
-        if (q.selected === i && q.selected !== q.answer_index) btn.classList.add('wrong');
-        btn.style.pointerEvents = 'none';
-      }
-
-      btn.addEventListener('click',()=>selectChoice(i));
-      answersEl.appendChild(btn);
+  // 設問カード内に選択文を表示（あれば）
+  const list = $('#choicesList'); list.innerHTML='';
+  if (choices){
+    choices.forEach((t,i)=>{
+      const line=document.createElement('div');
+      line.className='choice-line';
+      const k=document.createElement('span'); k.className='kana'; k.textContent=KANA[i];
+      const p=document.createElement('p'); p.textContent = t || '';
+      line.appendChild(k); line.appendChild(p);
+      list.appendChild(line);
     });
   }
 
-  // 表示を更新したら、毎問ページの先頭へ
+  // 4つの“かな”ボタン
+  const answersEl = $('#answers'); answersEl.innerHTML='';
+  for(let i=0;i<4;i++){
+    const btn=document.createElement('button');
+    btn.className='opt'; btn.textContent = KANA[i];
+
+    if (Number.isInteger(q.answer_index) && q.result !== null){
+      if (i === q.answer_index) btn.classList.add('correct');
+      if (q.selected === i && q.selected !== q.answer_index) btn.classList.add('wrong');
+      btn.style.pointerEvents = 'none';
+    }
+
+    btn.addEventListener('click',()=>selectChoice(i));
+    answersEl.appendChild(btn);
+  }
+
+  // 毎問ページ先頭へ
   requestAnimationFrame(()=>{ window.scrollTo(0,0); });
 
   updateCounters();
