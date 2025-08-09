@@ -36,7 +36,7 @@ h1,h2,p{margin:0}
 .opt, .opt *{color:var(--text)!important}
 .kana{flex:0 0 2.2ch;display:inline-block;text-align:center;margin-top:.1rem;color:#b9c6e6}
 .opt p{margin:0;white-space:pre-wrap}
-/* ハイライト（正解=緑 / 不正解=赤） */
+/* ハイライト */
 .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.10)}
 .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.10)}
 
@@ -68,7 +68,6 @@ h1,h2,p{margin:0}
 .center{display:grid;place-items:center;min-height:70vh}
 .hero{text-align:center;padding:20px 14px}
 .title{font-size:28px;letter-spacing:.5px}
-.sub{margin-top:6px;color:#b4c1df}
 .inline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .startbtn{margin-top:16px;display:inline-block}
 .tag{border:1px solid #2a3553;padding:4px 8px;border-radius:999px}
@@ -83,7 +82,6 @@ h1,h2,p{margin:0}
     <div class="hero center">
       <div>
         <div class="title" id="dsTitle">Dataset</div>
-        <div class="sub small">Trainer Minimal</div>
 
         <div class="sub small" id="info" style="margin-top:10px;">データ読込中…</div>
         <div class="inline small">
@@ -92,7 +90,6 @@ h1,h2,p{margin:0}
             <option value="30">30</option><option value="50">50</option>
             <option value="all" selected>全件</option>
           </select></label>
-          <label><input type="checkbox" id="stubs" checked> スタブ含む</label>
         </div>
         <div class="startbtn">
           <button id="go" class="btn primary">開始（模試 120分）</button>
@@ -102,33 +99,33 @@ h1,h2,p{margin:0}
     </div>
   </div>
 
-  <!-- QUIZ (cards separated) -->
+  <!-- QUIZ -->
   <div id="quiz" class="hide">
-    <!-- HUD card -->
+    <!-- HUD -->
     <div class="card pad" style="margin-bottom:14px">
       <div class="top">
         <div class="left">
-          <span class="badge">EXAM</span>
+          <span class="badge">模試</span>
           <strong id="pos">Q - / -</strong>
         </div>
         <div class="counters">
-          <span class="counter ok">OK <span id="ok">0</span></span>
-          <span class="counter ng">NG <span id="ng">0</span></span>
+          <span class="counter ok">正解 <span id="ok">0</span></span>
+          <span class="counter ng">不正解 <span id="ng">0</span></span>
           <span class="badge timer" id="timer">120:00</span>
         </div>
       </div>
       <div class="bar"><i id="bar"></i></div>
     </div>
 
-    <!-- Stem card -->
+    <!-- 問題 -->
     <div class="card pad" style="margin-bottom:14px">
       <div class="q" id="qText"></div>
     </div>
 
-    <!-- Answer cards -->
+    <!-- 選択肢 -->
     <div class="answers" id="answers"></div>
 
-    <!-- Controls -->
+    <!-- 操作 -->
     <div class="ctrl">
       <button id="prev" class="btn">← 戻る</button>
       <div>
@@ -143,8 +140,8 @@ h1,h2,p{margin:0}
     <div class="top">
       <h2>結果</h2>
       <div class="counters">
-        <span class="counter ok">OK <span id="rok">0</span></span>
-        <span class="counter ng">NG <span id="rng">0</span></span>
+        <span class="counter ok">正解 <span id="rok">0</span></span>
+        <span class="counter ng">不正解 <span id="rng">0</span></span>
         <span class="badge" id="elapsed">残り --:--</span>
       </div>
     </div>
@@ -172,7 +169,7 @@ h1,h2,p{margin:0}
 </div>
 
 <script>
-/* ===== データURL解決（?data=xxx で切替 / デフォルトは 2025r07） ===== */
+/* ===== データURL（?data=xxx で切替 / 既定は 2025r07） ===== */
 function resolveDataUrl() {
   const p = new URLSearchParams(location.search).get('data');
   if (!p) return './data/itpassport_2025r07.json';
@@ -206,7 +203,7 @@ const KANA = ['ア','イ','ウ','エ'];
 const LIMIT_SEC = 120 * 60;           // 120分
 const ADVANCE_DELAY_MS = 240;         // ハイライト表示時間
 let RAW=[], POOL=[], ORDER=[];
-let CUR=0, INCLUDE_STUBS=true;
+let CUR=0;
 let TIMER_ID=null, remainingSec=LIMIT_SEC;
 
 const $  = s => document.querySelector(s);
@@ -214,11 +211,11 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
 const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
-/* 選択肢先頭の「ア/イ/ウ/エ + 記号」を除去 */
+/* 選択肢頭の「ア/イ/ウ/エ + 記号」を除去 */
 function cleanseChoiceHead(t=''){
   return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim();
 }
-/* 問題文から「ア/イ/ウ/エ …」を抽出（複数行連結）し本文から除去 */
+/* 本文からア/イ/ウ/エを抽出（複数行連結）し本文から除去 */
 function splitStemAndChoices(text=''){
   const lines = String(text).split(/\r?\n/);
   const out = [];
@@ -246,8 +243,7 @@ async function loadData(){
     const data = await r.json();
     RAW = (data.questions||[]).map(q=>({...q, selected:null, result:null, seen:false}));
     const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
-    const stub = RAW.filter(q => !(q.question && q.choices && q.choices.length===4));
-    $('#info').innerHTML = `総数 <strong>${RAW.length}</strong> ／ 完全 <strong>${full.length}</strong> ／ スタブ <strong>${stub.length}</strong>`;
+    $('#info').innerHTML = `総数 <strong>${RAW.length}</strong> ／ 出題可能 <strong>${full.length}</strong>`;
   }catch(e){
     $('#info').innerHTML = `読み込み失敗：${e.message}`;
   }
@@ -257,12 +253,10 @@ $('#reload').addEventListener('click', loadData);
 
 /* ===== 模試開始 ===== */
 $('#go').addEventListener('click', () => {
-  INCLUDE_STUBS = $('#stubs').checked;
   const cntSel = $('#count').value;
 
   const full  = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
-  const stubs = RAW.filter(q => !(q.question && q.choices && q.choices.length===4));
-  POOL = INCLUDE_STUBS ? [...full, ...stubs] : full;
+  POOL = full;  // 常に完全問題のみ
   if(POOL.length===0){ alert('出題できる問題がありません。'); return; }
 
   ORDER = [...Array(POOL.length).keys()];
@@ -280,7 +274,7 @@ $('#go').addEventListener('click', () => {
   render();
 });
 
-/* ===== 画面レンダリング ===== */
+/* ===== レンダリング ===== */
 function render(){
   const idx = ORDER[CUR], q = POOL[idx];
   $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
@@ -289,8 +283,7 @@ function render(){
   const { stem, extracted } = splitStemAndChoices(q.question || '');
   $('#qText').textContent = stem || (q.question || '');
 
-  let choices = null;
-  if(q.choices && q.choices.length===4){ choices = q.choices.map(cleanseChoiceHead); }
+  let choices = q.choices?.length===4 ? q.choices.map(cleanseChoiceHead) : null;
   if(extracted.filter(Boolean).length===4){ choices = extracted; }
 
   const answersEl = $('#answers'); answersEl.innerHTML='';
@@ -300,18 +293,16 @@ function render(){
       btn.className='opt';
       btn.innerHTML = `<span class="kana">${KANA[i]}</span><p>${escapeHtml(text)}</p>`;
 
-      /* ▼すでに採点済みなら、正解は必ず緑、誤答は赤（同時表示） */
+      // 採点済みのとき：正解は必ず緑、誤答は赤（同時表示）
       if (Number.isInteger(q.answer_index) && q.result !== null){
         if (i === q.answer_index) btn.classList.add('correct');
         if (q.selected === i && q.selected !== q.answer_index) btn.classList.add('wrong');
-        btn.style.pointerEvents = 'none'; // 二度押し防止
+        btn.style.pointerEvents = 'none';
       }
 
       btn.addEventListener('click',()=>selectChoice(i));
       answersEl.appendChild(btn);
     });
-  }else{
-    const stub=document.createElement('div'); stub.className='muted small'; stub.textContent='選択肢未収録：この設問は採点対象外'; answersEl.appendChild(stub);
   }
 
   $('#prev').disabled = CUR===0;
@@ -321,17 +312,13 @@ function render(){
   buildNav();
 }
 
-/* 回答選択 → 採点 → ハイライト（正解=緑 / 不正解=赤+正解緑） → 自動で次へ */
+/* 回答→採点→ハイライト→自動次へ */
 function selectChoice(i){
   const idx = ORDER[CUR], q = POOL[idx];
   q.selected = i;
-  if (Number.isInteger(q.answer_index)){
-    q.result = (i === q.answer_index);
-  }else{
-    q.result = null; // 採点不可
-  }
-  render();                               // ハイライト表示
-  setTimeout(advance, ADVANCE_DELAY_MS);  // 短い遅延で次へ
+  q.result = (i === q.answer_index);
+  render();
+  setTimeout(advance, ADVANCE_DELAY_MS);
 }
 function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
 
@@ -388,7 +375,7 @@ function finish(){
   }
 }
 
-/* 結果画面の操作 */
+/* 結果画面操作 */
 $('#retryWrong').addEventListener('click', ()=>{
   const wrongIdx = ORDER.filter(i => { const q=POOL[i]; return q.result===false && Number.isInteger(q.answer_index); });
   if(wrongIdx.length===0){ alert('不正解がありません。'); return; }
@@ -402,7 +389,7 @@ $('#retryWrong').addEventListener('click', ()=>{
 });
 $('#retryAll').addEventListener('click', ()=>{ $('#result').classList.add('hide'); $('#start').classList.remove('hide'); });
 
-/* CSV出力 */
+/* CSV */
 $('#exportCsv').addEventListener('click', ()=>{
   const rows = [['dataset','index','number','selectedKana','correctKana','result']];
   ORDER.forEach((i,idx)=>{
