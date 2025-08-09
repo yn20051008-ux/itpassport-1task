@@ -15,7 +15,7 @@ body{ margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020); color:var(--t
 h1,h2,p{margin:0}
 .muted{color:var(--muted)} .small{font-size:12px} .hide{display:none}
 
-/* header */
+/* HUD */
 .top{display:flex;align-items:center;gap:12px;justify-content:space-between}
 .top .left{display:flex;align-items:center;gap:10px}
 .badge{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:#bcd2ff}
@@ -24,25 +24,23 @@ h1,h2,p{margin:0}
 .counter{font-variant-numeric:tabular-nums}
 .counter.ok{color:#b7ffb7}
 .counter.ng{color:#ffb4b4}
-
-/* progress */
-.bar{height:10px;background:#1a2132;border-radius:999px;overflow:hidden;margin:10px 0 14px}
+.bar{height:10px;background:#1a2132;border-radius:999px;overflow:hidden;margin:10px 0 0}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#95d0ff);width:0%}
 
-/* q & answers */
+/* stem & answers */
 .q{font-size:18px;white-space:pre-wrap}
-.answers{display:grid;gap:12px;margin-top:14px}
+.answers{display:grid;gap:14px;margin-top:14px}
 @media(min-width:720px){.answers{grid-template-columns:1fr 1fr}}
-.opt{display:flex;align-items:flex-start;gap:.6rem;padding:16px;border:1px solid #27314a;background:#151c2c;border-radius:12px;cursor:pointer;text-align:left;line-height:1.7}
+
+.opt{display:flex;align-items:flex-start;gap:.7rem;padding:16px;border:1px solid #27314a;background:#151c2c;border-radius:14px;cursor:pointer;text-align:left;line-height:1.7;
+     box-shadow:0 8px 24px rgba(0,0,0,.22);}
 .opt:hover{border-color:#33415f}
 .opt, .opt *{color:var(--text)!important}
-.opt.correct{border-color:var(--ok);background:rgba(76,175,80,.10)}
-.opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.10)}
 .kana{flex:0 0 2.2ch;display:inline-block;text-align:center;margin-top:.1rem;color:#b9c6e6}
 .opt p{margin:0;white-space:pre-wrap}
 
 /* controls */
-.ctrl{display:flex;gap:8px;justify-content:space-between;margin-top:14px}
+.ctrl{display:flex;gap:8px;justify-content:space-between;margin-top:16px}
 .btn{display:inline-flex;align-items:center;gap:.5rem;padding:10px 14px;border:1px solid #2a3349;border-radius:12px;background:#151c2b;color:var(--text);cursor:pointer}
 .btn:hover{border-color:#384766}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
@@ -101,22 +99,33 @@ h1,h2,p{margin:0}
     </div>
   </div>
 
-  <!-- QUIZ -->
-  <div id="quiz" class="card pad hide">
-    <div class="top">
-      <div class="left">
-        <span class="badge">EXAM</span>
-        <strong id="pos">Q - / -</strong>
+  <!-- QUIZ (cards separated) -->
+  <div id="quiz" class="hide">
+    <!-- HUD card -->
+    <div class="card pad" style="margin-bottom:14px">
+      <div class="top">
+        <div class="left">
+          <span class="badge">EXAM</span>
+          <strong id="pos">Q - / -</strong>
+        </div>
+        <div class="counters">
+          <span class="counter ok">OK <span id="ok">0</span></span>
+          <span class="counter ng">NG <span id="ng">0</span></span>
+          <span class="badge timer" id="timer">120:00</span>
+        </div>
       </div>
-      <div class="counters">
-        <span class="counter ok">OK <span id="ok">0</span></span>
-        <span class="counter ng">NG <span id="ng">0</span></span>
-        <span class="badge timer" id="timer">120:00</span>
-      </div>
+      <div class="bar"><i id="bar"></i></div>
     </div>
-    <div class="bar"><i id="bar"></i></div>
-    <div class="q" id="qText"></div>
+
+    <!-- Stem card -->
+    <div class="card pad" style="margin-bottom:14px">
+      <div class="q" id="qText"></div>
+    </div>
+
+    <!-- Answer cards -->
     <div class="answers" id="answers"></div>
+
+    <!-- Controls -->
     <div class="ctrl">
       <button id="prev" class="btn">← 戻る</button>
       <div>
@@ -127,7 +136,7 @@ h1,h2,p{margin:0}
   </div>
 
   <!-- RESULT -->
-  <div id="result" class="card pad hide">
+  <div id="result" class="card pad hide" style="margin-top:14px">
     <div class="top">
       <h2>結果</h2>
       <div class="counters">
@@ -172,12 +181,11 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
 const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
-/* 先頭に付いてしまった「ア/イ/ウ/エ + 記号」を削る */
+/* 先頭に付いた「ア/イ/ウ/エ + 記号」を除去 */
 function cleanseChoiceHead(t=''){
   return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim();
 }
-
-/* 問題文中のア/イ/ウ/エをラベル単位で抽出（複数行も連結） */
+/* 問題文中の選択肢（ア/イ/ウ/エ …）を抽出し、本文から除去 */
 function splitStemAndChoices(text=''){
   const lines = String(text).split(/\r?\n/);
   const out = [];
@@ -189,20 +197,17 @@ function splitStemAndChoices(text=''){
     const ln = raw.trim();
     const m = ln.match(headRe);
     if(m && map[m[1]]!=null){
-      started = true;
-      cur = map[m[1]];
+      started = true; cur = map[m[1]];
       picked[cur] += (picked[cur] ? ' ' : '') + m[2].trim();
       continue;
     }
     if(started && cur>=0){
-      // 選択肢本文が次のラベルまで続くケース
-      if(ln==='') continue;
+      if(ln==='') continue; // 空行はスキップ
       picked[cur] += ' ' + ln;
     }else{
       out.push(raw);
     }
   }
-  // 空文字は null に
   const extracted = picked.map(s=>s.trim()).map(s=>s? s:null);
   return { stem: out.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
 }
@@ -260,12 +265,8 @@ function render(){
 
   // 使う選択肢：JSON→先頭ラベル除去、抽出4本揃いなら抽出を優先
   let choices = null;
-  if(q.choices && q.choices.length===4){
-    choices = q.choices.map(cleanseChoiceHead);
-  }
-  if(extracted.filter(Boolean).length===4){
-    choices = extracted;
-  }
+  if(q.choices && q.choices.length===4){ choices = q.choices.map(cleanseChoiceHead); }
+  if(extracted.filter(Boolean).length===4){ choices = extracted; }
 
   const answersEl = $('#answers'); answersEl.innerHTML='';
   if(choices){
@@ -289,26 +290,24 @@ function render(){
 
 function selectChoice(i){
   const idx = ORDER[CUR], q = POOL[idx];
-  q.selected = i; // 記録のみ（採点は最後）
+  q.selected = i; // 記録のみ（採点は finish で）
   advance();
 }
-
 function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
 
 $('#prev').addEventListener('click', ()=>{ if(CUR>0){ CUR--; render(); }});
 $('#next').addEventListener('click', ()=> advance());
 $('#skip').addEventListener('click', ()=> advance());
 
+/* overlay nav */
 $('#navFab').addEventListener('click', ()=> $('#overlay').style.display='flex');
 $('#closeOv').addEventListener('click', ()=> $('#overlay').style.display='none');
-
 function buildNav(){
   const g = $('#navGrid'); g.innerHTML='';
   ORDER.forEach((i,idx)=>{
     const q=POOL[i];
     const b=document.createElement('button');
-    b.className='navbtn';
-    b.textContent = (idx+1);
+    b.className='navbtn'; b.textContent = (idx+1);
     if(q.result===true) b.classList.add('ok');
     else if(q.result===false) b.classList.add('ng');
     else if(q.selected!=null) b.style.borderColor='#3a4a6b';
@@ -383,7 +382,6 @@ function updateCounters(){
   const ng = POOL.filter(x=>x.result===false).length;
   $('#ok').textContent = ok; $('#ng').textContent = ng;
 }
-
 function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 </script>
 </body>
