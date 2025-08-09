@@ -15,7 +15,8 @@ body{
 }
 .app{max-width:960px;margin:0 auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom));min-height:100svh;display:block;}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
-.pad{padding:18px}
+.pad{padding:16px}
+@media(max-width:420px){ .pad{padding:12px} }
 h1,h2,p{margin:0}
 .muted{color:var(--muted)} .small{font-size:12px} .hide{display:none}
 
@@ -28,16 +29,16 @@ h1,h2,p{margin:0}
 .counter{font-variant-numeric:tabular-nums}
 .counter.ok{color:#b7ffb7}
 .counter.ng{color:#ffb4b4}
-.bar{height:10px;background:#1a2132;border-radius:999px;overflow:hidden;margin:10px 0 0}
+.bar{height:10px;background:#1a2132;border-radius:999px;overflow:hidden;margin:8px 0 0}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#95d0ff);width:0%}
 
 /* stem & answers */
-.q{font-size:18px;white-space:pre-wrap}
-.answers{display:grid;gap:14px;margin-top:14px}
+.q{font-size:clamp(15px,3.9vw,18px);line-height:1.6;white-space:pre-wrap}
+.answers{display:grid;gap:12px;margin-top:10px}
 @media(min-width:720px){.answers{grid-template-columns:1fr 1fr}}
 .opt{
-  display:flex;align-items:flex-start;gap:.7rem;padding:16px;border:1px solid #27314a;background:#151c2c;
-  border-radius:14px;cursor:pointer;text-align:left;line-height:1.7;box-shadow:0 8px 24px rgba(0,0,0,.22);
+  display:flex;align-items:flex-start;gap:.7rem;padding:14px;border:1px solid #27314a;background:#151c2c;
+  border-radius:14px;cursor:pointer;text-align:left;line-height:1.6;box-shadow:0 8px 24px rgba(0,0,0,.22);
   touch-action:manipulation;
 }
 .opt:hover{border-color:#33415f}
@@ -47,17 +48,6 @@ h1,h2,p{margin:0}
 /* ハイライト */
 .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.10)}
 .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.10)}
-
-/* controls */
-.ctrl{display:flex;gap:8px;justify-content:space-between;margin-top:16px}
-.btn{
-  display:inline-flex;align-items:center;gap:.5rem;padding:10px 14px;border:1px solid #2a3349;border-radius:12px;
-  background:#151c2b;color:var(--text);cursor:pointer;touch-action:manipulation;
-}
-.btn:hover{border-color:#384766}
-.btn[disabled]{opacity:.5;cursor:not-allowed}
-.primary{background:linear-gradient(180deg,#1b2b48,#15243d);border-color:#2e3d5c}
-.ghost{background:transparent}
 
 /* floating nav */
 .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:50}
@@ -113,7 +103,7 @@ h1,h2,p{margin:0}
   <!-- QUIZ -->
   <div id="quiz" class="hide">
     <!-- HUD -->
-    <div class="card pad" style="margin-bottom:14px">
+    <div class="card pad" style="margin-bottom:12px">
       <div class="top">
         <div class="left">
           <span class="badge">模試</span>
@@ -129,24 +119,17 @@ h1,h2,p{margin:0}
     </div>
 
     <!-- 問題 -->
-    <div class="card pad" style="margin-bottom:14px">
+    <div class="card pad" style="margin-bottom:12px">
       <div class="q" id="qText"></div>
     </div>
 
     <!-- 選択肢 -->
     <div class="answers" id="answers"></div>
-
-    <!-- 操作（高速モード：次へ だけ） -->
-    <div class="ctrl">
-      <div></div>
-      <div>
-        <button id="next" class="btn primary">次へ →</button>
-      </div>
-    </div>
+    <!-- ※フルオート：フッターボタンはありません -->
   </div>
 
   <!-- RESULT -->
-  <div id="result" class="card pad hide" style="margin-top:14px">
+  <div id="result" class="card pad hide" style="margin-top:12px">
     <div class="top">
       <h2>結果</h2>
       <div class="counters">
@@ -325,8 +308,8 @@ function render(){
     });
   }
 
-  // 高速モード：Nextだけ制御
-  $('#next').disabled = CUR>=ORDER.length-1;
+  // 表示を更新したら、毎問ページの先頭へ
+  requestAnimationFrame(()=>{ window.scrollTo(0,0); });
 
   updateCounters();
   buildNav();
@@ -341,7 +324,6 @@ function selectChoice(i){
   setTimeout(advance, ADVANCE_DELAY_MS);
 }
 function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
-$('#next').addEventListener('click', ()=> advance());
 
 /* ナビ */
 $('#navFab').addEventListener('click', ()=> $('#overlay').style.display='flex');
