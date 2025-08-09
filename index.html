@@ -3,12 +3,16 @@
 <head>
 <meta charset="utf-8">
 <title>Trainer Minimal</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
 :root{ --bg:#0b0d14; --panel:#121623; --accent:#52b2ff; --text:#eef3ff; --muted:#91a0bd; --ok:#4caf50; --ng:#ef5350; --line:#20273a; }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{ margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020); color:var(--text);font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; overscroll-behavior:none; touch-action:manipulation; overflow-x:hidden;}
+body{
+  margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020);
+  color:var(--text);font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  overscroll-behavior:none; touch-action:manipulation; overflow-x:hidden;
+}
 .app{max-width:960px;margin:0 auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom));min-height:100svh;display:block;}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
 .pad{padding:18px}
@@ -31,7 +35,11 @@ h1,h2,p{margin:0}
 .q{font-size:18px;white-space:pre-wrap}
 .answers{display:grid;gap:14px;margin-top:14px}
 @media(min-width:720px){.answers{grid-template-columns:1fr 1fr}}
-.opt{display:flex;align-items:flex-start;gap:.7rem;padding:16px;border:1px solid #27314a;background:#151c2c;border-radius:14px;cursor:pointer;text-align:left;line-height:1.7;box-shadow:0 8px 24px rgba(0,0,0,.22);}
+.opt{
+  display:flex;align-items:flex-start;gap:.7rem;padding:16px;border:1px solid #27314a;background:#151c2c;
+  border-radius:14px;cursor:pointer;text-align:left;line-height:1.7;box-shadow:0 8px 24px rgba(0,0,0,.22);
+  touch-action:manipulation;
+}
 .opt:hover{border-color:#33415f}
 .opt, .opt *{color:var(--text)!important}
 .kana{flex:0 0 2.2ch;display:inline-block;text-align:center;margin-top:.1rem;color:#b9c6e6}
@@ -42,7 +50,10 @@ h1,h2,p{margin:0}
 
 /* controls */
 .ctrl{display:flex;gap:8px;justify-content:space-between;margin-top:16px}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:10px 14px;border:1px solid #2a3349;border-radius:12px;background:#151c2b;color:var(--text);cursor:pointer}
+.btn{
+  display:inline-flex;align-items:center;gap:.5rem;padding:10px 14px;border:1px solid #2a3349;border-radius:12px;
+  background:#151c2b;color:var(--text);cursor:pointer;touch-action:manipulation;
+}
 .btn:hover{border-color:#384766}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
 .primary{background:linear-gradient(180deg,#1b2b48,#15243d);border-color:#2e3d5c}
@@ -125,11 +136,10 @@ h1,h2,p{margin:0}
     <!-- 選択肢 -->
     <div class="answers" id="answers"></div>
 
-    <!-- 操作 -->
+    <!-- 操作（高速モード：次へ だけ） -->
     <div class="ctrl">
-      <button id="prev" class="btn">← 戻る</button>
+      <div></div>
       <div>
-        <button id="skip" class="btn">スキップ</button>
         <button id="next" class="btn primary">次へ →</button>
       </div>
     </div>
@@ -169,7 +179,17 @@ h1,h2,p{margin:0}
 </div>
 
 <script>
-/* ===== データURL（?data=xxx で切替 / 既定は 2025r07） ===== */
+/* ===== iOSダブルタップ拡大の抑止 ===== */
+let __lastTouchEnd = 0;
+document.addEventListener('touchend', (e)=>{
+  const now = Date.now();
+  if (now - __lastTouchEnd <= 300) { e.preventDefault(); }
+  __lastTouchEnd = now;
+}, {passive:false});
+document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
+document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
+
+/* ===== データURL（?data=xxx / 既定は 2025r07） ===== */
 function resolveDataUrl() {
   const p = new URLSearchParams(location.search).get('data');
   if (!p) return './data/itpassport_2025r07.json';
@@ -179,7 +199,7 @@ function resolveDataUrl() {
 }
 const DATA_URL = resolveDataUrl();
 
-/* ファイル名 → きれいな表示名 */
+/* ファイル名 → きれい名 */
 function prettifyDatasetName(name){
   let s = String(name).replace(/\.json$/,'');
   s = s.replace(/[_\-]+/g,' ').trim();
@@ -198,10 +218,10 @@ const prettyName  = prettifyDatasetName(datasetName);
 document.title = `${prettyName} | Trainer Minimal`;
 document.querySelector('#dsTitle').textContent = prettyName;
 
-/* ===== 共通ユーティリティ ===== */
+/* ===== 共通 ===== */
 const KANA = ['ア','イ','ウ','エ'];
-const LIMIT_SEC = 120 * 60;           // 120分
-const ADVANCE_DELAY_MS = 240;         // ハイライト表示時間
+const LIMIT_SEC = 120 * 60;          // 120分
+const ADVANCE_DELAY_MS = 240;        // ハイライト表示時間
 let RAW=[], POOL=[], ORDER=[];
 let CUR=0;
 let TIMER_ID=null, remainingSec=LIMIT_SEC;
@@ -251,12 +271,12 @@ async function loadData(){
 loadData();
 $('#reload').addEventListener('click', loadData);
 
-/* ===== 模試開始 ===== */
+/* ===== 開始 ===== */
 $('#go').addEventListener('click', () => {
   const cntSel = $('#count').value;
 
   const full  = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
-  POOL = full;  // 常に完全問題のみ
+  POOL = full;  // 完全問題のみ
   if(POOL.length===0){ alert('出題できる問題がありません。'); return; }
 
   ORDER = [...Array(POOL.length).keys()];
@@ -293,7 +313,7 @@ function render(){
       btn.className='opt';
       btn.innerHTML = `<span class="kana">${KANA[i]}</span><p>${escapeHtml(text)}</p>`;
 
-      // 採点済みのとき：正解は必ず緑、誤答は赤（同時表示）
+      // 採点済み：正解は緑、誤答は赤（同時表示）
       if (Number.isInteger(q.answer_index) && q.result !== null){
         if (i === q.answer_index) btn.classList.add('correct');
         if (q.selected === i && q.selected !== q.answer_index) btn.classList.add('wrong');
@@ -305,7 +325,7 @@ function render(){
     });
   }
 
-  $('#prev').disabled = CUR===0;
+  // 高速モード：Nextだけ制御
   $('#next').disabled = CUR>=ORDER.length-1;
 
   updateCounters();
@@ -321,10 +341,7 @@ function selectChoice(i){
   setTimeout(advance, ADVANCE_DELAY_MS);
 }
 function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
-
-$('#prev').addEventListener('click', ()=>{ if(CUR>0){ CUR--; render(); }});
 $('#next').addEventListener('click', ()=> advance());
-$('#skip').addEventListener('click', ()=> advance());
 
 /* ナビ */
 $('#navFab').addEventListener('click', ()=> $('#overlay').style.display='flex');
