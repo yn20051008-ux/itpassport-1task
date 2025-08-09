@@ -5,27 +5,17 @@
 <title>Trainer Minimal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
-:root{
-  --bg:#0b0d14; --panel:#121623; --accent:#52b2ff; --text:#eef3ff; --muted:#91a0bd;
-  --ok:#4caf50; --ng:#ef5350; --line:#20273a;
-}
+:root{ --bg:#0b0d14; --panel:#121623; --accent:#52b2ff; --text:#eef3ff; --muted:#91a0bd; --ok:#4caf50; --ng:#ef5350; --line:#20273a; }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{
-  margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020);
-  color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-  overscroll-behavior: none; touch-action: manipulation; overflow-x:hidden;
-}
-.app{max-width:960px;margin:0 auto;
-  padding:18px 18px calc(18px + env(safe-area-inset-bottom));
-  min-height:100svh; display:block;
-}
+body{ margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020); color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; overscroll-behavior:none; touch-action:manipulation; overflow-x:hidden;}
+.app{max-width:960px;margin:0 auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom));min-height:100svh;display:block;}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
 .pad{padding:18px}
 h1,h2,p{margin:0}
 .muted{color:var(--muted)} .small{font-size:12px} .hide{display:none}
 
-/* Header line (quiz) */
+/* header */
 .top{display:flex;align-items:center;gap:12px;justify-content:space-between}
 .top .left{display:flex;align-items:center;gap:10px}
 .badge{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:#bcd2ff}
@@ -75,19 +65,17 @@ h1,h2,p{margin:0}
 .xrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .close{padding:6px 10px;border:1px solid #2a3553;border-radius:999px;background:#121a33;color:#cdd7f3;cursor:pointer}
 
-/* START minimal */
+/* START */
 .center{display:grid;place-items:center;min-height:70vh}
-.hero{
-  text-align:center; padding:20px 14px;
-}
-.title{font-size:28px; letter-spacing:.5px}
-.sub{margin-top:6px; color:#b4c1df}
+.hero{text-align:center;padding:20px 14px}
+.title{font-size:28px;letter-spacing:.5px}
+.sub{margin-top:6px;color:#b4c1df}
 .seg{display:inline-flex;border:1px solid #2a3553;border-radius:10px;overflow:hidden;margin-top:16px}
 .seg input{display:none}
 .seg label{padding:10px 16px;cursor:pointer;background:#121a33}
 .seg input:checked + label{background:#1a2646;color:#dbe6ff}
 .inline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
-.startbtn{margin-top:16px; display:inline-block}
+.startbtn{margin-top:16px;display:inline-block}
 .tag{border:1px solid #2a3553;padding:4px 8px;border-radius:999px}
 .review{margin-top:10px}
 .review ol{margin:0;padding-left:18px}
@@ -134,7 +122,7 @@ h1,h2,p{margin:0}
       <div class="counters">
         <span class="counter ok">OK <span id="ok">0</span></span>
         <span class="counter ng">NG <span id="ng">0</span></span>
-        <span class="badge timer" id="timer">--:--</span>
+        <span class="badge timer" id="timer">120:00</span>
       </div>
     </div>
     <div class="bar"><i id="bar"></i></div>
@@ -159,7 +147,7 @@ h1,h2,p{margin:0}
       <div class="counters">
         <span class="counter ok">OK <span id="rok">0</span></span>
         <span class="counter ng">NG <span id="rng">0</span></span>
-        <span class="badge" id="elapsed">--:--</span>
+        <span class="badge" id="elapsed">残り --:--</span>
       </div>
     </div>
     <div class="review" id="review"></div>
@@ -188,12 +176,12 @@ h1,h2,p{margin:0}
 <script>
 const DATA_URL = './data/itpassport_2025r07.json';
 const KANA = ['ア','イ','ウ','エ'];
-const EXAM_LIMIT_SEC = 120 * 60; // 120分
-const ADVANCE_DELAY_MS = 200;     // 正/誤ハイライト表示時間
+const LIMIT_SEC = 120 * 60;      // 120分（学習/模試どちらもカウントダウン）
+const ADVANCE_DELAY_MS = 200;     // 学習モード：ハイライト表示時間
 
 let RAW=[], POOL=[], ORDER=[];
 let CUR=0, MODE='train', INCLUDE_STUBS=true;
-let START_TIME=0, TIMER_ID=null, remainingSec=0;
+let TIMER_ID=null, remainingSec=LIMIT_SEC;
 
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
@@ -234,8 +222,8 @@ $('#go').addEventListener('click', () => {
   POOL.forEach(q=>{ q.selected=null; q.result=null; q.seen=false; });
   CUR=0;
 
-  if(MODE === 'exam'){ remainingSec = EXAM_LIMIT_SEC; $('#timer').textContent = fmtTime(remainingSec); }
-  else{ remainingSec = 0; START_TIME = Date.now(); }
+  remainingSec = LIMIT_SEC;
+  $('#timer').textContent = fmtTime(remainingSec);
   startTimer();
 
   $('#modeTag').textContent = MODE.toUpperCase();
@@ -248,13 +236,9 @@ $('#go').addEventListener('click', () => {
 function startTimer(){
   clearInterval(TIMER_ID);
   TIMER_ID = setInterval(()=>{
-    if(MODE === 'exam'){
-      remainingSec = Math.max(0, remainingSec - 1);
-      $('#timer').textContent = fmtTime(remainingSec);
-      if(remainingSec === 0){ clearInterval(TIMER_ID); finish(); }
-    }else{
-      $('#timer').textContent = fmtTime((Date.now()-START_TIME)/1000);
-    }
+    remainingSec = Math.max(0, remainingSec - 1);
+    $('#timer').textContent = fmtTime(remainingSec);
+    if(remainingSec === 0){ clearInterval(TIMER_ID); finish(); }
   }, 1000);
 }
 
@@ -361,11 +345,10 @@ function finish(){
   const ng = POOL.filter(x=>x.result===false).length;
   $('#rok').textContent = ok;
   $('#rng').textContent = ng;
-  $('#elapsed').textContent = MODE==='exam' ? '120:00→0:00' : $('#timer').textContent;
+  $('#elapsed').textContent = `残り ${fmtTime(remainingSec)}`;
 
-  const wrongs = POOL.filter(x=>x.result===false).map(x=>({
-    num: x.number ?? '-', q: x.question || '（本文なし）', ans: x.answer_index, sel: x.selected
-  }));
+  // 履歴（不正解のみ）
+  const wrongs = POOL.filter(x=>x.result===false).map(x=>({num:x.number ?? '-', q:x.question || '（本文なし）', ans:x.answer_index, sel:x.selected}));
   const box = $('#review'); box.innerHTML='';
   if(wrongs.length===0){ box.innerHTML='<p class="small">全問正解！</p>'; }
   else{
@@ -388,7 +371,7 @@ $('#retryWrong').addEventListener('click', ()=>{
   if(wrongIdx.length===0){ alert('不正解がありません。'); return; }
   ORDER = wrongIdx;
   ORDER.forEach(i=>{ POOL[i].selected=null; POOL[i].result=null; });
-  CUR=0; START_TIME=Date.now(); if(MODE==='exam'){ MODE='train'; } startTimer();
+  CUR=0; remainingSec = LIMIT_SEC; startTimer();
   $('#result').classList.add('hide'); $('#quiz').classList.remove('hide'); $('#modeTag').textContent='TRAIN';
   render();
 });
