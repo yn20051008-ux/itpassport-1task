@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Trainer Minimal</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
 :root{
   --bg:#0b0d14; --panel:#121623; --accent:#52b2ff; --text:#eef3ff; --muted:#91a0bd;
@@ -11,16 +11,21 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-.app{max-width:920px;margin:0 auto;padding:18px}
+body{
+  margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020);
+  color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  overscroll-behavior: none; touch-action: manipulation; overflow-x:hidden;
+}
+.app{max-width:960px;margin:0 auto;
+  padding:18px 18px calc(18px + env(safe-area-inset-bottom));
+  min-height:100svh; display:block;
+}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
-.pad{padding:16px 16px 18px}
+.pad{padding:18px}
 h1,h2,p{margin:0}
-.muted{color:var(--muted)}
-.small{font-size:12px}
-.hide{display:none}
+.muted{color:var(--muted)} .small{font-size:12px} .hide{display:none}
 
-/* header */
+/* Header line (quiz) */
 .top{display:flex;align-items:center;gap:12px;justify-content:space-between}
 .top .left{display:flex;align-items:center;gap:10px}
 .badge{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:#bcd2ff}
@@ -40,13 +45,13 @@ h1,h2,p{margin:0}
 @media(min-width:720px){.answers{grid-template-columns:1fr 1fr}}
 .opt{padding:14px;border:1px solid #27314a;background:#151c2c;border-radius:12px;cursor:pointer;text-align:left}
 .opt:hover{border-color:#33415f}
-.opt, .opt *{color:var(--text)!important} /* 文字を必ず白系に */
+.opt, .opt *{color:var(--text)!important}
 .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.10)}
 .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.10)}
 .opt.disabled{opacity:.65;pointer-events:none}
 .kana{display:inline-block;min-width:2ch;text-align:center;margin-right:.6rem;color:#b9c6e6}
 
-/* foot controls */
+/* controls */
 .ctrl{display:flex;gap:8px;justify-content:space-between;margin-top:12px}
 .btn{display:inline-flex;align-items:center;gap:.5rem;padding:10px 14px;border:1px solid #2a3349;border-radius:12px;background:#151c2b;color:var(--text);cursor:pointer}
 .btn:hover{border-color:#384766}
@@ -54,13 +59,12 @@ h1,h2,p{margin:0}
 .primary{background:linear-gradient(180deg,#1b2b48,#15243d);border-color:#2e3d5c}
 .ghost{background:transparent}
 
-/* floating nav trigger */
-.fab{position:fixed;right:16px;bottom:16px;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+/* floating nav */
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:50}
 .fab span{font-size:20px;line-height:1}
-.fab:active{transform:translateY(1px)}
 
 /* overlay nav */
-.overlay{position:fixed;inset:0;background:rgba(6,10,20,.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px}
+.overlay{position:fixed;inset:0;background:rgba(6,10,20,.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;z-index:40}
 .ov-card{width:min(860px,92vw);max-height:80vh;overflow:auto;background:#0f1426;border:1px solid #2b3653;border-radius:14px;padding:14px}
 .grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
 .navbtn{padding:8px;border:1px solid #2a3553;background:#121a33;color:#cdd7f3;border-radius:10px;cursor:pointer}
@@ -71,35 +75,48 @@ h1,h2,p{margin:0}
 .xrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .close{padding:6px 10px;border:1px solid #2a3553;border-radius:999px;background:#121a33;color:#cdd7f3;cursor:pointer}
 
-/* start & result */
-.center{display:grid;place-items:center;min-height:50vh}
-.selects{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-.tag{border:1px solid var(--line);padding:4px 8px;border-radius:999px}
+/* START minimal */
+.center{display:grid;place-items:center;min-height:70vh}
+.hero{
+  text-align:center; padding:20px 14px;
+}
+.title{font-size:28px; letter-spacing:.5px}
+.sub{margin-top:6px; color:#b4c1df}
+.seg{display:inline-flex;border:1px solid #2a3553;border-radius:10px;overflow:hidden;margin-top:16px}
+.seg input{display:none}
+.seg label{padding:10px 16px;cursor:pointer;background:#121a33}
+.seg input:checked + label{background:#1a2646;color:#dbe6ff}
+.inline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.startbtn{margin-top:16px; display:inline-block}
+.tag{border:1px solid #2a3553;padding:4px 8px;border-radius:999px}
 .review{margin-top:10px}
 .review ol{margin:0;padding-left:18px}
 </style>
 </head>
 <body>
 <div class="app">
-  <!-- start -->
+  <!-- START -->
   <div id="start" class="card pad">
-    <div class="center">
+    <div class="hero center">
       <div>
-        <h1>Trainer <span class="tag">Minimal</span></h1>
-        <p class="muted small" id="info">データ読込中…</p>
-        <div class="selects">
-          <label><input type="radio" name="mode" value="train" checked> 学習</label>
-          <label><input type="radio" name="mode" value="exam"> 模試</label>
-          <label><input type="checkbox" id="stubs" checked> スタブ含む</label>
-          <label>出題数
-            <select id="count">
-              <option value="10">10</option><option value="20">20</option>
-              <option value="30">30</option><option value="50">50</option>
-              <option value="all" selected>全件</option>
-            </select>
-          </label>
+        <div class="title">Trainer <span class="tag">Minimal</span></div>
+        <div class="sub small" id="info">データ読込中…</div>
+
+        <div class="seg" role="tablist" aria-label="mode">
+          <input type="radio" id="m-train" name="mode" value="train" checked><label for="m-train">学習</label>
+          <input type="radio" id="m-exam"  name="mode" value="exam"><label for="m-exam">模試</label>
         </div>
-        <div style="margin-top:12px">
+
+        <div class="inline small">
+          <label>出題 <select id="count">
+            <option value="10">10</option><option value="20">20</option>
+            <option value="30">30</option><option value="50">50</option>
+            <option value="all" selected>全件</option>
+          </select></label>
+          <label><input type="checkbox" id="stubs" checked> スタブ含む</label>
+        </div>
+
+        <div class="startbtn">
           <button id="go" class="btn primary">開始</button>
           <button id="reload" class="btn ghost">再読込</button>
         </div>
@@ -107,7 +124,7 @@ h1,h2,p{margin:0}
     </div>
   </div>
 
-  <!-- quiz -->
+  <!-- QUIZ -->
   <div id="quiz" class="card pad hide">
     <div class="top">
       <div class="left">
@@ -135,7 +152,7 @@ h1,h2,p{margin:0}
     </div>
   </div>
 
-  <!-- result -->
+  <!-- RESULT -->
   <div id="result" class="card pad hide">
     <div class="top">
       <h2>結果</h2>
@@ -172,6 +189,7 @@ h1,h2,p{margin:0}
 const DATA_URL = './data/itpassport_2025r07.json';
 const KANA = ['ア','イ','ウ','エ'];
 const EXAM_LIMIT_SEC = 120 * 60; // 120分
+const ADVANCE_DELAY_MS = 200;     // 正/誤ハイライト表示時間
 
 let RAW=[], POOL=[], ORDER=[];
 let CUR=0, MODE='train', INCLUDE_STUBS=true;
@@ -216,13 +234,8 @@ $('#go').addEventListener('click', () => {
   POOL.forEach(q=>{ q.selected=null; q.result=null; q.seen=false; });
   CUR=0;
 
-  if(MODE === 'exam'){
-    remainingSec = EXAM_LIMIT_SEC;
-    $('#timer').textContent = fmtTime(remainingSec);
-  }else{
-    remainingSec = 0;
-    START_TIME = Date.now();
-  }
+  if(MODE === 'exam'){ remainingSec = EXAM_LIMIT_SEC; $('#timer').textContent = fmtTime(remainingSec); }
+  else{ remainingSec = 0; START_TIME = Date.now(); }
   startTimer();
 
   $('#modeTag').textContent = MODE.toUpperCase();
@@ -249,10 +262,9 @@ function render(){
   const idx = ORDER[CUR], q = POOL[idx];
   $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
   $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
-
-  const answersEl = $('#answers'); answersEl.innerHTML='';
   $('#qText').textContent = q.question ? q.question : '（本文未抽出：解答のみ保持のスタブ）';
 
+  const answersEl = $('#answers'); answersEl.innerHTML='';
   if(q.choices && q.choices.length===4){
     q.choices.forEach((text,i)=>{
       const btn=document.createElement('button');
@@ -287,19 +299,25 @@ function selectChoice(i){
   if(!q.choices || !Number.isInteger(q.answer_index)) return;
 
   if(MODE==='exam'){
-    q.selected = i;
-    if(CUR<ORDER.length-1){ CUR++; render(); }
+    q.selected = i;           // 模試：選択だけ記録して即次へ
+    advance(); 
     return;
   }
-  // 学習：即採点
+  // 学習：即採点→色を200ms表示→次へ
   q.selected = i;
   q.result = (i===q.answer_index);
   render();
+  setTimeout(advance, ADVANCE_DELAY_MS);
+}
+
+function advance(){
+  if(CUR<ORDER.length-1){ CUR++; render(); }
+  else { finish(); }
 }
 
 $('#prev').addEventListener('click', ()=>{ if(CUR>0){ CUR--; render(); }});
-$('#next').addEventListener('click', ()=>{ if(CUR<ORDER.length-1){ CUR++; render(); }});
-$('#skip').addEventListener('click', ()=>{ if(CUR<ORDER.length-1){ CUR++; render(); }});
+$('#next').addEventListener('click', ()=> advance());
+$('#skip').addEventListener('click', ()=> advance());
 $('#reveal').addEventListener('click', ()=>{
   const idx = ORDER[CUR], q = POOL[idx];
   if(!q.choices || !Number.isInteger(q.answer_index)) return;
@@ -345,11 +363,8 @@ function finish(){
   $('#rng').textContent = ng;
   $('#elapsed').textContent = MODE==='exam' ? '120:00→0:00' : $('#timer').textContent;
 
-  // 履歴（レビュー）：不正解だけ一覧
   const wrongs = POOL.filter(x=>x.result===false).map(x=>({
-    num: x.number ?? '-',
-    q: x.question || '（本文なし）',
-    ans: x.answer_index, sel: x.selected
+    num: x.number ?? '-', q: x.question || '（本文なし）', ans: x.answer_index, sel: x.selected
   }));
   const box = $('#review'); box.innerHTML='';
   if(wrongs.length===0){ box.innerHTML='<p class="small">全問正解！</p>'; }
