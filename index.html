@@ -36,7 +36,7 @@ h1,h2,p{margin:0}
 .opt, .opt *{color:var(--text)!important}
 .kana{flex:0 0 2.2ch;display:inline-block;text-align:center;margin-top:.1rem;color:#b9c6e6}
 .opt p{margin:0;white-space:pre-wrap}
-/* highlight */
+/* ハイライト（正解=緑 / 不正解=赤） */
 .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.10)}
 .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.10)}
 
@@ -78,7 +78,7 @@ h1,h2,p{margin:0}
 </head>
 <body>
 <div class="app">
-  <!-- START (模試のみ) -->
+  <!-- START -->
   <div id="start" class="card pad">
     <div class="hero center">
       <div>
@@ -172,7 +172,7 @@ h1,h2,p{margin:0}
 </div>
 
 <script>
-/* ========== データURL解決（?data=xxx で切替 / デフォルトは 2025r07） ========== */
+/* ===== データURL解決（?data=xxx で切替 / デフォルトは 2025r07） ===== */
 function resolveDataUrl() {
   const p = new URLSearchParams(location.search).get('data');
   if (!p) return './data/itpassport_2025r07.json';
@@ -182,11 +182,11 @@ function resolveDataUrl() {
 }
 const DATA_URL = resolveDataUrl();
 
-/* 見た目を整える：ファイル名 -> きれいなタイトル */
+/* ファイル名 → きれいな表示名 */
 function prettifyDatasetName(name){
   let s = String(name).replace(/\.json$/,'');
-  s = s.replace(/[_\-]+/g,' ').trim();                       // 区切りはスペースへ
-  s = s.replace(/(\d{4})\s*r\s*(\d{1,2})/i,(_,y,m)=>`${y}-${String(m).padStart(2,'0')}`); // 2025r07→2025-07
+  s = s.replace(/[_\-]+/g,' ').trim();
+  s = s.replace(/(\d{4})\s*r\s*(\d{1,2})/i,(_,y,m)=>`${y}-${String(m).padStart(2,'0')}`);
   const dict = { itpassport:'ITパスポート', fe:'基本情報', ap:'応用情報' };
   s = s.split(/\s+/).map(w=>{
     const k=w.toLowerCase();
@@ -201,7 +201,7 @@ const prettyName  = prettifyDatasetName(datasetName);
 document.title = `${prettyName} | Trainer Minimal`;
 document.querySelector('#dsTitle').textContent = prettyName;
 
-/* ========== 共通ユーティリティ ========== */
+/* ===== 共通ユーティリティ ===== */
 const KANA = ['ア','イ','ウ','エ'];
 const LIMIT_SEC = 120 * 60;           // 120分
 const ADVANCE_DELAY_MS = 240;         // ハイライト表示時間
@@ -218,7 +218,7 @@ const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+
 function cleanseChoiceHead(t=''){
   return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim();
 }
-/* 問題文から「ア/イ/ウ/エ …」を抽出して本文から除去（複数行連結対応） */
+/* 問題文から「ア/イ/ウ/エ …」を抽出（複数行連結）し本文から除去 */
 function splitStemAndChoices(text=''){
   const lines = String(text).split(/\r?\n/);
   const out = [];
@@ -237,7 +237,7 @@ function splitStemAndChoices(text=''){
   return { stem: out.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
 }
 
-/* ========== データロード ========== */
+/* ===== データロード ===== */
 async function loadData(){
   $('#info').textContent = 'データ読込中…';
   try{
@@ -255,7 +255,7 @@ async function loadData(){
 loadData();
 $('#reload').addEventListener('click', loadData);
 
-/* ========== 模試開始 ========== */
+/* ===== 模試開始 ===== */
 $('#go').addEventListener('click', () => {
   INCLUDE_STUBS = $('#stubs').checked;
   const cntSel = $('#count').value;
@@ -280,7 +280,7 @@ $('#go').addEventListener('click', () => {
   render();
 });
 
-/* ========== 画面レンダリング ========== */
+/* ===== 画面レンダリング ===== */
 function render(){
   const idx = ORDER[CUR], q = POOL[idx];
   $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
@@ -300,11 +300,11 @@ function render(){
       btn.className='opt';
       btn.innerHTML = `<span class="kana">${KANA[i]}</span><p>${escapeHtml(text)}</p>`;
 
-      // 直前の判定結果があればハイライト
+      /* ▼すでに採点済みなら、正解は必ず緑、誤答は赤（同時表示） */
       if (Number.isInteger(q.answer_index) && q.result !== null){
         if (i === q.answer_index) btn.classList.add('correct');
         if (q.selected === i && q.selected !== q.answer_index) btn.classList.add('wrong');
-        btn.style.pointerEvents = 'none';
+        btn.style.pointerEvents = 'none'; // 二度押し防止
       }
 
       btn.addEventListener('click',()=>selectChoice(i));
@@ -321,14 +321,14 @@ function render(){
   buildNav();
 }
 
-/* 回答選択→ハイライト→即次へ */
+/* 回答選択 → 採点 → ハイライト（正解=緑 / 不正解=赤+正解緑） → 自動で次へ */
 function selectChoice(i){
   const idx = ORDER[CUR], q = POOL[idx];
   q.selected = i;
   if (Number.isInteger(q.answer_index)){
     q.result = (i === q.answer_index);
   }else{
-    q.result = null;
+    q.result = null; // 採点不可
   }
   render();                               // ハイライト表示
   setTimeout(advance, ADVANCE_DELAY_MS);  // 短い遅延で次へ
