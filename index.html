@@ -65,16 +65,12 @@ h1,h2,p{margin:0}
 .xrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .close{padding:6px 10px;border:1px solid #2a3553;border-radius:999px;background:#121a33;color:#cdd7f3;cursor:pointer}
 
-/* START */
+/* START (exam only) */
 .center{display:grid;place-items:center;min-height:70vh}
 .hero{text-align:center;padding:20px 14px}
 .title{font-size:28px;letter-spacing:.5px}
 .sub{margin-top:6px;color:#b4c1df}
-.seg{display:inline-flex;border:1px solid #2a3553;border-radius:10px;overflow:hidden;margin-top:16px}
-.seg input{display:none}
-.seg label{padding:10px 16px;cursor:pointer;background:#121a33}
-.seg input:checked + label{background:#1a2646;color:#dbe6ff}
-.inline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.inline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .startbtn{margin-top:16px;display:inline-block}
 .tag{border:1px solid #2a3553;padding:4px 8px;border-radius:999px}
 .review{margin-top:10px}
@@ -83,17 +79,12 @@ h1,h2,p{margin:0}
 </head>
 <body>
 <div class="app">
-  <!-- START -->
+  <!-- START (模試のみ) -->
   <div id="start" class="card pad">
     <div class="hero center">
       <div>
         <div class="title">Trainer <span class="tag">Minimal</span></div>
         <div class="sub small" id="info">データ読込中…</div>
-
-        <div class="seg" role="tablist" aria-label="mode">
-          <input type="radio" id="m-train" name="mode" value="train" checked><label for="m-train">学習</label>
-          <input type="radio" id="m-exam"  name="mode" value="exam"><label for="m-exam">模試</label>
-        </div>
 
         <div class="inline small">
           <label>出題 <select id="count">
@@ -105,7 +96,7 @@ h1,h2,p{margin:0}
         </div>
 
         <div class="startbtn">
-          <button id="go" class="btn primary">開始</button>
+          <button id="go" class="btn primary">開始（模試 120分）</button>
           <button id="reload" class="btn ghost">再読込</button>
         </div>
       </div>
@@ -116,7 +107,7 @@ h1,h2,p{margin:0}
   <div id="quiz" class="card pad hide">
     <div class="top">
       <div class="left">
-        <span class="badge" id="modeTag">TRAIN</span>
+        <span class="badge">EXAM</span>
         <strong id="pos">Q - / -</strong>
       </div>
       <div class="counters">
@@ -129,10 +120,7 @@ h1,h2,p{margin:0}
     <div class="q" id="qText"></div>
     <div class="answers" id="answers"></div>
     <div class="ctrl">
-      <div>
-        <button id="prev" class="btn">← 戻る</button>
-        <button id="reveal" class="btn">解答表示</button>
-      </div>
+      <button id="prev" class="btn">← 戻る</button>
       <div>
         <button id="skip" class="btn">スキップ</button>
         <button id="next" class="btn primary">次へ →</button>
@@ -176,11 +164,11 @@ h1,h2,p{margin:0}
 <script>
 const DATA_URL = './data/itpassport_2025r07.json';
 const KANA = ['ア','イ','ウ','エ'];
-const LIMIT_SEC = 120 * 60;      // 120分（学習/模試どちらもカウントダウン）
-const ADVANCE_DELAY_MS = 200;     // 学習モード：ハイライト表示時間
+const LIMIT_SEC = 120 * 60;      // 120分カウントダウン（模試のみ）
+const ADVANCE_DELAY_MS = 200;     // 学習排除後も演出用に残す（今は未使用でも可）
 
 let RAW=[], POOL=[], ORDER=[];
-let CUR=0, MODE='train', INCLUDE_STUBS=true;
+let CUR=0, INCLUDE_STUBS=true;
 let TIMER_ID=null, remainingSec=LIMIT_SEC;
 
 const $ = s => document.querySelector(s);
@@ -225,7 +213,6 @@ loadData();
 $('#reload').addEventListener('click', loadData);
 
 $('#go').addEventListener('click', () => {
-  MODE = $$('input[name="mode"]').find(r=>r.checked)?.value || 'train';
   INCLUDE_STUBS = $('#stubs').checked;
   const cntSel = $('#count').value;
 
@@ -245,7 +232,6 @@ $('#go').addEventListener('click', () => {
   $('#timer').textContent = fmtTime(remainingSec);
   startTimer();
 
-  $('#modeTag').textContent = MODE.toUpperCase();
   $('#start').classList.add('hide');
   $('#quiz').classList.remove('hide');
 
@@ -266,11 +252,9 @@ function render(){
   $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
   $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
 
-  // 問題文の中から「ア/イ/ウ/エ …」行を除去
   const { stem, extracted } = splitStemAndChoices(q.question || '');
   $('#qText').textContent = stem || (q.question || '');
 
-  // 使う選択肢（JSONが正規ならそれを優先、無ければ抽出結果）
   let choices = (q.choices && q.choices.length===4) ? q.choices : null;
   if(!choices && extracted.filter(Boolean).length===4) choices = extracted;
 
@@ -280,8 +264,7 @@ function render(){
       const btn=document.createElement('button');
       btn.className='opt';
       btn.innerHTML = `<span class="kana">${KANA[i]}</span>${escapeHtml(text)}`;
-      const disabled = (q.result!==null || MODE==='exam');
-      if(disabled && q.selected===null) btn.classList.add('disabled');
+      if(q.selected===null){} // no class
       if(q.result!==null){
         if(i===q.answer_index) btn.classList.add('correct');
         if(q.selected===i && !q.result) btn.classList.add('wrong');
@@ -298,7 +281,6 @@ function render(){
 
   $('#prev').disabled = CUR===0;
   $('#next').disabled = CUR>=ORDER.length-1;
-  $('#reveal').disabled = !(MODE==='exam' && Number.isInteger(q.answer_index) && choices);
 
   updateCounters();
   buildNav();
@@ -306,20 +288,8 @@ function render(){
 
 function selectChoice(i){
   const idx = ORDER[CUR], q = POOL[idx];
-  // 採点できるのは answer_index があるとき
-  if(MODE==='exam'){
-    q.selected = i;           // 模試：選択だけ記録して即次へ
-    advance(); 
-    return;
-  }
-  q.selected = i;
-  if(Number.isInteger(q.answer_index)){
-    q.result = (i===q.answer_index);
-  }else{
-    q.result = null; // 採点不可（スタブなど）
-  }
-  render();
-  setTimeout(advance, ADVANCE_DELAY_MS);
+  q.selected = i;            // 模試：選択だけ記録
+  advance();                 // 即次へ
 }
 
 function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
@@ -327,13 +297,6 @@ function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
 $('#prev').addEventListener('click', ()=>{ if(CUR>0){ CUR--; render(); }});
 $('#next').addEventListener('click', ()=> advance());
 $('#skip').addEventListener('click', ()=> advance());
-$('#reveal').addEventListener('click', ()=>{
-  const idx = ORDER[CUR], q = POOL[idx];
-  if(!Number.isInteger(q.answer_index)) return;
-  if(q.selected==null){ alert('まずどれか選択してください。'); return; }
-  q.result = (q.selected===q.answer_index);
-  render();
-});
 
 $('#navFab').addEventListener('click', ()=> $('#overlay').style.display='flex');
 $('#closeOv').addEventListener('click', ()=> $('#overlay').style.display='none');
@@ -356,11 +319,10 @@ function buildNav(){
 
 function finish(){
   clearInterval(TIMER_ID);
-  if(MODE==='exam'){
-    for(const q of POOL){
-      if(Number.isInteger(q.answer_index) && q.selected!=null){
-        q.result = (q.selected===q.answer_index);
-      }
+  // 採点
+  for(const q of POOL){
+    if(Number.isInteger(q.answer_index) && q.selected!=null){
+      q.result = (q.selected===q.answer_index);
     }
   }
   $('#quiz').classList.add('hide');
@@ -396,7 +358,7 @@ $('#retryWrong').addEventListener('click', ()=>{
   ORDER = wrongIdx;
   ORDER.forEach(i=>{ POOL[i].selected=null; POOL[i].result=null; });
   CUR=0; remainingSec = LIMIT_SEC; startTimer();
-  $('#result').classList.add('hide'); $('#quiz').classList.remove('hide'); $('#modeTag').textContent='TRAIN';
+  $('#result').classList.add('hide'); $('#quiz').classList.remove('hide');
   render();
 });
 
