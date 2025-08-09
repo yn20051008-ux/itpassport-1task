@@ -188,6 +188,25 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
 const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
+/** 問題文に混在する「ア/イ/ウ/エ …」行を除去し、抽出もする */
+function splitStemAndChoices(text=''){
+  const lines = String(text).split(/\r?\n/);
+  const outLines = [];
+  const extracted = [null,null,null,null];
+  const idxMap = { 'ア':0,'ｲ':1,'イ':1,'ｳ':2,'ウ':2,'ｴ':3,'エ':3 };
+  const re = /^\s*([アイウエｲｳｴ])[\s\)\]．。･・、:：.\-]*\s*(.*)$/;
+  for(const ln of lines){
+    const m = ln.match(re);
+    if(m && idxMap[m[1]]!=null){
+      const i = idxMap[m[1]];
+      extracted[i] = (extracted[i] ? (extracted[i]+' '+m[2]) : m[2]).trim();
+    }else{
+      outLines.push(ln);
+    }
+  }
+  return { stem: outLines.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
+}
+
 async function loadData(){
   $('#info').textContent = 'データ読込中…';
   try{
@@ -246,11 +265,18 @@ function render(){
   const idx = ORDER[CUR], q = POOL[idx];
   $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
   $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
-  $('#qText').textContent = q.question ? q.question : '（本文未抽出：解答のみ保持のスタブ）';
+
+  // 問題文の中から「ア/イ/ウ/エ …」行を除去
+  const { stem, extracted } = splitStemAndChoices(q.question || '');
+  $('#qText').textContent = stem || (q.question || '');
+
+  // 使う選択肢（JSONが正規ならそれを優先、無ければ抽出結果）
+  let choices = (q.choices && q.choices.length===4) ? q.choices : null;
+  if(!choices && extracted.filter(Boolean).length===4) choices = extracted;
 
   const answersEl = $('#answers'); answersEl.innerHTML='';
-  if(q.choices && q.choices.length===4){
-    q.choices.forEach((text,i)=>{
+  if(choices){
+    choices.forEach((text,i)=>{
       const btn=document.createElement('button');
       btn.className='opt';
       btn.innerHTML = `<span class="kana">${KANA[i]}</span>${escapeHtml(text)}`;
@@ -272,7 +298,7 @@ function render(){
 
   $('#prev').disabled = CUR===0;
   $('#next').disabled = CUR>=ORDER.length-1;
-  $('#reveal').disabled = !(MODE==='exam' && q.choices && Number.isInteger(q.answer_index));
+  $('#reveal').disabled = !(MODE==='exam' && Number.isInteger(q.answer_index) && choices);
 
   updateCounters();
   buildNav();
@@ -280,31 +306,30 @@ function render(){
 
 function selectChoice(i){
   const idx = ORDER[CUR], q = POOL[idx];
-  if(!q.choices || !Number.isInteger(q.answer_index)) return;
-
+  // 採点できるのは answer_index があるとき
   if(MODE==='exam'){
     q.selected = i;           // 模試：選択だけ記録して即次へ
     advance(); 
     return;
   }
-  // 学習：即採点→色を200ms表示→次へ
   q.selected = i;
-  q.result = (i===q.answer_index);
+  if(Number.isInteger(q.answer_index)){
+    q.result = (i===q.answer_index);
+  }else{
+    q.result = null; // 採点不可（スタブなど）
+  }
   render();
   setTimeout(advance, ADVANCE_DELAY_MS);
 }
 
-function advance(){
-  if(CUR<ORDER.length-1){ CUR++; render(); }
-  else { finish(); }
-}
+function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
 
 $('#prev').addEventListener('click', ()=>{ if(CUR>0){ CUR--; render(); }});
 $('#next').addEventListener('click', ()=> advance());
 $('#skip').addEventListener('click', ()=> advance());
 $('#reveal').addEventListener('click', ()=>{
   const idx = ORDER[CUR], q = POOL[idx];
-  if(!q.choices || !Number.isInteger(q.answer_index)) return;
+  if(!Number.isInteger(q.answer_index)) return;
   if(q.selected==null){ alert('まずどれか選択してください。'); return; }
   q.result = (q.selected===q.answer_index);
   render();
@@ -333,7 +358,7 @@ function finish(){
   clearInterval(TIMER_ID);
   if(MODE==='exam'){
     for(const q of POOL){
-      if(q.choices && Number.isInteger(q.answer_index) && q.selected!=null){
+      if(Number.isInteger(q.answer_index) && q.selected!=null){
         q.result = (q.selected===q.answer_index);
       }
     }
@@ -347,7 +372,6 @@ function finish(){
   $('#rng').textContent = ng;
   $('#elapsed').textContent = `残り ${fmtTime(remainingSec)}`;
 
-  // 履歴（不正解のみ）
   const wrongs = POOL.filter(x=>x.result===false).map(x=>({num:x.number ?? '-', q:x.question || '（本文なし）', ans:x.answer_index, sel:x.selected}));
   const box = $('#review'); box.innerHTML='';
   if(wrongs.length===0){ box.innerHTML='<p class="small">全問正解！</p>'; }
@@ -366,7 +390,7 @@ function finish(){
 
 $('#retryWrong').addEventListener('click', ()=>{
   const wrongIdx = ORDER.filter(i => {
-    const q=POOL[i]; return q.result===false && q.choices && Number.isInteger(q.answer_index);
+    const q=POOL[i]; return q.result===false && Number.isInteger(q.answer_index);
   });
   if(wrongIdx.length===0){ alert('不正解がありません。'); return; }
   ORDER = wrongIdx;
