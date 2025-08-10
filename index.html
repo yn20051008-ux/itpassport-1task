@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<title>ITパスポート問題集</title>
+<title>Trainer Minimal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
 :root{ --bg:#0b0d14; --panel:#121623; --accent:#52b2ff; --text:#eef3ff; --muted:#91a0bd; --ok:#4caf50; --ng:#ef5350; --line:#20273a; }
@@ -19,9 +19,6 @@ body{
 @media(max-width:420px){ .pad{padding:12px} }
 h1,h2,p{margin:0}
 .muted{color:var(--muted)} .small{font-size:12px} .hide{display:none}
-.btn{padding:12px 20px;border:1px solid var(--accent);background:var(--accent);color:white;border-radius:8px;cursor:pointer;margin:4px}
-.btn.ghost{background:transparent;color:var(--accent)}
-.btn.primary{background:var(--accent);border-color:var(--accent)}
 
 /* HUD */
 .top{display:flex;align-items:center;gap:12px;justify-content:space-between}
@@ -54,11 +51,7 @@ h1,h2,p{margin:0}
 .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.12)}
 .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.12)}
 
-/* file upload */
-.upload-area{border:2px dashed var(--line);border-radius:12px;padding:20px;text-align:center;margin:20px 0}
-.upload-area.dragover{border-color:var(--accent);background:rgba(82,178,255,.1)}
-
-/* floating nav */
+/* floating nav（必要なら使う。要らなければ削除可） */
 .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:50}
 .fab span{font-size:20px;line-height:1}
 
@@ -91,21 +84,8 @@ h1,h2,p{margin:0}
   <div id="start" class="card pad">
     <div class="hero center">
       <div>
-        <div class="title" id="dsTitle">ITパスポート問題集</div>
-        <div class="sub small" id="info" style="margin-top:10px;">問題データを読み込んでください</div>
-        
-        <!-- ファイルアップロード -->
-        <div class="upload-area" id="uploadArea">
-          <p>JSONファイルをドラッグ&ドロップ<br>または<br>
-          <input type="file" id="fileInput" accept=".json" style="display:none">
-          <button class="btn" onclick="document.getElementById('fileInput').click()">ファイルを選択</button></p>
-        </div>
-        
-        <!-- サンプルデータボタン -->
-        <div style="margin:10px 0">
-          <button id="loadSample" class="btn ghost">サンプルデータを使用</button>
-        </div>
-        
+        <div class="title" id="dsTitle">Dataset</div>
+        <div class="sub small" id="info" style="margin-top:10px;">データ読込中…</div>
         <div class="inline small">
           <label>出題 <select id="count">
             <option value="10">10</option><option value="20">20</option>
@@ -114,7 +94,8 @@ h1,h2,p{margin:0}
           </select></label>
         </div>
         <div class="startbtn">
-          <button id="go" class="btn primary" disabled>開始（模試 120分）</button>
+          <button id="go" class="btn primary">開始（模試 120分）</button>
+          <button id="reload" class="btn ghost">再読込</button>
         </div>
       </div>
     </div>
@@ -141,7 +122,7 @@ h1,h2,p{margin:0}
     <!-- 問題 -->
     <div class="card pad" style="margin-bottom:12px">
       <div class="q" id="qText"></div>
-      <!-- 選択文はここに出す -->
+      <!-- 選択文はここに出す（ア/イ/ウ/エ） -->
       <div id="choicesList" class="choice-list"></div>
     </div>
 
@@ -170,7 +151,7 @@ h1,h2,p{margin:0}
   </div>
 </div>
 
-<!-- floating nav -->
+<!-- floating nav（不要ならこの2ブロックを削除してください） -->
 <button class="fab" id="navFab" title="ナビ"><span>≡</span></button>
 <div class="overlay" id="overlay">
   <div class="ov-card">
@@ -193,7 +174,36 @@ document.addEventListener('touchend', (e)=>{
 document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
 document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
 
-/* ===== 共通 ===== */
+/* ===== データURL（?data=xxx / 既定は 2025r07） ===== */
+function resolveDataUrl() {
+  const p = new URLSearchParams(location.search).get('data');
+  if (!p) return './data/itpassport_2025r07.json';
+  if (p.startsWith('http')) return p;
+  const name = p.endsWith('.json') ? p : `${p}.json`;
+  return `./data/${name}`;
+}
+const DATA_URL = resolveDataUrl();
+
+/* ファイル名 → 表示名（きれい名） */
+function prettifyDatasetName(name){
+  let s = String(name).replace(/\.json$/,'');
+  s = s.replace(/[_\-]+/g,' ').trim();
+  s = s.replace(/(\d{4})\s*r\s*(\d{1,2})/i,(_,y,m)=>`${y}-${String(m).padStart(2,'0')}`);
+  const dict = { itpassport:'ITパスポート', fe:'基本情報', ap:'応用情報' };
+  s = s.split(/\s+/).map(w=>{
+    const k=w.toLowerCase();
+    if(dict[k]) return dict[k];
+    return /^[a-z]/i.test(w) ? w[0].toUpperCase()+w.slice(1) : w;
+  }).join(' ');
+  return s;
+}
+const datasetFile = DATA_URL.split('/').pop();
+const datasetName = datasetFile.replace(/\.json$/,'');
+const prettyName  = prettifyDatasetName(datasetName);
+document.title = `${prettyName} | Trainer Minimal`;
+document.querySelector('#dsTitle').textContent = prettyName;
+
+/* ===== ユーティリティ ===== */
 const KANA = ['ア','イ','ウ','エ'];
 const LIMIT_SEC = 120 * 60;          // 120分
 const ADVANCE_DELAY_MS = 240;        // ハイライト表示時間
@@ -204,93 +214,18 @@ let TIMER_ID=null, remainingSec=LIMIT_SEC;
 const $  = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
-const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
-/* ===== サンプルデータ（最初の5問） ===== */
-const SAMPLE_DATA = {
-  "comment": "ITパスポート試験問題データ - サンプル",
-  "generated_at": "2025-01-20T00:00:00.000Z",
-  "total_questions": 5,
-  "questions": [
-    {
-      "number": 1,
-      "question": "A社がB社に作業の一部を請負契約で委託している。作業形態a〜cのうち、いわゆる偽装請負とみなされる状態だけを全て挙げたものはどれか。\\n\\na　B社の従業員が、A社内において、A社の責任者の指揮命令の下で、請負契約で取り決めた作業を行っている。\\nb　B社の従業員が、A社内において、B社の責任者の指揮命令の下で、請負契約で取り決めた作業を行っている。\\nc　B社の従業員が、B社内において、A社の責任者の指揮命令の下で、請負契約で取り決めた作業を行っている。",
-      "choices": [
-        "【ア】a",
-        "【イ】a, b", 
-        "【ウ】a, c",
-        "【エ】b, c"
-      ],
-      "answer_index": 2,
-      "comment": "偽装請負：実質的にA社が指揮命令している状態（aとc）が該当"
-    },
-    {
-      "number": 2,
-      "question": "従来の情報セキュリティマネジメントシステム規格を基礎に追加で制定されたもので、クラウドサービスに対応した情報セキュリティ管理体制を構築するためのガイドライン規格として、最も適切なものはどれか。",
-      "choices": [
-        "【ア】ISO 14001",
-        "【イ】JIS Q 15001",
-        "【ウ】ISO/IEC 27017", 
-        "【エ】ISO 9001"
-      ],
-      "answer_index": 2,
-      "comment": "ISO/IEC 27017：クラウドサービス向け情報セキュリティ管理策のガイドライン"
-    },
-    {
-      "number": 3,
-      "question": "政府は、官民データ活用推進基本法に定められた\"官民データ活用推進基本計画\"を策定し、官民データの公開や活用の促進に取り組んでいる。次の組織体のうち、官民データを所有しているものだけを全て挙げたものはどれか。\\n\\na　県庁\\nb　大学\\nc　電力事業者\\nd　独立行政法人",
-      "choices": [
-        "【ア】a, b, c",
-        "【イ】a, b, c, d",
-        "【ウ】a, b, d", 
-        "【エ】a, c, d"
-      ],
-      "answer_index": 1,
-      "comment": "官民データ活用推進基本法：公的機関(a,b,d)と民間事業者(c)すべてが対象"
-    },
-    {
-      "number": 4,
-      "question": "投資の優先度などの経営の戦略を策定するために、経済価値、希少性、模倣困難性及び組織の四つの要素で評価することによって、自社のもつ資源を分析する手法として、最も適切なものはどれか。",
-      "choices": [
-        "【ア】4P",
-        "【イ】PPM",
-        "【ウ】SWOT分析", 
-        "【エ】VRIO分析"
-      ],
-      "answer_index": 3,
-      "comment": "VRIO分析：Value(価値)、Rarity(希少性)、Imitability(模倣困難性)、Organization(組織)で資源分析"
-    },
-    {
-      "number": 5,
-      "question": "A社ではB商品の仕入れと販売を行っている。ある期のB商品の仕入単価は期首から上昇し続け、期末が最も高くなった。当該期の売上原価を\"期首棚卸高＋当期商品仕入高－期末棚卸高\"で計算するとき、期末棚卸高の計算に期末の仕入単価を用いると、B商品の期末棚卸高及び売上原価は、期中の仕入単価の平均値を用いる場合に比べてどのようになるか。",
-      "choices": [
-        "【ア】期末棚卸高、売上原価ともに上がる。",
-        "【イ】期末棚卸高、売上原価ともに変わらない。",
-        "【ウ】期末棚卸高は上がり、売上原価は下がる。", 
-        "【エ】期末棚卸高は下がり、売上原価は上がる。"
-      ],
-      "answer_index": 2,
-      "comment": "期末単価＞平均単価なので、期末棚卸高↑→売上原価は逆算で↓（売上原価=期首棚卸高＋仕入高－期末棚卸高）"
-    }
-  ]
-};
-
-/* ===== プレースホルダ判定＆除去 ===== */
-function isPlaceholderChoice(t=''){ return /本文から読込/.test(String(t)); }
+/* プレースホルダ検出/除去 & 文頭のかな除去 */
+const isPlaceholderChoice = t => /本文から読込/.test(String(t));
 function stripPlaceholder(t=''){
   let s = String(t);
-  s = s.replace(/^[（(]\s*本文から読込\s*[)）]\s*/,'');
-  s = s.replace(/本文から読込/g,'');
-  s = s.trim();
+  s = s.replace(/^[（(]?\s*本文から読込\s*[)）]?\s*/,'').replace(/本文から読込/g,'').trim();
   if(/^[アイウエ]$/.test(s)) s = '';
   return s;
 }
+function cleanseChoiceHead(t=''){ return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim(); }
 
-/* 選択肢頭の「ア/イ/ウ/エ + 記号」を除去 */
-function cleanseChoiceHead(t=''){
-  return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim();
-}
-/* 本文からア/イ/ウ/エを抽出（複数行連結）し本文から除去 */
+/* 本文からア/イ/ウ/エを抽出（複数行結合）＋本文から除去（表示はきれいに） */
 function splitStemAndChoices(text=''){
   const lines = String(text).split(/\r?\n/);
   const out = [];
@@ -308,97 +243,42 @@ function splitStemAndChoices(text=''){
   const extracted = picked.map(s=>s.trim()).map(s=>s? s:null);
   return { stem: out.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
 }
-/* 本文の軽い正規化 */
-function tidyStem(s=''){ return String(s).replace(/%%/g,'%').replace(/\n{3,}/g,'\n\n').replace(/\\n/g,'\n').trim(); }
+function tidyStem(s=''){ return String(s).replace(/%%/g,'%').replace(/\n{3,}/g,'\n\n').trim(); }
 
-/* ===== データロード ===== */
-function loadData(data){
+/* ===== データロード（スキーマ自動判別） ===== */
+async function loadData(){
+  $('#info').textContent = 'データ読込中…';
   try{
-    RAW = (data.questions||[]).map(q=>({...q, selected:null, result:null, seen:false}));
+    const r = await fetch(DATA_URL,{cache:'no-store'});
+    if(!r.ok) throw new Error(r.status+' '+r.statusText);
+    const data = await r.json();
+
+    const arr = Array.isArray(data) ? data
+              : Array.isArray(data?.questions) ? data.questions
+              : Array.isArray(data?.pool) ? data.pool
+              : [];
+
+    RAW = arr.map(q=>({...q, selected:null, result:null, seen:false}));
     const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
     $('#info').innerHTML = `総数 <strong>${RAW.length}</strong> ／ 出題可能 <strong>${full.length}</strong>`;
-    
-    // ボタンの有効化
-    if(full.length > 0) {
-      $('#go').disabled = false;
-      $('#dsTitle').textContent = `ITパスポート問題集 (${full.length}問)`;
-    } else {
-      $('#go').disabled = true;
-    }
   }catch(e){
     $('#info').innerHTML = `読み込み失敗：${e.message}`;
-    $('#go').disabled = true;
   }
 }
-
-/* ===== ファイルアップロード ===== */
-const fileInput = $('#fileInput');
-const uploadArea = $('#uploadArea');
-
-fileInput.addEventListener('change', handleFile);
-
-uploadArea.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  uploadArea.classList.add('dragover');
-});
-
-uploadArea.addEventListener('dragleave', () => {
-  uploadArea.classList.remove('dragover');
-});
-
-uploadArea.addEventListener('drop', (e) => {
-  e.preventDefault();
-  uploadArea.classList.remove('dragover');
-  const files = e.dataTransfer.files;
-  if (files.length > 0) {
-    processFile(files[0]);
-  }
-});
-
-function handleFile(e) {
-  const file = e.target.files[0];
-  if (file) {
-    processFile(file);
-  }
-}
-
-function processFile(file) {
-  if (!file.name.toLowerCase().endsWith('.json')) {
-    alert('JSONファイルを選択してください。');
-    return;
-  }
-  
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const data = JSON.parse(e.target.result);
-      loadData(data);
-      $('#info').innerHTML += '<br><span style="color: #4caf50;">✓ ファイル読み込み完了</span>';
-      $('#go').disabled = false; // ボタンを明示的に有効化
-    } catch (err) {
-      alert('JSONファイルの形式が正しくありません。');
-      $('#go').disabled = true;
-    }
-  };
-  reader.readAsText(file);
-}
-
-/* ===== サンプルデータ読み込み ===== */
-$('#loadSample').addEventListener('click', () => {
-  loadData(SAMPLE_DATA);
-  $('#info').innerHTML += '<br><span style="color: #4caf50;">✓ サンプルデータ読み込み完了</span>';
-  $('#go').disabled = false; // ボタンを有効化
-});
+loadData();
+$('#reload').addEventListener('click', loadData);
 
 /* ===== 開始 ===== */
 $('#go').addEventListener('click', () => {
   const cntSel = $('#count').value;
+
+  // 完全な設問のみをプール
   const full  = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
   POOL = full;
   if(POOL.length===0){ alert('出題できる問題がありません。'); return; }
 
+  // 出題順はそのまま（ランダムにしない）
   ORDER = [...Array(POOL.length).keys()];
-  shuffle(ORDER);
   if(cntSel!=='all') ORDER = ORDER.slice(0, Math.min(parseInt(cntSel,10), ORDER.length));
 
   POOL.forEach(q=>{ q.selected=null; q.result=null; q.seen=false; });
@@ -418,11 +298,11 @@ function render(){
   $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
   $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
 
-  // 本文と本文内の抽出
+  // 本文＋本文内からの抽出（表示用）
   const { stem, extracted } = splitStemAndChoices(q.question || '');
   $('#qText').textContent = tidyStem(stem || (q.question || ''));
 
-  // 選択肢の優先順位：JSON choices優先 → 全てプレースホルダのときだけ抽出に置換
+  // choices の優先順位：JSON優先 → 全部プレースホルダなら抽出に置換 → なければ抽出
   let choices = Array.isArray(q.choices) && q.choices.length===4 ? q.choices.slice() : null;
   const extractedFull = extracted.filter(Boolean).length===4;
   const allPlaceholder = choices && choices.every(isPlaceholderChoice);
@@ -430,7 +310,7 @@ function render(){
   if (!choices && extractedFull) choices = extracted.slice();
   if (choices) choices = choices.map(t => stripPlaceholder(cleanseChoiceHead(t)));
 
-  // 設問カード内に選択文を表示（あれば）
+  // 設問カード内に選択文を表示
   const list = $('#choicesList'); list.innerHTML='';
   if (choices){
     choices.forEach((t,i)=>{
@@ -443,12 +323,13 @@ function render(){
     });
   }
 
-  // 4つの"かな"ボタン
+  // 4つの“かな”ボタン
   const answersEl = $('#answers'); answersEl.innerHTML='';
   for(let i=0;i<4;i++){
     const btn=document.createElement('button');
     btn.className='opt'; btn.textContent = KANA[i];
 
+    // 採点済みの見た目
     if (Number.isInteger(q.answer_index) && q.result !== null){
       if (i === q.answer_index) btn.classList.add('correct');
       if (q.selected === i && q.selected !== q.answer_index) btn.classList.add('wrong');
@@ -476,7 +357,7 @@ function selectChoice(i){
 }
 function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
 
-/* ナビ */
+/* ナビ（任意機能：不要なら FAB/overlay 部分を削除してください） */
 $('#navFab').addEventListener('click', ()=> $('#overlay').style.display='flex');
 $('#closeOv').addEventListener('click', ()=> $('#overlay').style.display='none');
 function buildNav(){
@@ -539,7 +420,7 @@ $('#retryWrong').addEventListener('click', ()=>{
 });
 $('#retryAll').addEventListener('click', ()=>{ $('#result').classList.add('hide'); $('#start').classList.remove('hide'); });
 
-/* CSV */
+/* CSV エクスポート（出題順で） */
 $('#exportCsv').addEventListener('click', ()=>{
   const rows = [['dataset','index','number','selectedKana','correctKana','result']];
   ORDER.forEach((i,idx)=>{
@@ -547,19 +428,16 @@ $('#exportCsv').addEventListener('click', ()=>{
     const sel = q.selected!=null ? KANA[q.selected] : '';
     const cor = Number.isInteger(q.answer_index) ? KANA[q.answer_index] : '';
     const res = q.result==null ? '' : (q.result?'OK':'NG');
-    rows.push(['ITパスポート', idx+1, q.number ?? '', sel, cor, res]);
+    rows.push([prettyName, idx+1, q.number ?? '', sel, cor, res]);
   });
   const csv = rows.map(r=>r.map(s=>`"${String(s??'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`itpassport_result.csv`; a.click(); URL.revokeObjectURL(a.href);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${datasetName}_result.csv`; a.click(); URL.revokeObjectURL(a.href);
 });
 
 /* 小物 */
 function updateCounters(){ $('#ok').textContent = POOL.filter(x=>x.result===true).length; $('#ng').textContent = POOL.filter(x=>x.result===false).length; }
 function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-// 初期化
-document.addEventListener('DOMContentLoaded', () => {
-  $('#go').disabled = true;
-  console.log('ページが読み込まれました。サンプルデータまたはJSONファイルを読み込んでください。');
-});
+</script>
+</body>
+</html>
