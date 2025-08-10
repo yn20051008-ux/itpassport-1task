@@ -1,319 +1,129 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Trainer Minimal</title>
-  <style>
-    :root{
-      --bg:#0f1420; --card:#151c2b; --edge:#1f2a40; --text:#e8eefc;
-      --muted:#9bb0d0; --btn:#1d2942; --btnEdge:#2a395a;
-      --ok:#38d078; --ng:#ff6b6b; --accent:#5aa2ff;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; background:linear-gradient(180deg,#0b1020,#0c1322 40%,#0e1423);
-      color:var(--text); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Sans","Noto Sans JP","Yu Gothic UI","YuGothic","Meiryo",sans-serif;
-      touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-    }
-    .wrap{max-width:940px;margin:32px auto;padding:0 16px}
-    .panel{
-      background:var(--card); border:1px solid var(--edge); border-radius:22px;
-      box-shadow:0 10px 30px rgba(0,0,0,.35); padding:28px;
-    }
-    h1{margin:0 0 8px;font-size:28px;font-weight:800;letter-spacing:.02em}
-    .sub{color:var(--muted); font-size:13px}
-
-    /* top */
-    .form-row{display:flex;gap:12px;align-items:center;margin:12px 0 8px}
-    .select, .input, .btn{
-      border-radius:14px; border:1px solid var(--btnEdge); background:var(--btn);
-      color:var(--text); padding:10px 14px; font-size:15px;
-    }
-    .select, .input{flex:1; outline:none}
-    .btn{cursor:pointer; white-space:nowrap}
-    .btn[disabled]{opacity:.45; cursor:not-allowed}
-    .badge{
-      display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
-      background:#0c1628;border:1px solid var(--edge); color:var(--muted); font-size:13px; margin-top:8px
-    }
-    .dot{width:8px;height:8px;border-radius:50%}
-    .dot.ok{background:var(--ok)} .dot.err{background:var(--ng)} .dot.wait{background:#99a9c8}
-
-    /* quiz header */
-    .hud{
-      display:grid; grid-template-columns:1fr auto; gap:14px; align-items:center;
-      background:var(--card); border:1px solid var(--edge); border-radius:20px; padding:16px 18px; margin-bottom:16px;
-    }
-    .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-    .chip{background:#0c1628;border:1px solid var(--edge);padding:8px 12px;border-radius:999px;font-weight:700}
-    .ok{color:var(--ok)} .ng{color:var(--ng)}
-    .timer{background:#0c1628;border:1px solid var(--edge);padding:10px 14px;border-radius:14px;min-width:88px;text-align:center}
-
-    .bar{height:8px;border-radius:8px;background:#0c1628;border:1px solid var(--edge);overflow:hidden;margin-bottom:16px}
-    .bar > i{display:block;height:100%;background:linear-gradient(90deg,#4d79ff,#59e2ff);width:0%}
-
-    .qcard{
-      background:var(--card); border:1px solid var(--edge); border-radius:22px; padding:18px;
-      min-height:180px;
-    }
-    .stem{white-space:pre-wrap}
-    .opts{margin-top:14px;color:var(--muted)}
-    .opts .li{display:flex;gap:.6em}
-    .optkey{color:#cfe1ff}
-
-    /* answer buttons */
-    .actions{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px}
-    .abtn{
-      border:1px solid var(--btnEdge); background:var(--btn); border-radius:16px; padding:14px 10px;
-      font-size:18px; font-weight:800; letter-spacing:.1em; text-align:center; cursor:pointer; user-select:none;
-      transition:transform .02s ease-out, background .2s;
-    }
-    .abtn:active{transform:scale(.98)}
-    .abtn.correct{background:rgba(56,208,120,.15); border-color:#2f9c62; color:var(--ok)}
-    .abtn.wrong{background:rgba(255,107,107,.14); border-color:#a04a4a; color:var(--ng)}
-
-    /* screens */
-    .hide{display:none}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITパスポート問題集</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        header {
+            background: #007BFF;
+            color: white;
+            padding: 1rem;
+            font-size: 1.5rem;
+        }
+        main {
+            padding: 1rem;
+        }
+        .question-container {
+            background: white;
+            margin: 1rem auto;
+            padding: 1rem;
+            max-width: 800px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin: 0.5rem 0;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            font-size: 1rem;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <!-- ===== Top Screen ===== -->
-    <section id="screen-top" class="panel">
-      <h1>Trainer Minimal</h1>
-      <div class="sub">まずは使うJSONデータを選んでください。</div>
-
-      <div class="form-row">
-        <select id="candidate" class="select" aria-label="候補から選ぶ">
-          <!-- ここに候補を増やしてOK（相対パスで） -->
-          <option value="data/itpassport_2025r07.json">data/itpassport_2025r07.json</option>
-        </select>
-      </div>
-
-      <div class="form-row">
-        <input id="url" class="input" type="text" placeholder="任意の JSON URL（同一ドメイン推奨）">
-        <button id="loadUrl" class="btn">URLを読み込む</button>
-      </div>
-
-      <div id="status" class="badge"><span class="dot wait"></span><span id="statLabel">未読込</span></div>
-
-      <div style="display:flex;justify-content:flex-end;margin-top:20px;">
-        <button id="startBtn" class="btn" disabled>開始（模試 120分）</button>
-      </div>
-    </section>
-
-    <!-- ===== Quiz Screen ===== -->
-    <section id="screen-quiz" class="hide">
-      <div class="hud">
-        <div class="row">
-          <span class="chip">模試</span>
-          <span id="qpos" class="chip">Q 1 / 100</span>
-          <span class="chip ok">正解 <b id="okCnt">0</b></span>
-          <span class="chip ng">不正解 <b id="ngCnt">0</b></span>
+    <header>ITパスポート問題集</header>
+    <main>
+        <div id="start-screen">
+            <h2>問題集を選択してください</h2>
+            <select id="jsonSelect">
+                <option value="">選択してください</option>
+                <option value="https://example.com/data/itpassport_manual_template_100.json">ITパスポート100問</option>
+            </select>
+            <br><br>
+            <button onclick="startQuiz()">開始</button>
         </div>
-        <div class="timer" id="timer">120:00</div>
-      </div>
-      <div class="bar"><i id="prog"></i></div>
+        <div id="quiz-container" style="display:none;">
+            <div class="question-container">
+                <div id="question"></div>
+                <ul class="options" id="options"></ul>
+                <button onclick="nextQuestion()">次へ</button>
+            </div>
+        </div>
+    </main>
 
-      <div class="qcard">
-        <div id="qtext" class="stem"></div>
-        <div id="qlist" class="opts"></div>
-      </div>
+    <script>
+        let questions = [];
+        let currentQuestionIndex = 0;
 
-      <div class="actions">
-        <div class="abtn" data-k="0">ア</div>
-        <div class="abtn" data-k="1">イ</div>
-        <div class="abtn" data-k="2">ウ</div>
-        <div class="abtn" data-k="3">エ</div>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    // ===== State =====
-    const state = {
-      data:null,
-      list:[],
-      idx:0,
-      ok:0, ng:0,
-      loadedUrl:null,
-      timerSec:120*60,
-      tick:null,
-    };
-
-    // ===== DOM =====
-    const elTop = document.querySelector('#screen-top');
-    const elQuiz = document.querySelector('#screen-quiz');
-    const candidateEl = document.querySelector('#candidate');
-    const urlEl = document.querySelector('#url');
-    const loadUrlBtn = document.querySelector('#loadUrl');
-    const startBtn = document.querySelector('#startBtn');
-    const stat = document.querySelector('#status');
-    const statLabel = document.querySelector('#statLabel');
-
-    const qpos = document.querySelector('#qpos');
-    const okCnt = document.querySelector('#okCnt');
-    const ngCnt = document.querySelector('#ngCnt');
-    const timer = document.querySelector('#timer');
-    const prog = document.querySelector('#prog');
-    const qtext = document.querySelector('#qtext');
-    const qlist = document.querySelector('#qlist');
-    const abtns = [...document.querySelectorAll('.abtn')];
-
-    // ===== Helpers =====
-    const fmtTime = s=>{
-      const m = Math.floor(s/60), ss = s%60;
-      return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-    };
-    const setBadge = (type,text)=>{
-      stat.querySelector('.dot').className='dot '+type;
-      statLabel.textContent=text;
-    };
-    const resolveUrl = (u)=>{
-      // 先頭スラッシュを外して相対に
-      return (u||'').replace(/^\//,'');
-    };
-
-    // ===== Data Loading =====
-    async function previewJson(url){
-      const path = resolveUrl(url);
-      try{
-        setBadge('wait','読み込み中…');
-        const res = await fetch(path,{cache:'no-store'});
-        if(!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-
-        // 受け入れ形式のゆるいバリデーション
-        if(!data || !(Array.isArray(data.questions))){
-          throw new Error('questions が見つかりません');
+        function startQuiz() {
+            const jsonUrl = document.getElementById("jsonSelect").value;
+            if (!jsonUrl) {
+                alert("問題集を選択してください。");
+                return;
+            }
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("データを読み込めませんでした");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    questions = data;
+                    currentQuestionIndex = 0;
+                    document.getElementById("start-screen").style.display = "none";
+                    document.getElementById("quiz-container").style.display = "block";
+                    showQuestion();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("問題データを読み込めませんでした。");
+                });
         }
-        state.data = data;
-        state.list = data.questions.slice(); // そのまま順番で
-        state.loadedUrl = path;
 
-        // UI反映
-        urlEl.value = path;
-        setBadge('ok',`読込OK：${state.list.length}問`);
-        startBtn.disabled = false;
-        // 保存（次回自動）
-        localStorage.setItem('trainer:last', path);
-      }catch(e){
-        console.error(e);
-        setBadge('err',`読込失敗：${e.message}`);
-        startBtn.disabled = true;
-        state.data = null; state.list = [];
-      }
-    }
+        function showQuestion() {
+            const questionElement = document.getElementById("question");
+            const optionsElement = document.getElementById("options");
+            optionsElement.innerHTML = "";
 
-    // ===== Quiz =====
-    function startQuiz(){
-      if(!state.data) return;
-      state.idx=0; state.ok=0; state.ng=0;
-      okCnt.textContent=0; ngCnt.textContent=0;
-      prog.style.width='0%';
-      qpos.textContent = `Q 1 / ${state.list.length}`;
-      elTop.classList.add('hide');
-      elQuiz.classList.remove('hide');
-      // timer
-      clearInterval(state.tick);
-      state.timerSec = 120*60;
-      timer.textContent = fmtTime(state.timerSec);
-      state.tick = setInterval(()=>{
-        state.timerSec--; if(state.timerSec<0){clearInterval(state.tick); return;}
-        timer.textContent = fmtTime(state.timerSec);
-      },1000);
-      render();
-    }
+            const q = questions[currentQuestionIndex];
+            questionElement.innerHTML = q.question;
 
-    function render(){
-      const q = state.list[state.idx];
-      // 本文
-      qtext.textContent = q.question || '';
-      // 選択肢も本文の下に列挙（高速解答のためボタンはア/イ/ウ/エのみ）
-      qlist.innerHTML='';
-      if(Array.isArray(q.choices)){
-        q.choices.slice(0,4).forEach((t,i)=>{
-          const row = document.createElement('div');
-          row.className='li';
-          const key = document.createElement('b');
-          key.className='optkey';
-          key.textContent = ['ア','イ','ウ','エ'][i];
-          const body = document.createElement('div');
-          body.textContent = '　' + String(t||'');
-          row.appendChild(key); row.appendChild(body);
-          qlist.appendChild(row);
-        });
-      }
-      // 状態系
-      abtns.forEach(b=>b.classList.remove('correct','wrong'));
-      qpos.textContent = `Q ${state.idx+1} / ${state.list.length}`;
-      prog.style.width = (100*(state.idx/state.list.length))+'%';
-    }
-
-    function answer(i){
-      const q = state.list[state.idx];
-      const ai = Number(q.answer_index ?? -1);
-      const isCorrect = i===ai;
-      // 色付け（正誤）
-      abtns.forEach(b=>b.classList.remove('correct','wrong'));
-      if(isCorrect){
-        abtns[i].classList.add('correct');
-        state.ok++; okCnt.textContent = state.ok;
-      }else{
-        abtns[i].classList.add('wrong');
-        if(ai>=0 && ai<abtns.length) abtns[ai].classList.add('correct');
-        state.ng++; ngCnt.textContent = state.ng;
-      }
-      // 自動次へ
-      setTimeout(()=>{
-        state.idx++;
-        if(state.idx>=state.list.length){
-          // 終了
-          clearInterval(state.tick);
-          prog.style.width='100%';
-          alert(`終了：正解 ${state.ok}／不正解 ${state.ng}`);
-          // トップへ戻す
-          elQuiz.classList.add('hide'); elTop.classList.remove('hide');
-        }else{
-          render();
+            q.options.forEach((option, index) => {
+                const li = document.createElement("li");
+                li.innerHTML = `<label><input type="radio" name="option" value="${index}"> ${option}</label>`;
+                optionsElement.appendChild(li);
+            });
         }
-      }, 420);
-    }
 
-    // ===== Events =====
-    // 4択ボタン
-    abtns.forEach(b=>{
-      b.addEventListener('click',()=>answer(Number(b.dataset.k)));
-    });
-
-    // セレクト変更 → 即読み込み
-    candidateEl.addEventListener('change',()=>{
-      previewJson(candidateEl.value);
-    });
-
-    // URL入力 → クリックで読み込み
-    loadUrlBtn.addEventListener('click',()=>{
-      const v = urlEl.value.trim();
-      if(v) previewJson(v);
-    });
-
-    // 開始
-    startBtn.addEventListener('click', startQuiz);
-
-    // 初期ロード：最後に使ったURL or 既定候補を自動読み込み
-    window.addEventListener('load',()=>{
-      const saved = localStorage.getItem('trainer:last');
-      const v = saved || candidateEl.value;
-      if(v){
-        // セレクトにも反映（候補に無い場合はそのままURL欄にだけ表示）
-        const found = [...candidateEl.options].some(o=>o.value===v);
-        if(found) candidateEl.value = v;
-        urlEl.value = v;
-        previewJson(v);
-      }
-    });
-  </script>
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                alert("終了です！");
+                location.reload();
+            }
+        }
+    </script>
 </body>
 </html>
