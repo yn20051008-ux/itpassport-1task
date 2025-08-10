@@ -317,10 +317,13 @@ function loadData(data){
     RAW = (data.questions||[]).map(q=>({...q, selected:null, result:null, seen:false}));
     const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
     $('#info').innerHTML = `総数 <strong>${RAW.length}</strong> ／ 出題可能 <strong>${full.length}</strong>`;
-    $('#go').disabled = full.length === 0;
     
+    // ボタンの有効化
     if(full.length > 0) {
+      $('#go').disabled = false;
       $('#dsTitle').textContent = `ITパスポート問題集 (${full.length}問)`;
+    } else {
+      $('#go').disabled = true;
     }
   }catch(e){
     $('#info').innerHTML = `読み込み失敗：${e.message}`;
@@ -371,8 +374,10 @@ function processFile(file) {
       const data = JSON.parse(e.target.result);
       loadData(data);
       $('#info').innerHTML += '<br><span style="color: #4caf50;">✓ ファイル読み込み完了</span>';
+      $('#go').disabled = false; // ボタンを明示的に有効化
     } catch (err) {
       alert('JSONファイルの形式が正しくありません。');
+      $('#go').disabled = true;
     }
   };
   reader.readAsText(file);
@@ -382,6 +387,7 @@ function processFile(file) {
 $('#loadSample').addEventListener('click', () => {
   loadData(SAMPLE_DATA);
   $('#info').innerHTML += '<br><span style="color: #4caf50;">✓ サンプルデータ読み込み完了</span>';
+  $('#go').disabled = false; // ボタンを有効化
 });
 
 /* ===== 開始 ===== */
@@ -553,4 +559,7 @@ function updateCounters(){ $('#ok').textContent = POOL.filter(x=>x.result===true
 function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 // 初期化
-$('#go').disabled = true;
+document.addEventListener('DOMContentLoaded', () => {
+  $('#go').disabled = true;
+  console.log('ページが読み込まれました。サンプルデータまたはJSONファイルを読み込んでください。');
+});
