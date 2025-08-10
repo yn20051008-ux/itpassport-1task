@@ -1,363 +1,278 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Trainer Minimal</title>
 <style>
   :root{
-    --bg:#0c1220;--card:#121b2e;--card2:#0f1728;--txt:#e9eefc;
-    --muted:#9fb0d6;--accent:#3b82f6;--ok:#22c55e;--ng:#f43f5e;
-    --chip:#1b2742;--btn:#19233c;--btn2:#111a30;--ring:#2a3b63;
+    --bg:#0d121a; --panel:#131a24; --panel-2:#0f1620; --txt:#e8edf4;
+    --muted:#9fb0c6; --accent:#2f6fed; --ok:#2ecc71; --ng:#ff6b6b;
+    --btn:#0f1b2b; --btn-br:#1f2a3a; --btn-txt:#b5c7e6;
+    --btn-hi:#1a2a44; --chip:#22304a;
   }
   html,body{height:100%}
-  body{
-    margin:0;background:linear-gradient(180deg,#0b1221, #0a1020 60%, #090e1c);
-    color:var(--txt);font-family: system-ui, -apple-system, Segoe UI, Roboto, "ヒラギノ角ゴ ProN", "游ゴシック", "Yu Gothic", "Noto Sans JP", sans-serif;
-  }
-  .wrap{max-width:980px;margin:0 auto;padding:24px 16px 100px}
-  .card{background:var(--card);border-radius:20px;padding:20px;border:1px solid #1f2b48;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-  h1{font-size:clamp(22px,3.8vw,40px);margin:6px 0 8px;letter-spacing:.02em}
-  .muted{color:var(--muted)}
-  .row{display:flex;gap:12px;flex-wrap:wrap}
-  .btn{appearance:none;border:1px solid #223053;background:var(--btn);color:var(--txt);
-       padding:12px 16px;border-radius:12px;font-weight:600;cursor:pointer}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","ヒラギノ角ゴ ProN W3","Noto Sans JP",Meiryo,sans-serif;-webkit-tap-highlight-color:transparent}
+  .wrap{max-width:860px;margin:0 auto;padding:24px}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border-radius:22px;padding:24px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  h1{margin:0 0 8px;font-size:28px;font-weight:700;letter-spacing:.2px}
+  .muted{color:var(--muted);font-size:12px}
+  /* トップ */
+  .form-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+  .select, .input{flex:1;min-width:260px;background:#0b1220;color:var(--txt);border:1px solid #283246;border-radius:12px;padding:12px 14px}
+  .btn{background:#17305d;border:1px solid #2d4d86;color:#e6efff;padding:12px 16px;border-radius:12px;font-weight:700;cursor:pointer}
   .btn:active{transform:translateY(1px)}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:white}
-  .btn.ghost{background:transparent}
-  .chip{display:inline-flex;align-items:center;gap:8px;background:var(--chip);color:#cfe1ff;
-        padding:8px 12px;border-radius:12px;border:1px solid #24345b}
-  .bar{height:10px;border-radius:999px;background:#182442;overflow:hidden;border:1px solid #24345b}
-  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3b82f6,#60a5fa)}
-  .stat{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .stat b.ok{color:var(--ok)} .stat b.ng{color:var(--ng)}
-  .qbox{background:var(--card2);border:1px solid #1b2846;border-radius:16px;padding:16px;line-height:1.9}
-  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  @media (max-width:680px){ .grid4{grid-template-columns:repeat(4,1fr)} }
-  .opt{background:#0f172a;border:1px solid #203055;border-radius:14px;padding:12px;text-align:center;font-weight:700;letter-spacing:.08em;cursor:pointer}
-  .opt.ok{background:rgba(34,197,94,.1);border-color:#22c55e;color:#a6f3c5}
-  .opt.wrong{background:rgba(244,63,94,.08);border-color:#f43f5e;color:#ffb9c3}
-  .titleRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-  .small{font-size:12px}
-  .select, input[type="text"], .file{
-    width:100%;max-width:520px;background:#0f172a;border:1px solid #223053;color:var(--txt);
-    border-radius:12px;padding:12px 14px
-  }
-  .grid2{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
-  @media (max-width:760px){ .grid2{grid-template-columns:1fr} }
-  dialog{border:none;border-radius:16px;background:#0f1729;color:var(--txt);padding:18px 16px}
-  dialog::backdrop{background:rgba(0,0,0,.45)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .pill{background:var(--chip);padding:8px 12px;border-radius:999px;color:#cfe0ff;font-weight:700}
+  /* ヘッダ */
+  .header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .stats{display:flex;gap:16px;align-items:center}
+  .stat{background:#131c2a;border:1px solid #23314a;border-radius:14px;padding:10px 14px;display:flex;gap:10px;align-items:center}
+  .badge{background:#1a2840;border-radius:12px;padding:8px 10px;color:#b9c9e6;font-weight:800}
+  .ok{color:var(--ok);font-weight:800}
+  .ng{color:var(--ng);font-weight:800}
+  .time{color:#cbd8f0;font-weight:800}
+  .bar{height:8px;border-radius:6px;background:#0d1a2a;overflow:hidden}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#1e90ff,#6ab7ff);width:0%}
+  /* 問題 */
+  .qcard{background:#111a27;border:1px solid #203049;border-radius:18px;padding:18px 18px;margin-top:14px}
+  .qtext{white-space:pre-wrap;line-height:1.65;font-size:16px;letter-spacing:.2px}
+  @media (max-width:420px){ .qtext{font-size:15.5px;line-height:1.6} }
+  /* 選択肢 1行4列 */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  .choice{background:var(--btn);border:1px solid var(--btn-br);border-radius:14px;padding:12px 0;text-align:center;color:var(--btn-txt);font-size:18px;font-weight:800;letter-spacing:.2em;user-select:none;touch-action:manipulation}
+  .choice:active{filter:brightness(1.1)}
+  .choice.ok{background:rgba(46,204,113,.14);border-color:#2ecc71;color:#c7f7de}
+  .choice.ng{background:rgba(255,107,107,.12);border-color:#ff6b6b;color:#ffdede}
+  /* 隠す/間 */
+  .hidden{display:none}
+  .spacer{height:8px}
 </style>
 </head>
 <body>
   <div class="wrap">
+    <!-- トップ画面 -->
+    <div id="top" class="card">
+      <h1>Trainer Minimal</h1>
+      <div class="muted">まずは使うJSONデータを選んでください。</div>
 
-    <!-- ========== Home / Top Screen ========== -->
-    <section id="home" class="card" style="display:block">
-      <h1 id="appTitle">Trainer Minimal</h1>
-      <p class="muted" id="homeSubtitle">まずは使うJSONデータを選んでください。</p>
+      <div class="form-row">
+        <select id="candidate" class="select" aria-label="候補から選ぶ">
+          <!-- 先頭スラッシュ無し（相対パス） -->
+          <option value="data/itpassport_2025r07.json">data/itpassport_2025r07.json</option>
+        </select>
+        <button class="btn" id="loadCandidate">候補を読み込む</button>
+      </div>
 
-      <div class="qbox" style="margin-top:12px">
-        <div class="grid2">
-          <div>
-            <label class="small muted">候補から選ぶ</label><br>
-            <select id="selectJson" class="select"></select>
+      <div class="form-row">
+        <input id="url" class="input" placeholder="任意の JSON URL（同一ドメイン推奨）">
+        <button class="btn" id="loadUrl">URLを読み込む</button>
+      </div>
+
+      <div class="row" style="margin-top:14px">
+        <span class="pill" id="metaTitle">未読込</span>
+        <span class="muted" id="metaCount"></span>
+      </div>
+
+      <div class="form-row" style="justify-content:flex-end;margin-top:18px">
+        <button class="btn" id="start" disabled>開始（模試 120分）</button>
+      </div>
+    </div>
+
+    <!-- 試験画面 -->
+    <div id="exam" class="hidden">
+      <div class="card">
+        <div class="header">
+          <div class="stats">
+            <div class="stat"><span class="badge">模試</span><strong id="title">Trainer Minimal</strong></div>
+            <div class="stat"><span>Q <span id="qpos">0</span>/<span id="qtotal">0</span></span></div>
+            <div class="stat"><span class="ok">正解 <span id="ok">0</span></span></div>
+            <div class="stat"><span class="ng">不正解 <span id="ng">0</span></span></div>
+            <div class="stat"><span class="time" id="time">120:00</span></div>
           </div>
-          <div>
-            <label class="small muted">任意のJSON URL（同一ドメイン推奨）</label><br>
-            <input id="inputUrl" type="text" class="select" placeholder="/data/itpassport_2025r07.json">
-          </div>
+        </div>
+        <div class="bar"><i id="bar"></i></div>
+
+        <div class="qcard">
+          <div id="qtext" class="qtext">読み込み中…</div>
         </div>
 
-        <div class="row" style="margin-top:10px;align-items:center">
-          <label class="btn ghost" style="padding:10px 12px">
-            ローカルファイル選択
-            <input id="fileInput" type="file" accept="application/json" style="display:none">
-          </label>
-          <span class="muted small" id="fileName"></span>
+        <div class="grid" style="margin-top:12px">
+          <button class="choice" data-idx="0">ア</button>
+          <button class="choice" data-idx="1">イ</button>
+          <button class="choice" data-idx="2">ウ</button>
+          <button class="choice" data-idx="3">エ</button>
         </div>
-
-        <div class="row" style="margin-top:12px">
-          <button class="btn" id="btnLoad">読み込む</button>
-          <button class="btn ghost" id="btnReload">再読込</button>
-        </div>
-
-        <div id="preview" style="display:none;margin-top:16px">
-          <span class="chip">件数プレビュー：<b id="countPreview">0</b> 問</span>
-          <span class="chip" id="titlePreview" style="display:none"></span>
-          <div class="row" style="margin-top:12px">
-            <button class="btn primary" id="btnStart">開始（模試 120分）</button>
-          </div>
-        </div>
+        <div class="spacer"></div>
       </div>
-    </section>
-
-    <!-- ========== Exam Screen ========== -->
-    <section id="exam" class="card" style="display:none">
-      <div class="titleRow">
-        <div class="chip">模試</div>
-        <div class="muted" id="examTitle">Trainer Minimal</div>
-      </div>
-
-      <div class="stat" style="margin-bottom:10px">
-        <b>Q <span id="qNow">1</span> / <span id="qTotal">0</span></b>
-        <b class="ok">正解 <span id="okCnt">0</span></b>
-        <b class="ng">不正解 <span id="ngCnt">0</span></b>
-        <span class="chip"><span id="timer">120:00</span></span>
-      </div>
-      <div class="bar"><i id="bar"></i></div>
-
-      <div class="qbox" style="margin-top:14px">
-        <div id="qText"></div>
-      </div>
-
-      <div class="grid4" style="margin-top:12px">
-        <div class="opt" data-idx="0">ア</div>
-        <div class="opt" data-idx="1">イ</div>
-        <div class="opt" data-idx="2">ウ</div>
-        <div class="opt" data-idx="3">エ</div>
-      </div>
-
-      <div id="explain" class="qbox" style="display:none;margin-top:12px"></div>
-
-      <div class="row" style="margin-top:12px;justify-content:flex-end">
-        <button class="btn" id="btnBackHome">終了してトップへ</button>
-      </div>
-    </section>
-
+    </div>
   </div>
-
-  <dialog id="dlg"><p id="dlgMsg">Message</p><div style="text-align:right"><button class="btn" id="dlgOk">OK</button></div></dialog>
 
 <script>
 (() => {
-  // ====== 設定（候補のJSON。必要に応じて増やしてください） ======
-  const DATA_CANDIDATES = [
-    {label:"/data/itpassport_2025r07.json", value:"/data/itpassport_2025r07.json"},
-    // 例: {label:"/data/itpassport_2025r04.json", value:"/data/itpassport_2025r04.json"},
-  ];
+  // ===== util =====
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s)=> Array.from(document.querySelectorAll(s));
+  const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
+  const cacheBuster = (url)=> url + (url.includes('?')?'&':'?') + '_=' + Date.now();
 
-  // ====== 要素 ======
-  const elHome = document.getElementById('home');
-  const elExam = document.getElementById('exam');
-  const sel = document.getElementById('selectJson');
-  const inpUrl = document.getElementById('inputUrl');
-  const fileInp = document.getElementById('fileInput');
-  const fileName = document.getElementById('fileName');
-  const btnLoad = document.getElementById('btnLoad');
-  const btnReload = document.getElementById('btnReload');
-  const prev = document.getElementById('preview');
-  const cntPrev = document.getElementById('countPreview');
-  const titlePreview = document.getElementById('titlePreview');
-  const btnStart = document.getElementById('btnStart');
-  const examTitle = document.getElementById('examTitle');
-
-  const qNow = document.getElementById('qNow');
-  const qTotal = document.getElementById('qTotal');
-  const okCnt = document.getElementById('okCnt');
-  const ngCnt = document.getElementById('ngCnt');
-  const bar = document.getElementById('bar');
-  const qText = document.getElementById('qText');
-  const opts = [...document.querySelectorAll('.opt')];
-  const explain = document.getElementById('explain');
-  const timerSpan = document.getElementById('timer');
-  const btnBackHome = document.getElementById('btnBackHome');
-
-  const dlg = document.getElementById('dlg');
-  const dlgMsg = document.getElementById('dlgMsg');
-  const dlgOk = document.getElementById('dlgOk');
-  dlgOk.onclick = () => dlg.close();
-
-  // ====== 状態 ======
-  let rawData = null;          // 読み込んだJSON（オブジェクト or 配列）
-  let questions = [];          // 正規化後 [{question,choices,answer_index,comment}]
-  let idx = 0, ok = 0, ng = 0;
-  let deadline = null, timerId = null;
-
-  // ====== ユーティリティ ======
-  const showError = (msg) => { dlgMsg.textContent = msg; dlg.showModal(); };
-  const cacheBuster = (url) => url + (url.includes('?')?'&':'?') + '_=' + Date.now();
-
-  function saveSource(meta){
-    localStorage.setItem('jsonSource', JSON.stringify(meta)); // {type:'url'|'file'|'inline', name, value}
-  }
-  function loadSource(){
-    try { return JSON.parse(localStorage.getItem('jsonSource')||'null'); } catch { return null; }
-  }
-
-  // ====== 初期化：候補リスト & 前回選択の復元 ======
-  function initHome(){
-    sel.innerHTML = DATA_CANDIDATES.map(x=>`<option value="${x.value}">${x.label}</option>`).join('');
-    const last = loadSource();
-    if(last){
-      if(last.type==='url'){ inpUrl.value = last.value; }
-      if(last.type==='candidate'){ sel.value = last.value; }
-      if(last.type==='file'){ fileName.textContent = last.name + '（ローカル）'; }
+  // 先頭 "/" を相対に補正（/repo/ に展開）
+  function resolveUrl(url){
+    if(!url) return url;
+    if(url.startsWith('/')){
+      const base = location.pathname.replace(/\/[^\/]*$/,'/'); // 例 /itpassport-1task/
+      return base + url.replace(/^\//,'');
     }
+    return url;
   }
 
-  // ====== JSON読み込み & 正規化 ======
-  async function loadJson(){
-    // 優先順位: ファイル選択 > URL欄 > 候補セレクト
+  function showError(msg){
+    alert(msg);
+  }
+
+  // ===== state =====
+  const state = {
+    title: 'Trainer Minimal',
+    questions: [],
+    idx: 0,
+    ok: 0,
+    ng: 0,
+    timerSec: 120*60,
+    loadedUrl: ''
+  };
+
+  // ===== top handlers =====
+  $('#loadCandidate').addEventListener('click', async ()=>{
+    const v = $('#candidate').value;
+    await previewJson(v);
+  });
+
+  $('#loadUrl').addEventListener('click', async ()=>{
+    const v = $('#url').value.trim();
+    if(!v){ showError('URLを入力してください。'); return; }
+    await previewJson(v);
+  });
+
+  $('#start').addEventListener('click', ()=>{
+    if(!state.questions.length){ showError('出題できる問題がありません。'); return; }
+    $('#top').classList.add('hidden');
+    $('#exam').classList.remove('hidden');
+    initExam();
+  });
+
+  async function previewJson(inputUrl){
     try{
-      let meta = null, data = null;
+      let url = resolveUrl(inputUrl);
+      const res = await fetch(cacheBuster(url));
+      if(!res.ok) throw new Error(`読み込み失敗：${res.status}`);
+      const data = await res.json();
 
-      if(fileInp.files && fileInp.files[0]){
-        const f = fileInp.files[0];
-        data = JSON.parse(await f.text());
-        meta = {type:'file', name:f.name, value:'localfile'};
-        saveSource(meta);
-      } else {
-        let url = (inpUrl.value || '').trim() || sel.value;
-        if(!url){ showError('JSONの場所を選択してください。'); return; }
-        // 相対パスはそのまま。キャッシュバスター付与
-        const res = await fetch(cacheBuster(url));
-        if(!res.ok){ showError(`読み込み失敗：${res.status} (${url})`); return; }
-        data = await res.json();
-        meta = {type:(inpUrl.value.trim()? 'url':'candidate'), name:url, value:url};
-        saveSource(meta);
-      }
+      // 受け入れフォーマット：{ title?, questions:[{question,choices[],answer_index}] }
+      const list = Array.isArray(data) ? data : (data.questions||[]);
+      if(!Array.isArray(list) || list.length===0) throw new Error('出題できる問題がありません。');
 
-      rawData = data;
-      questions = normalizeToQ(data);
-      if(!questions.length){ showError('出題できる問題がありません。'); return; }
+      state.title = data.title || 'Trainer Minimal';
+      state.questions = normalizeQuestions(list);
+      state.loadedUrl = url;
 
-      // プレビュー
-      cntPrev.textContent = String(questions.length);
-      const title = (data && (data.title || data.comment)) ? (data.title || data.comment) : '';
-      if(title){ titlePreview.style.display='inline-flex'; titlePreview.textContent = title; }
-      else{ titlePreview.style.display='none'; }
-      prev.style.display = 'block';
-
+      $('#metaTitle').textContent = state.title;
+      $('#metaCount').textContent = `問題数：${state.questions.length}`;
+      $('#start').disabled = false;
     }catch(e){
-      console.error(e);
-      showError('JSONの解析に失敗しました。フォーマットをご確認ください。');
+      $('#start').disabled = true;
+      $('#metaTitle').textContent = '未読込';
+      $('#metaCount').textContent = '';
+      showError(e.message || '読み込みに失敗しました。');
     }
   }
 
-  // 受け入れ可能な形に正規化
-  function normalizeToQ(data){
-    if(!data) return [];
-    let arr = [];
-    // ① {questions:[...]} 形式
-    if(Array.isArray(data.questions)) arr = data.questions;
-    // ② 配列そのもの
-    else if(Array.isArray(data)) arr = data;
-    // ③ ネストが深い場合（questions.questions）
-    else if(data.questions && Array.isArray(data.questions.questions)) arr = data.questions.questions;
-
-    // ④ 退避：choicesが文字列1本の「本文に選択肢含める型」も許容（このアプリでは本文に出す）
-    return arr.map((q,i) => {
-      let choices = q.choices;
-      if(!Array.isArray(choices) || choices.length===0){
-        // ない場合は本文から "(ア) xxx" を抽出…まではやらず、ダミー4択にする
-        choices = ["ア","イ","ウ","エ"];
-      }
-      // プレフィックス除去（【ア】など）
-      const clean = choices.map(t => String(t).replace(/^[\s【\(\[]?[ア-エ]\s*[\]】\)]?\s*/,'').trim());
-      return {
-        number: q.number ?? (i+1),
-        question: String(q.question||'').trim(),
-        choices: clean.length>=4 ? clean.slice(0,4) : (clean.concat(["","", "", ""]).slice(0,4)),
-        answer_index: Number.isInteger(q.answer_index)? q.answer_index : 0,
-        comment: q.comment || ''
-      };
-    }).filter(x => x.question && x.choices.every(s=>typeof s==='string'));
+  function normalizeQuestions(list){
+    return list.map((q, i)=>({
+      number: q.number ?? (i+1),
+      question: String(q.question || ''),
+      choices: (q.choices||[]).slice(0,4).map(String),
+      answer_index: Number.isInteger(q.answer_index) ? q.answer_index : null,
+      comment: q.comment || ''
+    })).filter(q => q.question && q.choices.length===4 && q.answer_index!==null);
   }
 
-  // ====== 試験開始 ======
-  function startExam(){
-    if(!questions.length){ showError('先に「読み込む」を押してください。'); return; }
-    // 状態初期化
-    idx=0; ok=0; ng=0;
-    okCnt.textContent='0'; ngCnt.textContent='0';
-    qTotal.textContent=String(questions.length);
-    updateBar();
-
-    // タイトル
-    const t = (rawData && (rawData.title || rawData.comment))? (rawData.title || rawData.comment) : 'Trainer Minimal';
-    examTitle.textContent = t;
-
-    // タイマー 120分
-    deadline = Date.now() + 120*60*1000;
-    if(timerId) clearInterval(timerId);
-    timerId = setInterval(tick, 500);
-    tick();
-
-    // 画面遷移
-    elHome.style.display='none';
-    elExam.style.display='block';
-
+  // ===== exam =====
+  let tHandle=null;
+  function initExam(){
+    state.idx=0; state.ok=0; state.ng=0; state.timerSec=120*60;
+    $('#title').textContent = state.title;
+    $('#qtotal').textContent = state.questions.length;
+    $('#ok').textContent = '0';
+    $('#ng').textContent = '0';
+    updateTimer(); if(tHandle) clearInterval(tHandle);
+    tHandle = setInterval(()=>{ state.timerSec=Math.max(0,state.timerSec-1); updateTimer(); },1000);
     render();
   }
 
-  function tick(){
-    const left = Math.max(0, deadline - Date.now());
-    const m = Math.floor(left/60000), s = Math.floor((left%60000)/1000);
-    timerSpan.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    if(left<=0){ clearInterval(timerId); timerId=null; }
-  }
-
-  function updateBar(){
-    const ratio = (idx)/Math.max(1,questions.length);
-    bar.style.width = (ratio*100)+'%';
+  function updateTimer(){
+    const m = Math.floor(state.timerSec/60);
+    const s = state.timerSec%60;
+    $('#time').textContent = `${m}:${s.toString().padStart(2,'0')}`;
   }
 
   function render(){
-    const q = questions[idx];
-    qNow.textContent = String(idx+1);
-    updateBar();
-    // 本文（選択肢本文も含めたい場合はここで合成）
-    const choiceLines = ['ア','イ','ウ','エ'].map((k,i)=>`${k}　${q.choices[i]||''}`).join('\n');
-    qText.textContent = `${q.question}\n\n${choiceLines}`;
-    // ボタン表記はアイウエのみ（高速押下）
-    opts.forEach(opt=>{
-      opt.classList.remove('ok','wrong');
+    const q = state.questions[state.idx];
+    if(!q){ finish(); return; }
+    $('#qpos').textContent = String(state.idx+1);
+    $('#bar').style.width = ((state.idx)/state.questions.length*100)+'%';
+    $('#qtext').textContent = formatQuestion(q);
+    // ボタン初期化
+    $$('.choice').forEach(b=>{
+      b.classList.remove('ok','ng'); b.disabled=false;
     });
-    explain.style.display='none';
-    explain.textContent='';
   }
 
-  function judge(chosen){
-    const q = questions[idx];
-    const correct = q.answer_index|0;
-    if(chosen===correct){ ok++; okCnt.textContent=String(ok); opts[chosen].classList.add('ok'); }
-    else { ng++; ngCnt.textContent=String(ng); opts[chosen].classList.add('wrong'); opts[correct].classList.add('ok'); }
-    // 解説
-    if(q.comment){ explain.style.display='block'; explain.textContent = '解説：' + q.comment; }
+  function formatQuestion(q){
+    // そのまま表示（choices は下部ボタン）
+    return q.question;
+  }
 
-    // 次へ（自動）
-    setTimeout(()=>{
-      idx++;
-      if(idx>=questions.length){
-        // 終了
-        showError(`終了：正解 ${ok} ／ 不正解 ${ng}`);
-        return;
+  $$('.choice').forEach(btn=>{
+    btn.addEventListener('click', async (ev)=>{
+      const guess = Number(btn.dataset.idx);
+      const q = state.questions[state.idx];
+      // 一旦すべて無効化
+      $$('.choice').forEach(b=>b.disabled=true);
+      // 採点
+      if(guess===q.answer_index){
+        btn.classList.add('ok'); state.ok++;
+      }else{
+        btn.classList.add('ng'); state.ng++;
       }
-      render();
-    }, 420);
-  }
+      // 正解は常に緑表示
+      const correctBtn = $$('.choice')[q.answer_index];
+      if(correctBtn) correctBtn.classList.add('ok');
 
-  // ====== イベント ======
-  btnLoad.onclick = loadJson;
-  btnReload.onclick = () => { prev.style.display='none'; loadJson(); };
-  btnStart.onclick = startExam;
-  fileInp.onchange = () => { fileName.textContent = fileInp.files[0]? fileInp.files[0].name : ''; inpUrl.value=''; };
+      $('#ok').textContent = String(state.ok);
+      $('#ng').textContent = String(state.ng);
 
-  opts.forEach(el=>{
-    el.addEventListener('click', ()=> judge(Number(el.dataset.idx)));
+      await sleep(420);
+      state.idx++;
+      if(state.idx>=state.questions.length){ finish(); } else { render(); }
+    });
   });
 
-  btnBackHome.onclick = () => {
-    elExam.style.display='none';
-    elHome.style.display='block';
-    if(timerId) clearInterval(timerId);
-  };
+  function finish(){
+    if(tHandle){ clearInterval(tHandle); tHandle=null; }
+    $('#bar').style.width='100%';
+    alert(`終了：正解 ${state.ok}／不正解 ${state.ng}`);
+    // トップへ戻す（連続反復）
+    $('#exam').classList.add('hidden');
+    $('#top').classList.remove('hidden');
+  }
 
-  // 起動
-  initHome();
-  // 自動で前回ソースを試し読み（任意）
-  // const last = loadSource(); if(last) btnLoad.click();
+  // iOS ダブルタップ拡大の誤爆を抑止（300ms内の二度押し無視）
+  let lastTouch=0;
+  document.addEventListener('touchend', (e)=>{
+    const now = Date.now();
+    if(now-lastTouch<300){ e.preventDefault(); }
+    lastTouch = now;
+  }, {passive:false});
 })();
 </script>
 </body>
