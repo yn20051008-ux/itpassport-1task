@@ -46,11 +46,14 @@ h1,h2,p{margin:0}
   padding:10px;border:1px solid #27314a;background:#151c2c;border-radius:12px;
   cursor:pointer;user-select:none;touch-action:manipulation;box-shadow:0 6px 18px rgba(0,0,0,.22);
   font-size:18px;letter-spacing:.1em;
+  /* ▼ 修正：ボタン文字色を常に白にする */
+  color: var(--text);
 }
 .opt:hover{border-color:#33415f}
 .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.12)}
 .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.12)}
-.opt[disabled]{opacity:.6;cursor:default}
+/* ▼ 修正：無効化時も白を維持 */
+.opt[disabled]{opacity:.6;cursor:default;color:var(--text)}
 
 /* floating nav */
 .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:50}
