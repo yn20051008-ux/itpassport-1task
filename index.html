@@ -82,14 +82,23 @@
       .option-grid{gap:8px}
       .optBtn{padding:10px 0}
     }
-    /* タイマーと出題数などの横並び固定 */
-.status-bar {
-  display: flex;
-  flex-wrap: nowrap !important; /* 折り返し禁止 */
-  gap: 0.5rem;
-  align-items: center;
+/* ヘッダー（正解/不正解/残り時間）を1行に固定 */
+#headerRow{
+  display:flex;
+  flex-wrap:nowrap;        /* 折り返し禁止 */
+  gap:12px;
+  align-items:center;
+  overflow:hidden;         /* まれなはみ出し対策 */
+}
+#headerRow > *{
+  white-space:nowrap;      /* 各チップを1行固定 */
+  flex:0 0 auto;           /* つぶれて縮まない */
 }
 
+/* 念のため：チップ自体も縮ませない */
+.chip{ flex:0 0 auto; }
+
+.container{ max-width:880px; margin:0 auto; padding:20px; overflow-x:hidden; }
 /* 各項目を1行固定で表示 */
 .status-bar > div {
   white-space: nowrap !important; /* 折り返し禁止 */
