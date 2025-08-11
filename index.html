@@ -1,182 +1,128 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>ITパス 練習｜シンプルクール × 反復最速</title>
-  <style>
-    :root{
-      --bg:#0b0f14;
-      --panel:#121823;
-      --panel-2:#0f1520;
-      --text:#e8eef7;
-      --muted:#9fb0c5;
-      --ok:#1fbf74;
-      --ng:#e35b5b;
-      --ring:#273244;
-      --accent:#3b82f6;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      color:var(--text);
-      background: radial-gradient(1200px 800px at 50% -200px, #172033 0%, #0b0f14 70%) no-repeat, var(--bg);
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "YuGothic", "Helvetica Neue", Arial, sans-serif;
-      letter-spacing:.2px;
-    }
-
-    .wrap{
-      min-height:100dvh;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      padding:16px clamp(12px, 3vw, 24px) max(12px, env(safe-area-inset-bottom));
-    }
-
-    /* ヘッダ（タイトル + HUD） */
-    header{display:flex; align-items:center; justify-content:space-between; gap:12px}
-    h1{
-      margin:0; font-size: clamp(16px, 4.5vw, 20px);
-      font-weight:800; letter-spacing:.4px;
-    }
-    #hud{
-      display:flex; gap:8px; align-items:center;
-    }
-    .pill{
-      padding:4px 10px; border-radius:999px; background:var(--panel);
-      border:1px solid var(--ring); font-size:12px; line-height:1; white-space:nowrap;
-    }
-    .pill.ok{ color:#c2ffe3; background:rgba(31,191,116,.12); border-color:rgba(31,191,116,.25); }
-    .pill.ng{ color:#ffe1e1; background:rgba(227,91,91,.12); border-color:rgba(227,91,91,.25); }
-    .pill.time{ color:#e1ecff; background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.25); }
-
-    /* セットアップ行（出題数 / 制限時間 / 開始） */
-    .toolbar{
-      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
-      padding:10px; background:var(--panel-2); border:1px solid var(--ring); border-radius:12px;
-    }
-    .row{display:flex; gap:8px; align-items:center;}
-    .label{font-size:14px; color:var(--muted)}
-    select, input[type="number"], button.btn{
-      background:var(--panel); color:var(--text); border:1px solid var(--ring);
-      border-radius:8px; padding:8px 10px; font-size:14px;
-    }
-    button.btn.primary{ background:var(--accent); border-color:transparent; color:#fff; font-weight:700; }
-
-    /* 本体 */
-    .stage{
-      flex:1 1 auto; display:flex; flex-direction:column; gap:12px;
-      overflow:hidden; /* スクロール無しの原則 */
-    }
-
-    /* 問題カード */
-    #card{
-      flex:1 1 auto; background:var(--panel); border:1px solid var(--ring); border-radius:14px;
-      padding:14px; display:flex; flex-direction:column; gap:8px; overflow:hidden;
-      transform-origin: top left;
-    }
-    #meta{font-size:12px; color:var(--muted); display:flex; gap:10px}
-    #question{ font-size: clamp(14px, 2.6vw, 18px); line-height:1.35; }
-
-    /* 選択文（問題カード内に出す） */
-    ol#choices{
-      margin:6px 0 0; padding-left: 1.2em;
-      display:block; gap:0;
-    }
-    #choices li{
-      margin:2px 0; font-size: clamp(13px, 2.3vw, 17px); line-height:1.3;
-    }
-
-    /* 1行4列キーパッド（あ・い・う・え） */
-    .keypad{
-      margin-top:6px;
-      display:grid; grid-template-columns:repeat(4,1fr); gap:8px;
-    }
-    .keypad button{
-      min-height:44px; border-radius:10px; font-weight:800; font-size:16px;
-      background:#1b2432; color:#fff; border:1px solid var(--ring);
-      transition: transform .03s ease;
-    }
-    .keypad button:active{ transform: translateY(1px); }
-    .keypad button.ok{ background:rgba(31,191,116,.14); border-color:rgba(31,191,116,.4); color:#d7ffe9; }
-    .keypad button.ng{ background:rgba(227,91,91,.14); border-color:rgba(227,91,91,.45); color:#ffe5e5; }
-
-    /* 終了モーダル */
-    dialog::backdrop{ background: rgba(0,0,0,.6); }
-    dialog{
-      border:1px solid var(--ring); border-radius:14px; padding:18px; background:var(--panel); color:var(--text);
-      max-width:min(520px, 92vw);
-    }
-    dialog h2{ margin:0 0 6px; font-size:18px }
-    dialog .actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px }
-    .muted{ color:var(--muted); font-size:13px }
-
-    /* 小画面の余白最適化 */
-    @media (max-width:430px){
-      .toolbar{ gap:8px; padding:8px }
-      .label{ font-size:13px }
-      select, input[type="number"], button.btn{ font-size:13px; padding:7px 8px }
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ITパスポート過去問題</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --muted:#8b93a7; --text:#e7ebf2;
+    --accent:#7bc3ff; --ok:#20d06b; --ng:#ff4d4f; --ring:#2a3040;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+  }
+  .wrap{max-width:900px; margin:32px auto; padding:0 16px}
+  .title{font-weight:800; font-size:22px; letter-spacing:.02em}
+  .panel{
+    background:linear-gradient(180deg, #171a21, #131722);
+    border:1px solid #1f2430; border-radius:18px; padding:20px 20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  .grid{display:grid; gap:16px}
+  .row{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+  .tag{padding:2px 10px; border:1px solid var(--ring); border-radius:999px; color:var(--muted)}
+  .btn{
+    background:#1b2030; color:#dfe7ff; border:1px solid #2a3040;
+    padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:700;
+  }
+  .btn:focus{outline:none; box-shadow:0 0 0 3px rgba(123,195,255,.25)}
+  .btn.primary{background:#1d2b40; border-color:#2f3f59}
+  .label{color:var(--muted); font-size:14px}
+  /* ---------- quiz ---------- */
+  .stats{display:flex; gap:12px; align-items:center}
+  .dot{width:10px; height:10px; border-radius:50%}
+  .dot.ok{background:var(--ok)} .dot.ng{background:var(--ng)}
+  .timer{font-variant-numeric:tabular-nums; font-weight:800; letter-spacing:.03em}
+  .card{background:var(--card); border:1px solid #202532; border-radius:18px; padding:18px}
+  .qtext{font-size:18px; font-weight:700}
+  .choices{display:grid; gap:12px; margin-top:14px}
+  .choice{
+    background:#121722; border:1px solid #2a3040; border-radius:14px; padding:16px;
+    cursor:pointer; transition:transform .04s ease, border-color .12s ease, background .12s ease;
+  }
+  .choice:hover{transform:translateY(-1px); border-color:#3a4661}
+  .choice.correct{border-color:var(--ok); background:rgba(32,208,107,.08)}
+  .choice.wrong{border-color:var(--ng); background:rgba(255,77,79,.08)}
+  .muted{color:var(--muted)}
+  .foot{display:flex; justify-content:space-between; align-items:center; color:var(--muted)}
+  .kbd{padding:2px 6px; border:1px solid #39425a; border-radius:6px; font-variant-numeric:tabular-nums}
+  .hidden{display:none}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>ITパス 練習｜シンプルクール × 反復最速</h1>
-      <div id="hud">
-        <div class="pill ok">正解 <span id="okCnt">0</span></div>
-        <div class="pill ng">不正解 <span id="ngCnt">0</span></div>
-        <div class="pill time">残り <span id="timeLeft">00:00</span></div>
-      </div>
-    </header>
+<div class="wrap">
+  <!-- ======= Top (設定) ======= -->
+  <section id="setup" class="panel grid">
+    <div class="title">ITパスポート過去問題</div>
 
-    <!-- セットアップ（出題数・制限時間・開始） -->
-    <div class="toolbar" id="setupBar">
-      <div class="row">
-        <div class="label">出題数：</div>
-        <input id="qCount" type="number" min="1" max="200" step="1" value="20" class="btn" />
-        <div class="label">(順番は 1→100。元データの順で出題)</div>
+    <div class="row" style="margin-top:10px">
+      <div class="label">出題数：<span id="totalQ" class="tag">0 問</span>
+        <span class="label" style="margin-left:8px">（順番は 1→100。データ順そのまま出題）</span>
       </div>
-      <div class="row">
-        <div class="label">制限時間：</div>
+    </div>
+    <div class="row">
+      <div class="label">制限時間：
         <select id="limitMin" class="btn">
-          <option value="10">10</option>
-          <option value="20" selected>20</option>
-          <option value="30">30</option>
-          <option value="45">45</option>
+          <option value="20">20</option>
+          <option value="40" selected>40</option>
           <option value="60">60</option>
           <option value="90">90</option>
           <option value="120">120</option>
-        </select>
-        <div class="label">分</div>
+        </select> 分
       </div>
-      <div class="row">
-        <button id="startBtn" class="btn primary">開始する</button>
-      </div>
+      <button id="startBtn" class="btn primary">開始する</button>
     </div>
 
-    <!-- 本体 -->
-    <main class="stage" id="stage" hidden>
-      <div id="card">
-        <div id="meta"><span id="qno"></span><span id="orig"></span></div>
-        <div id="question"></div>
-        <ol id="choices"></ol>
+    <div class="label" style="margin-top:6px">ショートカット：<span class="kbd">1–4</span> 選択 / <span class="kbd">Enter</span> 次へ（自動進行）</div>
+  </section>
 
-        <div class="keypad" id="pad">
-          <button data-idx="0" aria-label="あ">あ</button>
-          <button data-idx="1" aria-label="い">い</button>
-          <button data-idx="2" aria-label="う">う</button>
-          <button data-idx="3" aria-label="え">え</button>
-        </div>
+  <!-- ======= Quiz ======= -->
+  <section id="quiz" class="panel grid hidden" aria-live="polite">
+    <div class="row" style="justify-content:space-between">
+      <div class="stats">
+        <span class="dot ok"></span><span id="cntOk" class="tag">0</span>
+        <span class="dot ng" style="margin-left:8px"></span><span id="cntNg" class="tag">0</span>
       </div>
-    </main>
+      <div class="timer" id="timer">00:00</div>
+    </div>
 
-    <!-- データ貼付け領域（★ここに配列だけを入れる） -->
-    <script id="raw-data" type="application/json">
-   
-      [
-        {
+    <div id="qCard" class="card">
+      <div id="qNum" class="muted"></div>
+      <div id="qText" class="qtext"></div>
+      <div id="choices" class="choices"></div>
+    </div>
+
+    <div class="foot">
+      <div id="comment" class="muted"></div>
+      <div class="muted">残り <span id="remain" class="kbd">0</span> 問</div>
+    </div>
+  </section>
+
+  <!-- ======= Result ======= -->
+  <section id="result" class="panel grid hidden" aria-live="polite">
+    <div class="title">結果</div>
+    <div class="row" style="margin-top:6px">
+      <span class="tag">出題数：<span id="r_total">0</span></span>
+      <span class="tag">正解：<span id="r_ok">0</span></span>
+      <span class="tag">不正解：<span id="r_ng">0</span></span>
+      <span class="tag">正答率：<span id="r_rate">0%</span></span>
+      <span class="tag">所要時間：<span id="r_time">00:00</span></span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="againBtn" class="btn primary">もう一度</button>
+      <button id="backBtn" class="btn">トップに戻る</button>
+    </div>
+  </section>
+</div>
+
+<!-- ★ここに問題配列(JSON)を貼る -->
+<script id="raw-data" type="application/json">[
+
+   {
         "number": 1,
         "question": "A社がB社に作業の一部を請負契約で委託している。作業形態a〜cのうち、いわゆる偽装請負とみなされる状態だけを全て挙げたものはどれか。\n\na　B社の従業員が、A社内において、A社の責任者の指揮命令の下で、請負契約で取り決めた作業を行っている。\nb　B社の従業員が、A社内において、B社の責任者の指揮命令の下で、請負契約で取り決めた作業を行っている。\nc　B社の従業員が、B社内において、A社の責任者の指揮命令の下で、請負契約で取り決めた作業を行っている。",
         "choices": [
@@ -1376,237 +1322,167 @@
         "answer_index": 1,
         "comment": "データマイニング：大量データから未知のパターンや有用な知識を自動的に抽出する分析技術"
       }
-      ]
-    
-    </script>
 
-    <!-- 結果モーダル -->
-    <dialog id="resultDlg">
-      <h2>セッション終了</h2>
-      <div>正解 <b id="finOk">0</b> / 不正解 <b id="finNg">0</b></div>
-      <div class="muted" id="finMeta"></div>
-      <div class="actions">
-        <button id="againBtn" class="btn">同じ条件で再開</button>
-        <button id="resetBtn" class="btn primary">最初の画面に戻る</button>
-      </div>
-    </dialog>
+]</script>
 
-  </div>
+<script>
+(function(){
+  "use strict";
 
-  <script>
-  (function(){
-    "use strict";
+  // ---- 1) 生データ読み込み（配列必須） ----
+  const rawTag = document.getElementById("raw-data");
+  let ITEMS = [];
+  try {
+    let text = (rawTag?.textContent || "").trim();
+    // 末尾の ",]" を "]" に直す保険（本番は正しいJSONを推奨）
+    text = text.replace(/,\s*\]/g, ']');
+    if (text) ITEMS = JSON.parse(text);
+  } catch(e){
+    console.error(e);
+    alert('問題データ(JSON)の構文エラー：' + e.message);
+  }
 
-    // ---------- DOM 取得 ----------
-    const $ = sel => document.querySelector(sel);
-    const hudOk = $('#okCnt'), hudNg = $('#ngCnt'), hudTime = $('#timeLeft');
-    const setupBar = $('#setupBar'), stage = $('#stage'), pad = $('#pad');
-    const qno = $('#qno'), orig = $('#orig'), qtext = $('#question'), ol = $('#choices');
-    const dlg = $('#resultDlg'), finOk = $('#finOk'), finNg = $('#finNg'), finMeta = $('#finMeta');
+  const $ = (s)=>document.querySelector(s);
+  const setup = $("#setup");
+  const quiz = $("#quiz");
+  const result = $("#result");
 
-    // ---------- 状態 ----------
-    const state = {
-      all: [],              // 全問題
-      use: [],              // 今回使う問題配列
-      i: 0,                 // 今のインデックス
-      ok: 0, ng: 0,
-      tRemain: 0,           // 残り秒
-      tHandle: null,
-      cfg: { count: 20, limitMin: 20 }
-    };
+  const elTotal = $("#totalQ");
+  const elTimer = $("#timer");
+  const elOk = $("#cntOk");
+  const elNg = $("#cntNg");
+  const elQNum = $("#qNum");
+  const elQText = $("#qText");
+  const elChoices = $("#choices");
+  const elRemain = $("#remain");
+  const elComment = $("#comment");
 
-    // ---------- データ取得 ----------
-    function loadData(){
-      const tag = document.getElementById('raw-data');
-      const raw = tag.textContent.trim();
-      if(!raw){
-        alert('問題データがありません。<script id="raw-data"> に配列を貼ってください。');
-        throw new Error('no data');
-      }
-      try{
-        const arr = JSON.parse(raw);
-        if(!Array.isArray(arr)) throw 0;
-        // 軽いバリデーション
-        arr.forEach((q,idx)=>{
-          if(!q || typeof q !== 'object') throw new Error(`Q${idx+1}: オブジェクトではありません`);
-          if(!Array.isArray(q.choices) || q.choices.length !== 4) throw new Error(`Q${q.number||idx+1}: choices は4件が必要です`);
-          if(typeof q.answer_index !== 'number') throw new Error(`Q${q.number||idx+1}: answer_index がありません`);
-        });
-        state.all = arr;
-      }catch(e){
-        console.error(e);
-        alert('問題データ(JSON)の構文に誤りがあります。\n・先頭/末尾のカンマ禁止\n・コメント不可\n・配列 [ {...}, {...} ] だけを貼ってください。');
-        throw e;
-      }
+  const rTotal = $("#r_total"), rOk = $("#r_ok"), rNg = $("#r_ng"),
+        rRate = $("#r_rate"), rTime = $("#r_time");
+
+  // 出題数表示 or 警告
+  if(!Array.isArray(ITEMS) || ITEMS.length===0){
+    elTotal.textContent = "0 問";
+    setTimeout(()=>alert('問題データがありません。<script id="raw-data"> に配列を貼ってください。'), 100);
+  }else{
+    ITEMS.sort((a,b)=> (a.number||0) - (b.number||0)); // 1→100
+    elTotal.textContent = `${ITEMS.length} 問`;
+  }
+
+  // ---- 2) 状態 ----
+  let idx = 0, ok=0, ng=0, timerId=null, remain=ITEMS.length, endAt=0, locked=false, startAt=0;
+
+  function start(){
+    if(ITEMS.length===0) return;
+    const mins = parseInt($("#limitMin").value,10)||20;
+    startAt = Date.now();
+    endAt = startAt + mins*60*1000;
+    tick(); timerId = setInterval(tick, 250);
+
+    setup.classList.add("hidden");
+    result.classList.add("hidden");
+    quiz.classList.remove("hidden");
+
+    idx = 0; ok=0; ng=0; remain = ITEMS.length;
+    render();
+  }
+
+  function tick(){
+    const ms = Math.max(0, endAt - Date.now());
+    const s = Math.floor(ms/1000);
+    const mm = String(Math.floor(s/60)).padStart(2,"0");
+    const ss = String(s%60).padStart(2,"0");
+    elTimer.textContent = `${mm}:${ss}`;
+    if(ms<=0){ finish(); }
+  }
+
+  function finish(){
+    clearInterval(timerId); timerId=null;
+    locked = true;
+
+    // 所要時間
+    const elapsedMs = Math.max(0, Math.min(Date.now(), endAt) - startAt);
+    const s = Math.floor(elapsedMs/1000);
+    const mm = String(Math.floor(s/60)).padStart(2,"0");
+    const ss = String(s%60).padStart(2,"0");
+
+    // 結果描画
+    rTotal.textContent = ITEMS.length;
+    rOk.textContent = ok;
+    rNg.textContent = ng;
+    rRate.textContent = `${Math.round((ok/ITEMS.length)*100)}%`;
+    rTime.textContent = `${mm}:${ss}`;
+
+    // 画面切替
+    quiz.classList.add("hidden");
+    result.classList.remove("hidden");
+  }
+
+  function render(){
+    if(idx>=ITEMS.length){ finish(); return; }
+    locked=false; elComment.textContent=""; elComment.classList.add("muted");
+
+    const q = ITEMS[idx];
+    elQNum.textContent = `Q ${idx+1} / ${ITEMS.length}（元番号: ${q.number ?? "?"}）`;
+    elQText.textContent = (q.question||"").trim();
+
+    elChoices.innerHTML = "";
+    (q.choices||[]).forEach((txt, i)=>{
+      const div = document.createElement("div");
+      div.className = "choice";
+      div.dataset.idx = i;
+      div.innerHTML = `<div>${txt}</div><div class="muted" style="margin-top:6px">ショートカット：<span class="kbd">${i+1}</span></div>`;
+      div.addEventListener("click", ()=> choose(i));
+      elChoices.appendChild(div);
+    });
+
+    elOk.textContent = ok; elNg.textContent = ng;
+    remain = ITEMS.length - idx;
+    elRemain.textContent = remain;
+  }
+
+  function choose(i){
+    if(locked) return;
+    locked = true;
+
+    const q = ITEMS[idx];
+    const correct = (i === q.answer_index);
+    const nodes = [...elChoices.children];
+    nodes.forEach((n, ni)=>{
+      n.classList.add(ni===q.answer_index? "correct":"wrong");
+      n.style.cursor="default";
+    });
+
+    if(correct){ ok++; elComment.textContent = "正解"; }
+    else { ng++; elComment.textContent = `不正解`; }
+    if(q.comment){ elComment.textContent += `：${q.comment}`; }
+    elComment.classList.remove("muted");
+    elOk.textContent = ok; elNg.textContent = ng;
+
+    // 次の問題へ（高速遷移）
+    setTimeout(()=>{ idx++; render(); }, 380);
+  }
+
+  // ---- 3) イベント ----
+  $("#startBtn").addEventListener("click", start);
+  $("#againBtn").addEventListener("click", start);
+  $("#backBtn").addEventListener("click", ()=>{
+    clearInterval(timerId); timerId=null;
+    quiz.classList.add("hidden");
+    result.classList.add("hidden");
+    setup.classList.remove("hidden");
+  });
+  window.addEventListener("keydown",(e)=>{
+    if(setup.classList.contains("hidden") && !result.classList.contains("hidden")) return; // 結果表示中は無効
+
+    if(setup.classList.contains("hidden")){
+      if(e.key>='1' && e.key<='4'){
+        const n = parseInt(e.key,10)-1;
+        if(elChoices.children[n]) choose(n);
+      }else if(e.key==='Enter' && locked){ idx++; render(); }
     }
-
-    // ---------- 画面セットアップ ----------
-    function init(){
-      // 既定値
-      $('#qCount').value = state.cfg.count;
-      $('#limitMin').value = state.cfg.limitMin;
-
-      $('#startBtn').addEventListener('click', start);
-
-      // キーパッド
-      pad.addEventListener('click', (e)=>{
-        const btn = e.target.closest('button');
-        if(!btn) return;
-        answer(parseInt(btn.dataset.idx,10));
-      });
-
-      // キーショートカット（表示は出さない）
-      window.addEventListener('keydown', (e)=>{
-        const m = {'1':0,'2':1,'3':2,'4':3}[e.key];
-        if(m!=null){ e.preventDefault(); answer(m); }
-        else if(e.key === 'Enter'){ e.preventDefault(); next(); }
-      });
-
-      // モーダルボタン
-      $('#againBtn').addEventListener('click', ()=>{ dlg.close(); restartSame(); });
-      $('#resetBtn').addEventListener('click', ()=>{ dlg.close(); hardReset(); });
-    }
-
-    // ---------- 開始 / 再開 ----------
-    function start(){
-      try{ if(state.all.length===0) loadData(); }catch{ return; }
-
-      const cnt = clamp(parseInt($('#qCount').value,10)||1, 1, state.all.length);
-      const lm  = parseInt($('#limitMin').value,10)||20;
-
-      state.cfg.count = cnt; state.cfg.limitMin = lm;
-
-      // 使用する問題（順番は元データのまま）
-      state.use = state.all.slice(0, cnt);
-      state.i = 0; state.ok = 0; state.ng = 0;
-      hudOk.textContent = '0'; hudNg.textContent = '0';
-
-      // タイマー
-      if(state.tHandle) clearInterval(state.tHandle);
-      state.tRemain = lm*60;
-      tick(); // 1回即時更新
-      state.tHandle = setInterval(()=>{
-        state.tRemain--;
-        tick();
-        if(state.tRemain<=0){ finish('時間切れ'); }
-      }, 1000);
-
-      setupBar.hidden = true;
-      stage.hidden = false;
-
-      render();
-    }
-
-    function restartSame(){
-      // 同じ設定・同じ先頭から
-      state.i = 0; state.ok = 0; state.ng = 0;
-      hudOk.textContent = '0'; hudNg.textContent = '0';
-
-      if(state.tHandle) clearInterval(state.tHandle);
-      state.tRemain = state.cfg.limitMin*60;
-      tick();
-      state.tHandle = setInterval(()=>{
-        state.tRemain--;
-        tick();
-        if(state.tRemain<=0){ finish('時間切れ'); }
-      }, 1000);
-
-      setupBar.hidden = true;
-      stage.hidden = false;
-
-      render();
-    }
-
-    function hardReset(){
-      if(state.tHandle) clearInterval(state.tHandle);
-      setupBar.hidden = false;
-      stage.hidden = true;
-    }
-
-    // ---------- 表示 ----------
-    function render(){
-      const q = state.use[state.i];
-      if(!q){ finish(); return; }
-
-      qno.textContent  = `Q ${state.i+1} / ${state.use.length}`;
-      orig.textContent = `(元番号: ${q.number ?? '—'})`;
-      qtext.textContent = q.question;
-
-      // 選択文（カード内）
-      ol.innerHTML = '';
-      q.choices.forEach((t)=> {
-        const li = document.createElement('li');
-        li.textContent = t;
-        ol.appendChild(li);
-      });
-
-      // キーパッドの色リセット
-      pad.querySelectorAll('button').forEach(b=>{ b.classList.remove('ok','ng'); b.disabled=false; });
-
-      // はみ出し時の自動縮小（スクロール禁止のため）
-      fitCard();
-    }
-
-    // はみ出していたら少し縮小してカード内に収める
-    function fitCard(){
-      const card = document.getElementById('card');
-      card.style.transform = 'scale(1)';
-      let scale = 1, min = 0.84, step = 0.02;
-      const tooTall = ()=> card.scrollHeight > card.clientHeight;
-      let guard=0;
-      while(tooTall() && scale>min && guard<20){
-        scale -= step; guard++;
-        card.style.transform = `scale(${scale})`;
-      }
-    }
-
-    // ---------- 回答処理 ----------
-    function answer(idx){
-      const q = state.use[state.i]; if(!q) return;
-      const ok = (idx === q.answer_index);
-      const b = pad.querySelector(`button[data-idx="${idx}"]`);
-      b.classList.add(ok ? 'ok':'ng');
-
-      pad.querySelectorAll('button').forEach(x=>x.disabled=true);
-
-      if(ok){ state.ok++; hudOk.textContent = state.ok; }
-      else  { state.ng++; hudNg.textContent = state.ng; }
-
-      setTimeout(next, 220);
-    }
-
-    function next(){
-      state.i++;
-      if(state.i >= state.use.length){ finish(); }
-      else { render(); }
-    }
-
-    // ---------- タイマー表示 ----------
-    function tick(){
-      hudTime.textContent = toMinSec(state.tRemain);
-    }
-    function toMinSec(sec){
-      const m = Math.floor(sec/60).toString().padStart(2,'0');
-      const s = Math.floor(sec%60).toString().padStart(2,'0');
-      return `${m}:${s}`;
-    }
-
-    // ---------- 終了 ----------
-    function finish(reason=''){
-      if(state.tHandle) { clearInterval(state.tHandle); state.tHandle=null; }
-      finOk.textContent = state.ok;
-      finNg.textContent = state.ng;
-      const done = `${state.use.length}問 / 経過 ${toMinSec(state.cfg.limitMin*60 - state.tRemain)}` + (reason?`（${reason}）`:'');
-      finMeta.textContent = done;
-      dlg.showModal();
-    }
-
-    // ---------- ユーティリティ ----------
-    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
-
-    // ---------- 起動 ----------
-    init();
-  })();
-  </script>
+  });
+})();
+</script>
 </body>
 </html>
