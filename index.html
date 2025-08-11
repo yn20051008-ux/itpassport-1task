@@ -82,6 +82,19 @@
       .option-grid{gap:8px}
       .optBtn{padding:10px 0}
     }
+    /* タイマーと出題数などの横並び固定 */
+.status-bar {
+  display: flex;
+  flex-wrap: nowrap !important; /* 折り返し禁止 */
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* 各項目を1行固定で表示 */
+.status-bar > div {
+  white-space: nowrap !important; /* 折り返し禁止 */
+  min-width: fit-content;
+}
   </style>
 </head>
 <body>
