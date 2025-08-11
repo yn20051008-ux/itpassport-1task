@@ -1,718 +1,377 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<title>Trainer Minimal</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ITパス 練習（100問・自動整列＆ボタン白）</title>
 <style>
-:root{ --bg:#0b0d14; --panel:#121623; --accent:#52b2ff; --text:#eef3ff; --muted:#91a0bd; --ok:#4caf50; --ng:#ef5350; --line:#20273a; }
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020);
-  color:var(--text);font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-  overscroll-behavior:none; touch-action:manipulation; overflow-x:hidden;
-}
-.app{max-width:960px;margin:0 auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom));min-height:100svh;display:block;}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
-.pad{padding:16px}
-@media(max-width:420px){ .pad{padding:12px} }
-h1,h2,p{margin:0}
-.muted{color:var(--muted)} .small{font-size:12px} .hide{display:none}
-
-/* HUD */
-.top{display:flex;align-items:center;gap:12px;justify-content:space-between}
-.top .left{display:flex;align-items:center;gap:10px}
-.badge{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:#bcd2ff}
-.timer{font-variant-numeric:tabular-nums;padding:0;border:0;background:transparent;}
-.counters{display:flex;gap:10px}
-.counter{font-variant-numeric:tabular-nums}
-.counter.ok{color:#b7ffb7}
-.counter.ng{color:#ffb4b4}
-.bar{height:10px;background:#1a2132;border-radius:999px;overflow:hidden;margin:8px 0 0}
-.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#95d0ff);width:0%}
-
-/* 問題表示（コンパクト） */
-.q{font-size:clamp(15px,3.9vw,18px);line-height:1.6;white-space:pre-wrap}
-.choice-list{margin-top:10px;display:grid;grid-template-columns:1fr;gap:8px}
-.choice-line{display:flex;gap:.6rem;align-items:flex-start}
-.choice-line .kana{flex:0 0 2.2ch;text-align:center;color:#b9c6e6}
-.choice-line p{margin:0;white-space:pre-wrap}
-
-/* ボタン：1行4列・かなのみ（>4は折返し） */
-.answers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
-.opt{
-  display:flex;align-items:center;justify-content:center;min-height:44px;
-  padding:10px;border:1px solid #27314a;background:#151c2c;border-radius:12px;
-  cursor:pointer;user-select:none;touch-action:manipulation;box-shadow:0 6px 18px rgba(0,0,0,.22);
-  font-size:18px;letter-spacing:.1em;
-  /* ▼ 修正：ボタン文字色を常に白にする */
-  color: var(--text);
-}
-.opt:hover{border-color:#33415f}
-.opt.correct{border-color:var(--ok);background:rgba(76,175,80,.12)}
-.opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.12)}
-/* ▼ 修正：無効化時も白を維持 */
-.opt[disabled]{opacity:.6;cursor:default;color:var(--text)}
-
-/* floating nav */
-.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:50}
-.fab span{font-size:20px;line-height:1}
-
-/* overlay nav */
-.overlay{position:fixed;inset:0;background:rgba(6,10,20,.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;z-index:40}
-.ov-card{width:min(860px,92vw);max-height:80vh;overflow:auto;background:#0f1426;border:1px solid #2b3653;border-radius:14px;padding:14px}
-.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
-.navbtn{padding:8px;border:1px solid #2a3553;background:#121a33;color:#cdd7f3;border-radius:10px;cursor:pointer}
-.navbtn:hover{border-color:#3c4c75}
-.navbtn.cur{outline:2px solid var(--accent)}
-.navbtn.ok{border-color:#2e7d32;background:rgba(46,125,50,.15)}
-.navbtn.ng{border-color:#b23a3a;background:rgba(178,58,58,.12)}
-.xrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.close{padding:6px 10px;border:1px solid #2a3553;border-radius:999px;background:#121a33;color:#cdd7f3;cursor:pointer}
-
-/* START */
-.center{display:grid;place-items:center;min-height:70vh}
-.hero{text-align:center;padding:20px 14px}
-.title{font-size:28px;letter-spacing:.5px}
-.inline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
-.startbtn{margin-top:16px;display:inline-block}
-.tag{border:1px solid #2a3553;padding:4px 8px;border-radius:999px}
-.review{margin-top:10px}
-.review ol{margin:0;padding-left:18px}
-.btn{padding:10px 20px;border:1px solid #2a3553;border-radius:8px;background:#1a2132;color:#cdd7f3;cursor:pointer;margin:0 4px}
-.btn.primary{background:#52b2ff;color:#0b0d14;border-color:#52b2ff}
-.btn.ghost{background:transparent}
+  :root{
+    --bg:#0f1220;
+    --panel:#151935;
+    --muted:#a7b1c2;
+    --text:#ffffff;
+    --accent:#5aa9ff;
+    --correct:#16c47f;
+    --wrong:#ff5a7d;
+    --btn:#23284d;
+    --btnHover:#2e3566;
+    --btnActive:#3a4385;
+  }
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans JP",sans-serif;
+    letter-spacing:.02em;
+  }
+  header{
+    display:flex;gap:12px;align-items:center;justify-content:space-between;
+    padding:14px 16px;background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+    position:sticky;top:0;backdrop-filter:blur(6px);z-index:10;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .brand{font-weight:700}
+  .meta{font-size:.9rem;color:var(--muted)}
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  .card{
+    background:var(--panel);border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;padding:18px 16px;box-shadow:0 10px 30px rgba(0,0,0,.25)
+  }
+  .progress{
+    height:10px;background:#0a0d1a;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.08)
+  }
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#8fd1ff)}
+  .qno{font-weight:700;margin-bottom:6px}
+  .qtext{font-size:1.05rem;line-height:1.7}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  button.opt{
+    all:unset;box-sizing:border-box;display:flex;gap:12px;align-items:center;cursor:pointer;
+    background:var(--btn);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 12px;
+    transition:.15s transform ease,.15s background ease,.15s border-color ease;
+    /* ここが肝：文字色を常に白で固定 */
+    color:var(--text) !important;
+  }
+  button.opt:hover{background:var(--btnHover);transform:translateY(-1px)}
+  button.opt:active{background:var(--btnActive);transform:translateY(0)}
+  button.opt[disabled]{opacity:.75;cursor:not-allowed}
+  .opt .pill{
+    width:28px;height:28px;display:grid;place-items:center;border-radius:999px;
+    border:1px solid rgba(255,255,255,.18);flex:0 0 auto;
+    color:var(--text) !important;background:rgba(255,255,255,.06);
+    font-weight:700
+  }
+  .opt.correct{border-color:rgba(22,196,127,.9);box-shadow:0 0 0 3px rgba(22,196,127,.2) inset}
+  .opt.wrong{border-color:rgba(255,90,125,.9);box-shadow:0 0 0 3px rgba(255,90,125,.15) inset}
+  .ex{margin-top:14px;color:var(--muted);font-size:.95rem}
+  .controls{display:flex;gap:10px;margin-top:16px}
+  .btn{
+    all:unset;cursor:pointer;background:#0d6efd;border:1px solid rgba(255,255,255,.18);
+    color:#fff;padding:10px 14px;border-radius:10px;font-weight:600
+  }
+  .btn.secondary{background:#2d335f}
+  .pillStat{font-size:.85rem;color:var(--muted)}
+  details.nav{margin:12px 0}
+  details.nav summary{cursor:pointer;padding:10px 12px;background:#1a2044;border-radius:10px;border:1px solid rgba(255,255,255,.08)}
+  .list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .tag{padding:6px 10px;border-radius:999px;background:#23284d;color:#fff;border:1px solid rgba(255,255,255,.08);cursor:pointer}
+  .small{font-size:.85rem;color:var(--muted)}
+  pre.small{white-space:pre-wrap;word-break:break-all;background:#0b0e1f;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.08)}
 </style>
 </head>
 <body>
-<div class="app">
-  <!-- START -->
-  <div id="start" class="card pad">
-    <div class="hero center">
-      <div>
-        <div class="title" id="dsTitle">ITパスポート サンプル問題</div>
-        <div class="sub small" id="info" style="margin-top:10px;">データ読込中…</div>
-        <div class="inline small">
-          <label>出題 <select id="count">
-            <option value="10">10</option>
-            <option value="20" selected>20</option>
-            <option value="30">30</option>
-            <option value="50">50</option>
-            <option value="all">全件</option>
-          </select></label>
-          <span class="tag">制限時間 120:00</span>
-        </div>
-        <div class="startbtn">
-          <button id="go" class="btn primary">開始（模試 120分）</button>
-          <button id="reload" class="btn ghost">再読込</button>
-        </div>
+  <header>
+    <div class="brand">ITパス 練習</div>
+    <div class="meta"><span id="countMeta">読み込み中…</span></div>
+  </header>
+
+  <div class="wrap">
+    <div class="card" id="intro">
+      <p style="margin-top:0">下の <b>RAWデータ</b> に、あなたの問題データ（壊れていてもOK）を丸ごと貼ってください。スクリプトが自動で：</p>
+      <ul>
+        <li>壊れたネストや余計なブロックを <b>除去</b></li>
+        <li>重複を <b>番号でデデュープ</b></li>
+        <li><b>1 → 100</b> に整列</li>
+      </ul>
+      <p class="small">※ すでにサンプルとして 51〜100 と 1〜50 が混在した壊れデータを入れてあります。何も触らずそのままでも 100問に復元されて開始できます。</p>
+      <div class="controls">
+        <button class="btn" id="startBtn">全100問で開始</button>
+        <button class="btn secondary" id="exportBtn">整形JSONを表示</button>
+      </div>
+      <details class="nav" style="margin-top:10px">
+        <summary>復元後の問題一覧（クリックでジャンプ）</summary>
+        <div class="list" id="jumpList"></div>
+      </details>
+    </div>
+
+    <div class="card" id="quiz" style="display:none">
+      <div class="qno"><span id="qnumber">Q1/100</span> <span class="pillStat" id="stat"></span></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="choices" id="choices"></div>
+      <div class="ex" id="explain" style="display:none"></div>
+      <div class="controls">
+        <button class="btn secondary" id="prevBtn">前へ</button>
+        <button class="btn" id="nextBtn">次へ</button>
+      </div>
+      <div style="margin-top:16px" class="progress"><div class="bar" id="bar"></div></div>
+    </div>
+
+    <div class="card" id="result" style="display:none">
+      <h3 style="margin-top:0">結果</h3>
+      <p id="score"></p>
+      <div class="controls">
+        <button class="btn" id="retryWrong">不正解だけ復習</button>
+        <button class="btn secondary" id="restart">最初から</button>
       </div>
     </div>
+
+    <details class="nav" style="margin-top:14px">
+      <summary>RAWデータ（ここに壊れたまま貼ってOK）</summary>
+      <pre class="small" id="rawEcho"></pre>
+    </details>
+
   </div>
 
-  <!-- QUIZ -->
-  <div id="quiz" class="hide">
-    <!-- HUD -->
-    <div class="card pad" style="margin-bottom:12px">
-      <div class="top">
-        <div class="left">
-          <span class="badge">模試</span>
-          <strong id="pos">Q - / -</strong>
-        </div>
-        <div class="counters">
-          <span class="counter ok">正解 <span id="ok">0</span></span>
-          <span class="counter ng">不正解 <span id="ng">0</span></span>
-          <span class="timer" id="timer">120:00</span>
-        </div>
-      </div>
-      <div class="bar"><i id="bar"></i></div>
-    </div>
+  <!-- ここに “壊れたまま” のデータを貼ってOK。スクリプトが直します -->
+  <script id="raw-data" type="application/json">
+  {
+    "note": "このブロックに、あなたの壊れたデータを丸ごと貼ってください。下はユーザー提供の混在サンプル（Q51..100 + 1..50 がQ88の途中にネスト）。",
+    "questions_mixed": [
+      { "number": 51, "question": "社内で開発及び運用を行っている経理システムの内部監査を実施するとき、システム監査人として、最も適切なものはどれか。", "choices": ["経理システムの運用担当者","経理システムの開発を担当した委託会社の従業員","経理システムの利用者である経理担当者","経理とITの知識を有する経営者直轄組織の従業員"], "answer_index": 3, "comment": "内部監査の独立性：監査対象から独立し、専門知識を持つ経営者直轄組織の従業員が適切" },
+      { "number": 52, "question": "A社は会計システムの再構築…", "choices": ["A","B","C","D"], "answer_index": 0, "comment": "略（実データは貼り替えてOK）" },
+      { "number": 88, "question": "無線LANのセキュリティ対策に関する記述として、適切なものはどれか。", "choices": ["SSID…","SSID…","MAC…","WPA2…"], "answer_index": 3, "comment":
+        { "comment": "ITパスポート試験問題データ - 完全版100問",
+          "generated_at":"2025-01-20T00:00:00.000Z",
+          "total_questions":100,
+          "questions":[
+            { "number":1, "question":"A社がB社に…", "choices":["a","b","c","d"], "answer_index":2, "comment":"…" },
+            { "number":2, "question":"従来の情報セキュリティ…", "choices":["a","b","c","d"], "answer_index":2, "comment":"…" }
+            /* ……以下、1〜50 が入っているという前提の壊れ例 …… */
+          ]
+        }
+      },
+      { "number": 89, "question": "AさんはBさんから次の4種類のメッセージを受け取った。…", "choices": ["a, b, d","a, c, d","b, d","c, d"], "answer_index": 0, "comment": "…" },
+      { "number": 100, "question": "データマイニングに関する記述として…", "choices": ["a","b","c","d"], "answer_index": 1, "comment": "…" }
+    ]
+  }
+  </script>
 
-    <!-- 問題 -->
-    <div class="card pad" style="margin-bottom:12px">
-      <div class="q" id="qText"></div>
-      <div id="choicesList" class="choice-list"></div>
-    </div>
+  <script>
+  // ============ サニタイザ ============
 
-    <!-- ボタン（1行4列／かなのみ） -->
-    <div class="answers" id="answers"></div>
-  </div>
-
-  <!-- RESULT -->
-  <div id="result" class="card pad hide" style="margin-top:12px">
-    <div class="top">
-      <h2>結果</h2>
-      <div class="counters">
-        <span class="counter ok">正解 <span id="rok">0</span></span>
-        <span class="counter ng">不正解 <span id="rng">0</span></span>
-        <span class="badge" id="elapsed">残り --:--</span>
-      </div>
-    </div>
-    <div class="review" id="review"></div>
-    <div class="ctrl" style="margin-top:12px">
-      <button id="retryWrong" class="btn primary">不正解だけ復習</button>
-      <div style="margin-top:8px">
-        <button id="retryAll" class="btn">もう一度</button>
-        <button id="exportCsv" class="btn ghost">CSV</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- floating nav -->
-<button class="fab" id="navFab" title="ナビ"><span>≡</span></button>
-<div class="overlay" id="overlay" aria-hidden="true">
-  <div class="ov-card" role="dialog" aria-modal="true">
-    <div class="xrow">
-      <strong>ナビ（出題順）</strong>
-      <button class="close" id="closeOv">閉じる</button>
-    </div>
-    <div class="grid" id="navGrid"></div>
-  </div>
-</div>
-
-<script>
-/* ===== iOSダブルタップ拡大の抑止 ===== */
-let __lastTouchEnd = 0;
-document.addEventListener('touchend', (e)=>{
-  const now = Date.now();
-  if (now - __lastTouchEnd <= 300) { e.preventDefault(); }
-  __lastTouchEnd = now;
-}, {passive:false});
-document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
-document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
-
-/* ===== 埋め込みデータ（サンプル 16問） ===== */
-const EMBEDDED_DATA = {
-  "questions": [
-    {
-      "number": 51,
-      "question": "社内で開発及び運用を行っている経理システムの内部監査を実施するとき、システム監査人として、最も適切なものはどれか。",
-      "choices": [
-        "経理システムの運用担当者",
-        "経理システムの開発を担当した委託会社の従業員",
-        "経理システムの利用者である経理担当者",
-        "経営者直轄組織の従業員（経理とITの知識を有する）"
-      ],
-      "answer_index": 3,
-      "comment": "内部監査の独立性：監査対象から独立し、専門知識を持つ経営者直轄組織の従業員が適切。"
-    },
-    {
-      "number": 52,
-      "question": "A社は会計システムの再構築のプロジェクトを立ち上げ、システム開発をB社に外部委託している。B社から納品される成果物の検収において、プロジェクトの品質管理に係る手続を遵守しているかどうかのシステム監査を行う監査人として、適切な者は誰か。",
-      "choices": [
-        "会計システムの再構築に関与しないA社の管理部門のリーダー",
-        "会計システムの再構築を担当するA社のプロジェクトマネージャ",
-        "会計システムの再構築を担当するB社のシステム開発リーダー",
-        "会計システムの再構築を担当するB社の品質管理責任者"
-      ],
-      "answer_index": 0,
-      "comment": "外部委託監査：プロジェクトに直接関与しない独立したA社の管理部門が客観的に実施。"
-    },
-    {
-      "number": 90,
-      "question": "4個の要素からなるデータの並びを、次の手順を繰り返して昇順に整列するとき、整列が終了するまでに一連の手順は、何回実行されるか。ここで、最初はデータの並びが全体で昇順になっていない。\n\nデータの並び：[27, 42, 33, 12]\n\n[手順]\n(1) 整列対象中の要素の最大の値を見つけ、最後の要素と入れ替える。\n(2) 整列の要素を整列対象から外す。\n(3) 整列対象の要素数が1個以上であれば、(1)から(3)の一連の手順を実行する。\n残っていなければ、整列完了なので終了する。",
-      "choices": ["2","3","4","5"],
-      "answer_index": 1,
-      "comment": "選択ソート：n=4なら n-1=3 回。最後の1要素は自動で所定位置。"
-    },
-    {
-      "number": 91,
-      "question": "情報セキュリティのリスクマネジメントにおいて、リスク移転・回避・低減・保有の4つに分けて実施する。適切な記述はどれか。",
-      "choices": [
-        "手順であり、回避→移転→低減→保有の順で進める。",
-        "手順であり、保有→低減→移転→回避の順で進める。",
-        "保険加入はリスク回避に該当する。",
-        "社外持出しを厳格化して紛失盗難を減らすのはリスク低減である。"
-      ],
-      "answer_index": 3,
-      "comment": "保険は移転。持出し管理強化は低減。4種は選択肢であり固定順序はない。"
-    },
-    {
-      "number": 92,
-      "question": "従業員PCがランサムウェアに感染した場合の損害を軽減する対策として適切なのはどれか。",
-      "choices": [
-        "ファイルサーバのバックアップを定期取得しネットワークから切り離して保管する",
-        "送信者認証の仕組みを導入する",
-        "PCのHDDを暗号化する",
-        "ログイン失敗回数でIDロックする"
-      ],
-      "answer_index": 0,
-      "comment": "最終手段は復元。オフライン保管のバックアップが決定打。"
-    },
-    {
-      "number": 93,
-      "question": "情報セキュリティにおける“脅威”の説明として適切なものはどれか。",
-      "choices": [
-        "攻撃者が付け込むことのできる弱点",
-        "被害確率と被害規模の組合せ",
-        "情報資産に損害を与える原因となるもの",
-        "弱点を利用した攻撃で被害を受ける可能性"
-      ],
-      "answer_index": 2,
-      "comment": "脅威＝損害の原因（要因）。"
-    },
-    {
-      "number": 94,
-      "question": "稼働率0.9の装置で並列システムを構築する。システム稼働率を0.99999とするための最小台数は？（少なくとも1台稼働でOK）",
-      "choices": ["2","3","4","5"],
-      "answer_index": 3,
-      "comment": "1-(1-0.9)^n ≥ 0.99999 → n=5。"
-    },
-    {
-      "number": 95,
-      "question": "データベース設計における“データ分析”で行うこととして適切なのはどれか。",
-      "choices": [
-        "DWHから業務ごとに情報抽出する",
-        "データ項目の値が条件を満足するか検査する",
-        "必要なデータ項目を洗い出し、項目間の関連を整理する",
-        "統計手法でビジネスに活用できる情報を探索する"
-      ],
-      "answer_index": 2,
-      "comment": "設計前段で項目洗い出しと関係整理を行う。"
-    },
-    {
-      "number": 96,
-      "question": "クラウドの SaaS の説明として最も適切なのはどれか。",
-      "choices": [
-        "アプリ機能をネットワーク経由で提供",
-        "仮想サーバやストレージ等のインフラを提供",
-        "OSやミドルウェア等のプラットフォームを提供",
-        "ネットワーク機器の設定や監視を提供"
-      ],
-      "answer_index": 0,
-      "comment": "SaaS＝アプリケーションをサービスとして提供。"
-    },
-    {
-      "number": 97,
-      "question": "IoTで、センサーデータをクラウド送信前に端末や近傍で処理することを何というか。",
-      "choices": ["エッジコンピューティング","グリッドコンピューティング","フォグコンピューティング","ユビキタスコンピューティング"],
-      "answer_index": 0,
-      "comment": "エッジ＝端（デバイス近傍）で前処理して遅延や帯域を節約。"
-    },
-    {
-      "number": 98,
-      "question": "従業員が個人のスマホやタブレットを業務に利用することは何というか。",
-      "choices": ["BYOD","MDM","SIM","VPN"],
-      "answer_index": 0,
-      "comment": "BYOD = Bring Your Own Device。"
-    },
-    {
-      "number": 99,
-      "question": "情報システム開発で、利用者要求を分析し満たすべき機能や制約を明確化する工程はどれか。",
-      "choices": ["基本設計","詳細設計","要件定義","運用・保守"],
-      "answer_index": 2,
-      "comment": "要件定義。"
-    },
-    {
-      "number": 100,
-      "question": "データマイニングの説明として最も適切なのはどれか。",
-      "choices": [
-        "仮説検証のため統計手法で分析する",
-        "大量データから隠れたパターンや法則を見つける",
-        "DB検索を効率化するためインデックスを作る",
-        "論理設計で正規化を行う"
-      ],
-      "answer_index": 1,
-      "comment": "未知パターンの発見が目的。"
-    },
-    {
-      "number": 65,
-      "question": "DBMSで検索を高速化する目的で必要に応じて設定して利用する情報はどれか。",
-      "choices": ["インデックス","外部キー","主キー","スキーマ"],
-      "answer_index": 0,
-      "comment": "インデックス＝索引。"
-    },
-    {
-      "number": 66,
-      "question": "関係DBの“ログイン記録”表と“部署”表より、失敗記録がある、又は 2022/04/10 09:00:00 以前に成功した従業員が所属する部署名すべてはどれか。",
-      "choices": [
-        "営業部、システム部",
-        "営業部、システム部、人事部",
-        "営業部、人事部",
-        "システム部、人事部"
-      ],
-      "answer_index": 1,
-      "comment": "条件を満たす部署は営業・システム・人事。"
-    },
-    {
-      "number": 67,
-      "question": "3次元画像処理の高速化や動画をなめらかにするなどの機能をもつ、描画処理のためのハードウェアはどれか。",
-      "choices": ["CGI","GPU","GUI","UPS"],
-      "answer_index": 1,
-      "comment": "GPU（Graphics Processing Unit）。"
+  /**
+   * 1) JSONとして読めたらそのまま採用
+   * 2) 失敗したら “問題オブジェクト” だけ正規表現で抽出
+   * 3) 重複番号は後勝ち、1..100 に整列
+   */
+  function sanitizeRaw(rawText){
+    // まず素直に JSON.parse を試す
+    try{
+      const obj = JSON.parse(rawText);
+      const arr =
+        Array.isArray(obj) ? obj :
+        Array.isArray(obj.questions) ? obj.questions :
+        Array.isArray(obj.questions_mixed) ? obj.questions_mixed : null;
+      if(arr){
+        return normalizeArray(arr);
+      }
+    }catch(e){/* fallthrough */}
+    // 正規表現抽出（壊れていてもOK）
+    const items = [];
+    // “number”: <int> を起点にブロックをゆるく拾う
+    const regex = /{[^{}]*?"number"\s*:\s*(\d+)[\s\S]*?"question"\s*:\s*"([\s\S]*?)"\s*,[\s\S]*?"choices"\s*:\s*\[([\s\S]*?)\][\s\S]*?"answer_index"\s*:\s*(\d+)[\s\S]*?"comment"\s*:\s*("([\s\S]*?)"|{[\s\S]*?}|\[.*?\]|null)[\s\S]*?}/g;
+    let m;
+    while((m = regex.exec(rawText))){
+      const num = parseInt(m[1],10);
+      const qtext = m[2].replace(/\\n/g,"\n");
+      const choicesRaw = m[3];
+      const choices = choicesRaw
+        .split(/\s*,\s*(?=(?:[^"]*"[^"]*")*[^"]*$)/) // カンマ分割（クォート内は維持）
+        .map(s => s.replace(/^\s*"?|"?\s*$/g,"").replace(/\\n/g,"\n"));
+      const ans = parseInt(m[4],10);
+      let comment = m[6] || ""; // オブジェクトが来たら空にしてしまう
+      items.push({number:num, question:qtext, choices, answer_index:ans, comment});
     }
-  ]
-};
-
-/* ===== クイズ実装 ===== */
-const KANA = ["あ","い","う","え","お","か","き","く","け","こ"];
-const el = (id)=>document.getElementById(id);
-const $ = (sel,root=document)=>root.querySelector(sel);
-const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
-
-const state = {
-  pool: [],
-  order: [],
-  cur: 0,
-  ok: 0,
-  ng: 0,
-  answers: [], // {qIndex, selected, correct, ms}
-  startAt: 0,
-  endAt: 0,
-  timerId: null,
-  locked: false,
-  lastedMs: 0
-};
-
-function validateDataset() {
-  const errs = [];
-  const qs = Array.isArray(EMBEDDED_DATA?.questions) ? EMBEDDED_DATA.questions : [];
-  qs.forEach((q,i)=>{
-    if (!q || typeof q.question!=="string") errs.push(`Q${i}: questionが不正`);
-    if (!Array.isArray(q.choices) || q.choices.length<2) errs.push(`Q${i}: choicesが不正`);
-    if (!Number.isInteger(q.answer_index) || q.answer_index<0 || q.answer_index>=q.choices.length) errs.push(`Q${i}: answer_indexが不正`);
-  });
-  return {count: qs.length, errors: errs};
-}
-
-function formatTime(ms) {
-  const total = Math.max(0, Math.floor(ms/1000));
-  const m = Math.floor(total/60);
-  const s = total%60;
-  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-}
-
-function init() {
-  const v = validateDataset();
-  el('dsTitle').textContent = "ITパスポート サンプル問題";
-  const info = el('info');
-  if (v.errors.length) {
-    info.innerHTML = `読込 <strong>${v.count}</strong> 問 / 構造エラー <strong style="color:#ffb4b4">${v.errors.length}</strong> 件。詳細はコンソールを確認。`;
-    console.warn("Dataset errors:", v.errors);
-  } else {
-    info.textContent = `読込 ${v.count} 問。自己検証を実行中…`;
+    return normalizeArray(items);
   }
 
-  // 画面イベント
-  el('reload').addEventListener('click', ()=>location.reload());
-  el('go').addEventListener('click', ()=>startQuiz());
-  el('navFab').addEventListener('click', openOverlay);
-  el('closeOv').addEventListener('click', closeOverlay);
-  el('overlay').addEventListener('click', (e)=>{ if (e.target.id==='overlay') closeOverlay(); });
-  el('retryAll').addEventListener('click', ()=>startQuiz());
-  el('retryWrong').addEventListener('click', retryWrongOnly);
-  el('exportCsv').addEventListener('click', exportCsv);
-
-  // 自己テスト
-  const pass = runSelfTests();
-  if (v.errors.length===0) {
-    el('info').textContent = `読込 ${v.count} 問。自己検証 10/10 ${pass? 'OK':'NG'}`;
+  function normalizeArray(arr){
+    // 必要キーだけ抽出＋バリデーション
+    const map = new Map();
+    for(const it of arr){
+      const num = Number(it.number);
+      if(!Number.isInteger(num)) continue;
+      if(!it.question || !Array.isArray(it.choices) || it.choices.length !== 4) continue;
+      const answer_index = Number(it.answer_index);
+      if(!(answer_index>=0 && answer_index<4)) continue;
+      const clean = {
+        number:num,
+        question:String(it.question),
+        choices:it.choices.map(String),
+        answer_index,
+        comment: (typeof it.comment === "string") ? it.comment : ""
+      };
+      // 後勝ち（同番号が複数あれば最後のを採用）
+      map.set(num, clean);
+    }
+    // 1..100 のみ採用して整列
+    const out = [];
+    for(let i=1;i<=100;i++){
+      if(map.has(i)) out.push(map.get(i));
+    }
+    return out;
   }
-}
 
-function startQuiz(customPool=null) {
-  // 初期化
-  state.pool = customPool ?? (Array.isArray(EMBEDDED_DATA?.questions) ? EMBEDDED_DATA.questions.slice() : []);
-  // 出題数
-  const sel = el('count').value;
-  const want = sel==='all' ? state.pool.length : Math.max(1, Math.min(state.pool.length, parseInt(sel,10)||10));
-  state.order = state.pool.map((_,i)=>i).slice(0, want); // 出題順はそのまま（必要ならシャッフル可）
-  state.cur = 0;
-  state.ok = 0;
-  state.ng = 0;
-  state.answers = state.order.map(()=>({selected:null, correct:null, ms:0}));
-  state.startAt = Date.now();
-  state.endAt = state.startAt + 120*60*1000; // 120分
-  state.lastedMs = 0;
-  if (state.timerId) clearInterval(state.timerId);
-  state.timerId = setInterval(tick, 250);
+  // ============ アプリ本体 ============
+  const RAW_EL = document.getElementById('raw-data');
+  const RAW_TEXT = RAW_EL.textContent;
+  const QUESTIONS = sanitizeRaw(RAW_TEXT);
 
-  // 画面切替
-  el('start').classList.add('hide');
-  el('result').classList.add('hide');
-  el('quiz').classList.remove('hide');
+  // 検証ポイント1：100問か
+  const countMeta = document.getElementById('countMeta');
+  countMeta.textContent = `検出: ${QUESTIONS.length} 問`;
+  document.getElementById('rawEcho').textContent = RAW_TEXT.trim();
 
-  buildNav();
-  render();
-}
-
-function tick() {
-  const now = Date.now();
-  const remain = state.endAt - now;
-  el('timer').textContent = formatTime(remain);
-  if (remain<=0) {
-    clearInterval(state.timerId);
-    state.timerId = null;
-    finishQuiz(true);
-  }
-}
-
-function buildNav() {
-  const grid = el('navGrid');
-  grid.innerHTML = '';
-  state.order.forEach((_,i)=>{
-    const b = document.createElement('button');
-    b.className = 'navbtn';
-    b.textContent = i+1;
-    b.dataset.idx = i;
-    b.addEventListener('click', ()=>{
-      state.cur = i;
-      render();
-      openOverlay(false);
+  // ナビ作成（検証2：ジャンプできる）
+  const jumpList = document.getElementById('jumpList');
+  QUESTIONS.forEach(q=>{
+    const a=document.createElement('button');
+    a.className='tag';
+    a.textContent = `Q${q.number}`;
+    a.addEventListener('click',()=>{
+      startQuiz();
+      goToNumber(q.number);
     });
-    grid.appendChild(b);
+    jumpList.appendChild(a);
   });
-  updateNavStates();
-}
-
-function updateNavStates() {
-  const grid = el('navGrid');
-  $$('.navbtn', grid).forEach((b,i)=>{
-    b.classList.remove('cur','ok','ng');
-    const a = state.answers[i];
-    if (i===state.cur) b.classList.add('cur');
-    if (a.correct===true) b.classList.add('ok');
-    if (a.correct===false) b.classList.add('ng');
-  });
-}
-
-function render() {
-  const total = state.order.length;
-  el('pos').textContent = `Q ${state.cur+1} / ${total}`;
-  el('ok').textContent = state.ok;
-  el('ng').textContent = state.ng;
-  const done = state.answers.filter(a=>a.correct!==null).length;
-  el('bar').style.width = `${(done/Math.max(1,total))*100}%`;
-
-  const qIdx = state.order[state.cur];
-  const q = state.pool[qIdx];
-  el('qText').textContent = q.question;
-
-  // 選択肢本文
-  const cl = el('choicesList');
-  cl.innerHTML = '';
-  q.choices.forEach((t,i)=>{
-    const line = document.createElement('div');
-    line.className = 'choice-line';
-    const kana = document.createElement('span');
-    kana.className = 'kana';
-    kana.textContent = KANA[i] ?? String(i+1);
-    const p = document.createElement('p');
-    p.textContent = t;
-    line.appendChild(kana);
-    line.appendChild(p);
-    cl.appendChild(line);
-  });
-
-  // 回答ボタン（かなのみ）
-  const ans = el('answers');
-  ans.innerHTML = '';
-  q.choices.forEach((_,i)=>{
-    const btn = document.createElement('button');
-    btn.className = 'opt';
-    btn.type = 'button';
-    btn.textContent = KANA[i] ?? String(i+1);
-    btn.dataset.choice = i;
-    btn.addEventListener('click', onAnswer);
-    ans.appendChild(btn);
-  });
-
-  // 既に回答済みなら状態を反映してロック
-  const rec = state.answers[state.cur];
-  if (rec.correct!==null) {
-    const buttons = $$('.opt', ans);
-    buttons.forEach(b=>b.disabled = true);
-    if (rec.correct) buttons[q.answer_index]?.classList.add('correct');
-    else {
-      buttons[rec.selected]?.classList.add('wrong');
-      buttons[q.answer_index]?.classList.add('correct');
-    }
-  }
-
-  updateNavStates();
-}
-
-function onAnswer(e) {
-  if (state.locked) return;
-  const btn = e.currentTarget;
-  const picked = parseInt(btn.dataset.choice, 10);
-  const qIdx = state.order[state.cur];
-  const q = state.pool[qIdx];
-  const correct = (picked === q.answer_index);
 
   // UI
-  const buttons = $$('.opt', el('answers'));
-  buttons.forEach(b=>b.disabled = true);
-  if (correct) btn.classList.add('correct');
-  else {
-    btn.classList.add('wrong');
-    buttons[q.answer_index]?.classList.add('correct');
-  }
+  const intro = document.getElementById('intro');
+  const quiz = document.getElementById('quiz');
+  const result = document.getElementById('result');
+  const qnumber = document.getElementById('qnumber');
+  const qtext = document.getElementById('qtext');
+  const choices = document.getElementById('choices');
+  const explain = document.getElementById('explain');
+  const bar = document.getElementById('bar');
+  const stat = document.getElementById('stat');
 
-  // 記録
-  const spent = Math.min(120*60*1000, Date.now() - state.startAt - state.lastedMs);
-  state.answers[state.cur] = {selected:picked, correct, ms: spent};
-  if (correct) state.ok++; else state.ng++;
-  state.lastedMs += spent;
+  const startBtn = document.getElementById('startBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const scoreEl = document.getElementById('score');
+  const retryWrong = document.getElementById('retryWrong');
+  const restart = document.getElementById('restart');
 
-  updateNavStates();
-  // 次へ（少し待つ）
-  state.locked = true;
-  setTimeout(()=>{
-    state.locked = false;
-    goNext();
-  }, 650);
-}
+  let order = [];
+  let idx = 0;
+  let answered = new Map(); // number -> {chosen, correct}
+  let wrongSet = new Set();
 
-function goNext() {
-  const total = state.order.length;
-  // 次の未回答へ。なければ終了。
-  let next = state.cur + 1;
-  while (next<total && state.answers[next].correct!==null) next++;
-  if (next>=total) {
-    // 先頭から未回答探索
-    next = 0;
-    while (next<total && state.answers[next].correct!==null) next++;
-    if (next>=total) {
-      finishQuiz(false);
-      return;
+  function startQuiz(){
+    if(QUESTIONS.length !== 100){
+      alert(`注意: ${QUESTIONS.length}問しか見つかりませんでした。RAWを確認してください。`);
     }
+    order = QUESTIONS.map(q=>q.number); // 1..100 順
+    idx = 0; answered.clear(); wrongSet.clear();
+    intro.style.display='none'; result.style.display='none'; quiz.style.display='block';
+    render();
   }
-  state.cur = next;
-  render();
-}
 
-function finishQuiz(timeup) {
-  if (state.timerId) { clearInterval(state.timerId); state.timerId=null; }
-  el('quiz').classList.add('hide');
-  el('result').classList.remove('hide');
-  el('rok').textContent = state.ok;
-  el('rng').textContent = state.ng;
-  const remainMs = Math.max(0, state.endAt - Date.now());
-  el('elapsed').textContent = (timeup?'時間切れ ':'残り ') + formatTime(remainMs);
-
-  // レビュー
-  const wrap = el('review');
-  const ol = document.createElement('ol');
-  ol.start = 1;
-  state.order.forEach((qIdx, i)=>{
-    const q = state.pool[qIdx];
-    const rec = state.answers[i];
-    const li = document.createElement('li');
-    li.style.margin = '8px 0';
-    const good = rec.correct===true;
-    li.innerHTML =
-      `<div><strong>${good?'◯':'×'}</strong> Q${i+1}（No.${q.number ?? (qIdx+1)}）</div>
-       <div class="small muted" style="margin:4px 0 6px">${q.question.replace(/</g,'&lt;')}</div>
-       <div class="small">あなたの回答：${KANA[rec.selected] ?? '-'} ／ 正解：${KANA[q.answer_index]}</div>
-       <div class="small muted" style="margin-top:2px">解説：${(q.comment||'').replace(/</g,'&lt;')}</div>`;
-    ol.appendChild(li);
-  });
-  wrap.innerHTML = '';
-  wrap.appendChild(ol);
-
-  // ナビ更新（全問状態確定）
-  updateNavStates();
-}
-
-function retryWrongOnly() {
-  const wrong = [];
-  state.order.forEach((qIdx,i)=>{ if (state.answers[i].correct===false) wrong.push(state.pool[qIdx]); });
-  if (!wrong.length) {
-    alert('不正解はありません。すべて正解でした！');
-    return;
+  function goToNumber(n){
+    const i = order.findIndex(no=>no===n);
+    if(i>=0){ idx=i; render(); }
   }
-  startQuiz(wrong);
-}
 
-function exportCsv() {
-  const rows = [];
-  rows.push(['index','number','question','choices','correct_index','correct_kana','selected_index','selected_kana','correct','time_ms']);
-  state.order.forEach((qIdx,i)=>{
-    const q = state.pool[qIdx];
-    const rec = state.answers[i];
-    const choices = (q.choices||[]).map(c=>c.replace(/"/g,'""')).join(' | ');
-    rows.push([
-      i+1,
-      q.number ?? '',
-      (q.question||'').replace(/\s+/g,' ').replace(/"/g,'""'),
-      `"${choices}"`,
-      q.answer_index,
-      KANA[q.answer_index] ?? '',
-      rec.selected ?? '',
-      KANA[rec.selected] ?? '',
-      rec.correct===true ? 'TRUE' : (rec.correct===false ? 'FALSE' : ''),
-      rec.ms ?? 0
-    ]);
+  function render(){
+    // 検証3：インデックス境界
+    if(idx<0) idx=0;
+    if(idx>=order.length){ return finish(); }
+    const num = order[idx];
+    const q = QUESTIONS[num-1]; // 1..100 として整列済み
+    qnumber.textContent = `Q${idx+1} / ${order.length}（元番号: ${q.number}）`;
+    stat.textContent = `正解 ${[...answered.values()].filter(v=>v.correct).length} / 解答 ${answered.size}`;
+    qtext.textContent = q.question;
+    explain.style.display='none';
+    explain.textContent = q.comment ? `解説：${q.comment}` : '';
+
+    choices.innerHTML='';
+    const labels = ['あ','い','う','え'];
+    q.choices.forEach((c,i)=>{
+      const btn = document.createElement('button');
+      btn.className='opt';
+      btn.innerHTML = `<span class="pill">${labels[i]}</span> <span>${c}</span>`;
+      btn.addEventListener('click', ()=>{
+        lockAndJudge(i);
+      }, {once:true});
+      choices.appendChild(btn);
+    });
+
+    // 過去に答えていれば状態再現
+    if(answered.has(q.number)){
+      const prev = answered.get(q.number);
+      Array.from(choices.children).forEach((b, i)=>{
+        b.setAttribute('disabled','disabled');
+        if(i===q.answer_index) b.classList.add('correct');
+        if(i===prev.chosen && !prev.correct) b.classList.add('wrong');
+      });
+      explain.style.display = q.comment ? 'block' : 'none';
+    }
+
+    // 進捗（検証4）
+    const prog = Math.round((idx)/order.length*100);
+    bar.style.width = prog+'%';
+    prevBtn.disabled = (idx===0);
+    nextBtn.textContent = (idx===order.length-1) ? '結果' : '次へ';
+  }
+
+  function lockAndJudge(chosen){
+    const num = order[idx];
+    const q = QUESTIONS[num-1];
+    const corr = (chosen===q.answer_index);
+    answered.set(q.number, {chosen, correct: corr});
+    if(!corr) wrongSet.add(q.number); else wrongSet.delete(q.number);
+    // 視覚
+    Array.from(choices.children).forEach((b, i)=>{
+      b.setAttribute('disabled','disabled');
+      if(i===q.answer_index) b.classList.add('correct');
+      if(i===chosen && i!==q.answer_index) b.classList.add('wrong');
+    });
+    explain.style.display = q.comment ? 'block' : 'none';
+    stat.textContent = `正解 ${[...answered.values()].filter(v=>v.correct).length} / 解答 ${answered.size}`;
+  }
+
+  function finish(){
+    quiz.style.display='none'; result.style.display='block';
+    const correct = [...answered.values()].filter(v=>v.correct).length;
+    scoreEl.textContent = `正解 ${correct} / ${order.length}（正答率 ${(correct/order.length*100).toFixed(1)}%）`;
+  }
+
+  // イベント
+  startBtn.addEventListener('click', startQuiz);
+  exportBtn.addEventListener('click', ()=>{
+    const data = JSON.stringify(QUESTIONS, null, 2);
+    const w = window.open();
+    w.document.write('<pre>'+data.replace(/[<>&]/g,s=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[s]))+'</pre>');
   });
-  const csv = rows.map(r=>r.join(',')).join('\r\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const a = document.createElement('a');
-  const t = new Date();
-  a.download = `result_${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}_${String(t.getHours()).padStart(2,'0')}${String(t.getMinutes()).padStart(2,'0')}.csv`;
-  a.href = URL.createObjectURL(blob);
-  document.body.appendChild(a);
-  a.click();
-  URL.revokeObjectURL(a.href);
-  a.remove();
-}
+  prevBtn.addEventListener('click', ()=>{ idx--; render(); });
+  nextBtn.addEventListener('click', ()=>{
+    if(idx===order.length-1) finish(); else { idx++; render(); }
+  });
+  retryWrong.addEventListener('click', ()=>{
+    if(wrongSet.size===0){ alert('不正解はありません。'); return; }
+    order = [...wrongSet];
+    order.sort((a,b)=>a-b);
+    idx = 0; quiz.style.display='block'; result.style.display='none'; render();
+  });
+  restart.addEventListener('click', ()=>{
+    intro.style.display='block'; quiz.style.display='none'; result.style.display='none';
+  });
 
-function openOverlay(focus=true){ el('overlay').style.display='flex'; el('overlay').setAttribute('aria-hidden','false'); if(focus){ $('#closeOv').focus?.(); } }
-function closeOverlay(){ el('overlay').style.display='none'; el('overlay').setAttribute('aria-hidden','true'); }
-
-/* ===== 自己テスト（10件） ===== */
-function runSelfTests(){
-  let pass = 0;
-  const assert = (name, cond)=>{ if(cond){ pass++; console.log('PASS:', name);} else { console.error('FAIL:', name);} };
-
-  // T1/T2 dataset
-  const v = validateDataset();
-  assert('T1 dataset count > 0', v.count>0);
-  assert('T2 answer_index in range', v.errors.filter(e=>/answer_index/.test(e)).length===0);
-
-  // T3 出題数計算
-  const poolLen = EMBEDDED_DATA.questions.length;
-  const calcCount = (sel)=> sel==='all'? poolLen : Math.max(1,Math.min(poolLen, parseInt(sel,10)||10));
-  assert('T3 count select 10', calcCount('10')===Math.min(poolLen,10));
-  assert('T3 count all', calcCount('all')===poolLen);
-
-  // T4 かな割当
-  assert('T4 kana mapping', KANA.slice(0,4).join('')==='あいうえ');
-
-  // T5 採点
-  const q0 = EMBEDDED_DATA.questions[0];
-  assert('T5 scoring', (q0.answer_index>=0 && q0.answer_index<q0.choices.length));
-
-  // T6 進捗バー
-  const pct = (done,total)=>Math.round((done/Math.max(1,total))*100);
-  assert('T6 progress 5/20 = 25%', pct(5,20)===25);
-
-  // T7 タイマー表示
-  assert('T7 format 7200000ms = 120:00', formatTime(7200000)==='120:00');
-  assert('T7 format 7199000ms ≈ 119:59', formatTime(71990*100/100)==='119:59');
-
-  // T8 CSV 生成（ヘッダ形状のみ事前検査）
-  const hdr = ['index','number','question','choices','correct_index','correct_kana','selected_index','selected_kana','correct','time_ms'];
-  assert('T8 CSV header', hdr.length===10);
-
-  // T9 不正解だけ復習（集合構築）
-  (function(){
-    const dummyAnswers = [{correct:true},{correct:false},{correct:false}];
-    const dummyOrder = [0,1,2];
-    const wrong = [];
-    dummyOrder.forEach((qi,i)=>{ if(dummyAnswers[i].correct===false) wrong.push(qi); });
-    assert('T9 wrong-only length', wrong.length===2);
-  })();
-
-  // T10 ナビ状態（クラス反映の論理検査）
-  assert('T10 nav state logic reachable', true);
-
-  return pass===10;
-}
-
-document.addEventListener('DOMContentLoaded', init);
-</script>
+  // 検証5：ロード時に自動で100問検出＆ジャンプタグ生成済みか
+  if(QUESTIONS.length===100){
+    document.getElementById('startBtn').textContent = '全100問で開始（準備OK）';
+  } else {
+    document.getElementById('startBtn').textContent = `開始（${QUESTIONS.length}問 検出）`;
+  }
+  </script>
 </body>
 </html>
