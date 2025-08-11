@@ -104,12 +104,24 @@
   white-space: nowrap !important; /* 折り返し禁止 */
   min-width: fit-content;
 }
-/* モバイル画面用（幅480px以下）でフォントを少し小さく */
-@media (max-width: 480px) {
-  #statusRow .chip {
-    font-size: 0.5rem; /* 通常より少し小さめ */
-    padding: 4px 8px;   /* 余白も少し減らす */
-  }
+/* ── ヘッダー（正解/不正解/タイマー）を1行固定 & はみ出し防止 ── */
+#headerRow{
+  display:flex;
+  flex-wrap:nowrap;
+  gap:8px;
+  align-items:center;
+}
+#headerRow .chip{
+  white-space:nowrap;    /* 折り返さない */
+  flex:0 0 auto;         /* つぶれ防止 */
+  min-width:fit-content; /* 内容分は確保 */
+}
+
+/* ── モバイルだけ少し小さく ── */
+@media (max-width:480px){
+  #headerRow{ gap:6px; }
+  #headerRow .chip{ font-size:12px; padding:6px 10px; } /* ラベル＆数値の親 */
+  #headerRow .big{  font-size:18px; }                   /* 数値だけさらに微調整 */
 }
 
   </style>
