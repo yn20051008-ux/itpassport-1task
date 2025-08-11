@@ -1469,7 +1469,7 @@
       state.locked=false;
       const i = state.idx, q = state.deck[i];
       $("#qNo").textContent = `Q ${i+1} / ${state.total}`;
-      $("#origNo").textContent = q.number!=null ? `(元番号: ${q.number})` : "";
+     $("#origNo").textContent = "";
       $("#qText").textContent = q.question || "";
       // 選択肢（本文はカード内に表示）
       const ol = $("#choiceList");
