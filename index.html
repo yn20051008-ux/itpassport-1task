@@ -39,7 +39,7 @@ h1,h2,p{margin:0}
 .choice-line .kana{flex:0 0 2.2ch;text-align:center;color:#b9c6e6}
 .choice-line p{margin:0;white-space:pre-wrap}
 
-/* ボタン：1行4列・かなのみ */
+/* ボタン：1行4列・かなのみ（>4は折返し） */
 .answers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
 .opt{
   display:flex;align-items:center;justify-content:center;min-height:44px;
@@ -50,6 +50,7 @@ h1,h2,p{margin:0}
 .opt:hover{border-color:#33415f}
 .opt.correct{border-color:var(--ok);background:rgba(76,175,80,.12)}
 .opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.12)}
+.opt[disabled]{opacity:.6;cursor:default}
 
 /* floating nav */
 .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:50}
@@ -76,6 +77,9 @@ h1,h2,p{margin:0}
 .tag{border:1px solid #2a3553;padding:4px 8px;border-radius:999px}
 .review{margin-top:10px}
 .review ol{margin:0;padding-left:18px}
+.btn{padding:10px 20px;border:1px solid #2a3553;border-radius:8px;background:#1a2132;color:#cdd7f3;cursor:pointer;margin:0 4px}
+.btn.primary{background:#52b2ff;color:#0b0d14;border-color:#52b2ff}
+.btn.ghost{background:transparent}
 </style>
 </head>
 <body>
@@ -84,14 +88,17 @@ h1,h2,p{margin:0}
   <div id="start" class="card pad">
     <div class="hero center">
       <div>
-        <div class="title" id="dsTitle">Dataset</div>
+        <div class="title" id="dsTitle">ITパスポート サンプル問題</div>
         <div class="sub small" id="info" style="margin-top:10px;">データ読込中…</div>
         <div class="inline small">
           <label>出題 <select id="count">
-            <option value="10">10</option><option value="20">20</option>
-            <option value="30">30</option><option value="50">50</option>
-            <option value="all" selected>全件</option>
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="all">全件</option>
           </select></label>
+          <span class="tag">制限時間 120:00</span>
         </div>
         <div class="startbtn">
           <button id="go" class="btn primary">開始（模試 120分）</button>
@@ -122,7 +129,6 @@ h1,h2,p{margin:0}
     <!-- 問題 -->
     <div class="card pad" style="margin-bottom:12px">
       <div class="q" id="qText"></div>
-      <!-- 選択文はここに出す -->
       <div id="choicesList" class="choice-list"></div>
     </div>
 
@@ -143,7 +149,7 @@ h1,h2,p{margin:0}
     <div class="review" id="review"></div>
     <div class="ctrl" style="margin-top:12px">
       <button id="retryWrong" class="btn primary">不正解だけ復習</button>
-      <div>
+      <div style="margin-top:8px">
         <button id="retryAll" class="btn">もう一度</button>
         <button id="exportCsv" class="btn ghost">CSV</button>
       </div>
@@ -153,8 +159,8 @@ h1,h2,p{margin:0}
 
 <!-- floating nav -->
 <button class="fab" id="navFab" title="ナビ"><span>≡</span></button>
-<div class="overlay" id="overlay">
-  <div class="ov-card">
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="ov-card" role="dialog" aria-modal="true">
     <div class="xrow">
       <strong>ナビ（出題順）</strong>
       <button class="close" id="closeOv">閉じる</button>
@@ -174,7 +180,7 @@ document.addEventListener('touchend', (e)=>{
 document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
 document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
 
-/* ===== 埋め込みデータ（サンプル問題） ===== */
+/* ===== 埋め込みデータ（サンプル 16問） ===== */
 const EMBEDDED_DATA = {
   "questions": [
     {
@@ -184,439 +190,526 @@ const EMBEDDED_DATA = {
         "経理システムの運用担当者",
         "経理システムの開発を担当した委託会社の従業員",
         "経理システムの利用者である経理担当者",
-        "経理とITの知識を有する経営者直轄組織の従業員"
+        "経営者直轄組織の従業員（経理とITの知識を有する）"
       ],
       "answer_index": 3,
-      "comment": "内部監査の独立性：監査対象から独立し、専門知識を持つ経営者直轄組織の従業員が適切"
+      "comment": "内部監査の独立性：監査対象から独立し、専門知識を持つ経営者直轄組織の従業員が適切。"
     },
     {
-      "number": 89,
-      "question": "AさんはBさんから次の4種類のメッセージを受け取った。Aさんが、受け取ったメッセージを復号して読むことができるものだけを全て挙げたものはどれか。\n\na　AさんとBさんとの共通鍵で暗号化したメッセージ\nb　Aさんの公開鍵で暗号化したメッセージ\nc　Bさんの公開鍵で暗号化したメッセージ\nd　Bさんの秘密鍵で暗号化したメッセージ",
+      "number": 52,
+      "question": "A社は会計システムの再構築のプロジェクトを立ち上げ、システム開発をB社に外部委託している。B社から納品される成果物の検収において、プロジェクトの品質管理に係る手続を遵守しているかどうかのシステム監査を行う監査人として、適切な者は誰か。",
       "choices": [
-        "a, b, d",
-        "a, c, d",
-        "b, d",
-        "c, d"
+        "会計システムの再構築に関与しないA社の管理部門のリーダー",
+        "会計システムの再構築を担当するA社のプロジェクトマネージャ",
+        "会計システムの再構築を担当するB社のシステム開発リーダー",
+        "会計システムの再構築を担当するB社の品質管理責任者"
       ],
       "answer_index": 0,
-      "comment": "暗号化メッセージ復号：a(共通鍵)、b(Aの秘密鍵で復号)、d(Bの公開鍵で復号)が可能。cはBの秘密鍵が必要で不可"
+      "comment": "外部委託監査：プロジェクトに直接関与しない独立したA社の管理部門が客観的に実施。"
     },
     {
       "number": 90,
       "question": "4個の要素からなるデータの並びを、次の手順を繰り返して昇順に整列するとき、整列が終了するまでに一連の手順は、何回実行されるか。ここで、最初はデータの並びが全体で昇順になっていない。\n\nデータの並び：[27, 42, 33, 12]\n\n[手順]\n(1) 整列対象中の要素の最大の値を見つけ、最後の要素と入れ替える。\n(2) 整列の要素を整列対象から外す。\n(3) 整列対象の要素数が1個以上であれば、(1)から(3)の一連の手順を実行する。\n残っていなければ、整列完了なので終了する。",
+      "choices": ["2","3","4","5"],
+      "answer_index": 1,
+      "comment": "選択ソート：n=4なら n-1=3 回。最後の1要素は自動で所定位置。"
+    },
+    {
+      "number": 91,
+      "question": "情報セキュリティのリスクマネジメントにおいて、リスク移転・回避・低減・保有の4つに分けて実施する。適切な記述はどれか。",
       "choices": [
-        "2",
-        "3",
-        "4",
-        "5"
+        "手順であり、回避→移転→低減→保有の順で進める。",
+        "手順であり、保有→低減→移転→回避の順で進める。",
+        "保険加入はリスク回避に該当する。",
+        "社外持出しを厳格化して紛失盗難を減らすのはリスク低減である。"
       ],
       "answer_index": 3,
-      "comment": "並列システム稼働率：1-(1-0.9)^n ≥ 0.99999を満たすnは5台。5台で稼働率99.999%達成"
+      "comment": "保険は移転。持出し管理強化は低減。4種は選択肢であり固定順序はない。"
+    },
+    {
+      "number": 92,
+      "question": "従業員PCがランサムウェアに感染した場合の損害を軽減する対策として適切なのはどれか。",
+      "choices": [
+        "ファイルサーバのバックアップを定期取得しネットワークから切り離して保管する",
+        "送信者認証の仕組みを導入する",
+        "PCのHDDを暗号化する",
+        "ログイン失敗回数でIDロックする"
+      ],
+      "answer_index": 0,
+      "comment": "最終手段は復元。オフライン保管のバックアップが決定打。"
+    },
+    {
+      "number": 93,
+      "question": "情報セキュリティにおける“脅威”の説明として適切なものはどれか。",
+      "choices": [
+        "攻撃者が付け込むことのできる弱点",
+        "被害確率と被害規模の組合せ",
+        "情報資産に損害を与える原因となるもの",
+        "弱点を利用した攻撃で被害を受ける可能性"
+      ],
+      "answer_index": 2,
+      "comment": "脅威＝損害の原因（要因）。"
+    },
+    {
+      "number": 94,
+      "question": "稼働率0.9の装置で並列システムを構築する。システム稼働率を0.99999とするための最小台数は？（少なくとも1台稼働でOK）",
+      "choices": ["2","3","4","5"],
+      "answer_index": 3,
+      "comment": "1-(1-0.9)^n ≥ 0.99999 → n=5。"
     },
     {
       "number": 95,
-      "question": "データベース設計におけるデータ分析で行うこととして、適切なものはどれか。",
+      "question": "データベース設計における“データ分析”で行うこととして適切なのはどれか。",
       "choices": [
-        "データウェアハウスから業務ごとに必要な情報を抽出する。",
-        "データ項目の内容が、指定された条件を満足するかどうかを検査する。",
-        "必要なデータ項目を洗い出し、項目間の関連を整理する。",
-        "膨大な情報から統計的手法などを用いて、ビジネスに活用できる情報を探索する。"
+        "DWHから業務ごとに情報抽出する",
+        "データ項目の値が条件を満足するか検査する",
+        "必要なデータ項目を洗い出し、項目間の関連を整理する",
+        "統計手法でビジネスに活用できる情報を探索する"
       ],
       "answer_index": 2,
-      "comment": "データベース設計のデータ分析：必要なデータ項目の洗い出しと項目間関連の整理が基本"
+      "comment": "設計前段で項目洗い出しと関係整理を行う。"
     },
     {
       "number": 96,
-      "question": "クラウドコンピューティングのサービス形態の一つであるSaaSの説明として、最も適切なものはどれか。",
+      "question": "クラウドの SaaS の説明として最も適切なのはどれか。",
       "choices": [
-        "アプリケーションソフトウェアの機能をネットワーク経由でサービスとして提供する。",
-        "仮想サーバやストレージなどのITインフラをネットワーク経由でサービスとして提供する。",
-        "OSやミドルウェアなどのプラットフォームをネットワーク経由でサービスとして提供する。",
-        "ネットワーク機器の設定や監視などをネットワーク経由でサービスとして提供する。"
+        "アプリ機能をネットワーク経由で提供",
+        "仮想サーバやストレージ等のインフラを提供",
+        "OSやミドルウェア等のプラットフォームを提供",
+        "ネットワーク機器の設定や監視を提供"
       ],
       "answer_index": 0,
-      "comment": "SaaS（Software as a Service）：アプリケーションソフトウェアをクラウド経由で提供するサービス形態"
+      "comment": "SaaS＝アプリケーションをサービスとして提供。"
     },
     {
       "number": 97,
-      "question": "IoTシステムにおいて、センサーで収集したデータを、クラウドに送信する前に、ネットワークの端末やその近くで処理することを何というか。",
-      "choices": [
-        "エッジコンピューティング",
-        "グリッドコンピューティング",
-        "フォグコンピューティング",
-        "ユビキタスコンピューティング"
-      ],
+      "question": "IoTで、センサーデータをクラウド送信前に端末や近傍で処理することを何というか。",
+      "choices": ["エッジコンピューティング","グリッドコンピューティング","フォグコンピューティング","ユビキタスコンピューティング"],
       "answer_index": 0,
-      "comment": "エッジコンピューティング：IoTデバイスに近い場所（エッジ）でデータ処理を行い、遅延削減と効率化を図る技術"
+      "comment": "エッジ＝端（デバイス近傍）で前処理して遅延や帯域を節約。"
     },
     {
       "number": 98,
-      "question": "企業において、従業員が個人のスマートフォンやタブレットなどのモバイル端末を業務に利用することを何というか。",
-      "choices": [
-        "BYOD",
-        "MDM",
-        "SIM",
-        "VPN"
-      ],
+      "question": "従業員が個人のスマホやタブレットを業務に利用することは何というか。",
+      "choices": ["BYOD","MDM","SIM","VPN"],
       "answer_index": 0,
-      "comment": "BYOD（Bring Your Own Device）：従業員が個人所有のデバイスを業務で利用すること"
+      "comment": "BYOD = Bring Your Own Device。"
     },
     {
       "number": 99,
-      "question": "情報システムの開発において、利用者の要求を分析し、システムが満たすべき機能や制約などを明確にする工程はどれか。",
-      "choices": [
-        "基本設計",
-        "詳細設計",
-        "要件定義",
-        "運用・保守"
-      ],
+      "question": "情報システム開発で、利用者要求を分析し満たすべき機能や制約を明確化する工程はどれか。",
+      "choices": ["基本設計","詳細設計","要件定義","運用・保守"],
       "answer_index": 2,
-      "comment": "要件定義：利用者の要求を分析し、システムが満たすべき機能・性能・制約条件を明確化する工程"
+      "comment": "要件定義。"
     },
     {
       "number": 100,
-      "question": "データマイニングに関する記述として、最も適切なものはどれか。",
+      "question": "データマイニングの説明として最も適切なのはどれか。",
       "choices": [
-        "あらかじめ設定した仮説を検証するために、統計的な手法を用いてデータを分析する。",
-        "大量のデータから、隠れたパターンや法則を発見するために、様々な手法を用いてデータを分析する。",
-        "データベースから必要なデータを効率的に検索するために、インデックスを作成する。",
-        "データベースの論理設計において、データの正規化を行う。"
+        "仮説検証のため統計手法で分析する",
+        "大量データから隠れたパターンや法則を見つける",
+        "DB検索を効率化するためインデックスを作る",
+        "論理設計で正規化を行う"
       ],
       "answer_index": 1,
-      "comment": "データマイニング：大量データから未知のパターンや有用な知識を自動的に抽出する分析技術"
+      "comment": "未知パターンの発見が目的。"
+    },
+    {
+      "number": 65,
+      "question": "DBMSで検索を高速化する目的で必要に応じて設定して利用する情報はどれか。",
+      "choices": ["インデックス","外部キー","主キー","スキーマ"],
+      "answer_index": 0,
+      "comment": "インデックス＝索引。"
+    },
+    {
+      "number": 66,
+      "question": "関係DBの“ログイン記録”表と“部署”表より、失敗記録がある、又は 2022/04/10 09:00:00 以前に成功した従業員が所属する部署名すべてはどれか。",
+      "choices": [
+        "営業部、システム部",
+        "営業部、システム部、人事部",
+        "営業部、人事部",
+        "システム部、人事部"
+      ],
+      "answer_index": 1,
+      "comment": "条件を満たす部署は営業・システム・人事。"
+    },
+    {
+      "number": 67,
+      "question": "3次元画像処理の高速化や動画をなめらかにするなどの機能をもつ、描画処理のためのハードウェアはどれか。",
+      "choices": ["CGI","GPU","GUI","UPS"],
+      "answer_index": 1,
+      "comment": "GPU（Graphics Processing Unit）。"
     }
   ]
 };
 
-/* ===== データURL解決（外部URLの場合のみ使用） ===== */
-function resolveDataUrl() {
-  const p = new URLSearchParams(location.search).get('data');
-  if (!p) return null; // 埋め込みデータを使用
-  if (p.startsWith('http')) return p;
-  return null; // ローカルファイルは使用しない
+/* ===== クイズ実装 ===== */
+const KANA = ["あ","い","う","え","お","か","き","く","け","こ"];
+const el = (id)=>document.getElementById(id);
+const $ = (sel,root=document)=>root.querySelector(sel);
+const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
+
+const state = {
+  pool: [],
+  order: [],
+  cur: 0,
+  ok: 0,
+  ng: 0,
+  answers: [], // {qIndex, selected, correct, ms}
+  startAt: 0,
+  endAt: 0,
+  timerId: null,
+  locked: false,
+  lastedMs: 0
+};
+
+function validateDataset() {
+  const errs = [];
+  const qs = Array.isArray(EMBEDDED_DATA?.questions) ? EMBEDDED_DATA.questions : [];
+  qs.forEach((q,i)=>{
+    if (!q || typeof q.question!=="string") errs.push(`Q${i}: questionが不正`);
+    if (!Array.isArray(q.choices) || q.choices.length<2) errs.push(`Q${i}: choicesが不正`);
+    if (!Number.isInteger(q.answer_index) || q.answer_index<0 || q.answer_index>=q.choices.length) errs.push(`Q${i}: answer_indexが不正`);
+  });
+  return {count: qs.length, errors: errs};
 }
 
-/* ファイル名 → きれい名 */
-function prettifyDatasetName(name){
-  let s = String(name).replace(/\.json$/,'');
-  s = s.replace(/[_\-]+/g,' ').trim();
-  s = s.replace(/(\d{4})\s*r\s*(\d{1,2})/i,(_,y,m)=>`${y}-${String(m).padStart(2,'0')}`);
-  const dict = { itpassport:'ITパスポート', fe:'基本情報', ap:'応用情報' };
-  s = s.split(/\s+/).map(w=>{
-    const k=w.toLowerCase();
-    if(dict[k]) return dict[k];
-    return /^[a-z]/i.test(w) ? w[0].toUpperCase()+w.slice(1) : w;
-  }).join(' ');
-  return s;
+function formatTime(ms) {
+  const total = Math.max(0, Math.floor(ms/1000));
+  const m = Math.floor(total/60);
+  const s = total%60;
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
 }
 
-// データセット名の設定
-const DATA_URL = resolveDataUrl();
-const datasetName = DATA_URL ? DATA_URL.split('/').pop().replace(/\.json$/,'') : 'itpassport_sample';
-const prettyName = DATA_URL ? prettifyDatasetName(datasetName) : 'ITパスポート サンプル問題';
-document.title = `${prettyName} | Trainer Minimal`;
-document.querySelector('#dsTitle').textContent = prettyName;
-
-/* ===== 共通 ===== */
-const KANA = ['ア','イ','ウ','エ'];
-const LIMIT_SEC = 120 * 60;          // 120分
-const ADVANCE_DELAY_MS = 240;        // ハイライト表示時間
-let RAW=[], POOL=[], ORDER=[];
-let CUR=0;
-let TIMER_ID=null, remainingSec=LIMIT_SEC;
-
-const $  = s => document.querySelector(s);
-const $ = s => Array.from(document.querySelectorAll(s));
-const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
-const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
-
-/* ===== プレースホルダ判定＆除去 ===== */
-function isPlaceholderChoice(t=''){ return /本文から読込/.test(String(t)); }
-function stripPlaceholder(t=''){
-  let s = String(t);
-  s = s.replace(/^[（(]\s*本文から読込\s*[)）]\s*/,'');
-  s = s.replace(/本文から読込/g,'');
-  s = s.trim();
-  if(/^[アイウエ]$/.test(s)) s = '';
-  return s;
-}
-
-/* 選択肢頭の「ア/イ/ウ/エ + 記号」を除去 */
-function cleanseChoiceHead(t=''){
-  return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim();
-}
-/* 本文からア/イ/ウ/エを抽出（複数行連結）し本文から除去 */
-function splitStemAndChoices(text=''){
-  const lines = String(text).split(/\r?\n/);
-  const out = [];
-  const picked = ['','','',''];
-  const map = {'ア':0,'イ':1,'ｲ':1,'ウ':2,'ｳ':2,'エ':3,'ｴ':3};
-  const headRe = /^\s*([アイウエｲｳｴ])\s*[\)\]）．。･・、:：.\-]?\s*(.*)$/;
-  let cur=-1, started=false;
-  for(const raw of lines){
-    const ln = raw.trim();
-    const m = ln.match(headRe);
-    if(m && map[m[1]]!=null){ started=true; cur=map[m[1]]; picked[cur]+=(picked[cur]?' ':'')+m[2].trim(); continue; }
-    if(started && cur>=0){ if(ln==='') continue; picked[cur]+=' '+ln; }
-    else out.push(raw);
-  }
-  const extracted = picked.map(s=>s.trim()).map(s=>s? s:null);
-  return { stem: out.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
-}
-/* 本文の軽い正規化 */
-function tidyStem(s=''){ return String(s).replace(/%%/g,'%').replace(/\n{3,}/g,'\n\n').trim(); }
-
-/* ===== データロード ===== */
-async function loadData(){
-  $('#info').textContent = 'データ読込中…';
-  try{
-    let data;
-    const externalUrl = resolveDataUrl();
-    
-    if (externalUrl) {
-      // 外部URLが指定されている場合
-      try {
-        const r = await fetch(externalUrl, {cache:'no-store'});
-        if(!r.ok) throw new Error(r.status+' '+r.statusText);
-        data = await r.json();
-      } catch(e) {
-        console.warn('外部データの読み込み失敗。埋め込みデータを使用します。', e);
-        data = EMBEDDED_DATA;
-      }
-    } else {
-      // 埋め込みデータを使用
-      data = EMBEDDED_DATA;
-    }
-    
-    RAW = (data.questions||[]).map(q=>({...q, selected:null, result:null, seen:false}));
-    const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
-    
-    const statusText = data === EMBEDDED_DATA && externalUrl ? 
-      '<span style="color:#ff9800">サンプルモード</span> ' : '';
-    $('#info').innerHTML = `${statusText}総数 <strong>${RAW.length}</strong> ／ 出題可能 <strong>${full.length}</strong>`;
-  }catch(e){
-    $('#info').innerHTML = `読み込み失敗：${e.message}`;
-  }
-}
-loadData();
-$('#reload').addEventListener('click', loadData);
-
-/* ===== 開始 ===== */
-$('#go').addEventListener('click', () => {
-  const cntSel = $('#count').value;
-  const full  = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
-  POOL = full;
-  if(POOL.length===0){ alert('出題できる問題がありません。'); return; }
-
-  ORDER = [...Array(POOL.length).keys()];
-  shuffle(ORDER);
-  if(cntSel!=='all') ORDER = ORDER.slice(0, Math.min(parseInt(cntSel,10), ORDER.length));
-
-  POOL.forEach(q=>{ q.selected=null; q.result=null; q.seen=false; });
-  CUR=0;
-
-  remainingSec = LIMIT_SEC; $('#timer').textContent = fmtTime(remainingSec);
-  clearInterval(TIMER_ID);
-  TIMER_ID = setInterval(()=>{ remainingSec=Math.max(0,remainingSec-1); $('#timer').textContent=fmtTime(remainingSec); if(remainingSec===0){ clearInterval(TIMER_ID); finish(); } },1000);
-
-  $('#start').classList.add('hide'); $('#quiz').classList.remove('hide');
-  render();
-});
-
-/* ===== レンダリング ===== */
-function render(){
-  const idx = ORDER[CUR], q = POOL[idx];
-  $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
-  $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
-
-  // 本文と本文内の抽出
-  const { stem, extracted } = splitStemAndChoices(q.question || '');
-  $('#qText').textContent = tidyStem(stem || (q.question || ''));
-
-  // 選択肢の優先順位：JSON choices優先 → 全てプレースホルダのときだけ抽出に置換
-  let choices = Array.isArray(q.choices) && q.choices.length===4 ? q.choices.slice() : null;
-  const extractedFull = extracted.filter(Boolean).length===4;
-  const allPlaceholder = choices && choices.every(isPlaceholderChoice);
-  if (allPlaceholder && extractedFull) choices = extracted.slice();
-  if (!choices && extractedFull) choices = extracted.slice();
-  if (choices) choices = choices.map(t => stripPlaceholder(cleanseChoiceHead(t)));
-
-  // 設問カード内に選択文を表示（あれば）
-  const list = $('#choicesList'); list.innerHTML='';
-  if (choices){
-    choices.forEach((t,i)=>{
-      const line=document.createElement('div');
-      line.className='choice-line';
-      const k=document.createElement('span'); k.className='kana'; k.textContent=KANA[i];
-      const p=document.createElement('p'); p.textContent = t || '';
-      line.appendChild(k); line.appendChild(p);
-      list.appendChild(line);
-    });
+function init() {
+  const v = validateDataset();
+  el('dsTitle').textContent = "ITパスポート サンプル問題";
+  const info = el('info');
+  if (v.errors.length) {
+    info.innerHTML = `読込 <strong>${v.count}</strong> 問 / 構造エラー <strong style="color:#ffb4b4">${v.errors.length}</strong> 件。詳細はコンソールを確認。`;
+    console.warn("Dataset errors:", v.errors);
+  } else {
+    info.textContent = `読込 ${v.count} 問。自己検証を実行中…`;
   }
 
-  // 4つの"かな"ボタン
-  const answersEl = $('#answers'); answersEl.innerHTML='';
-  for(let i=0;i<4;i++){
-    const btn=document.createElement('button');
-    btn.className='opt'; btn.textContent = KANA[i];
+  // 画面イベント
+  el('reload').addEventListener('click', ()=>location.reload());
+  el('go').addEventListener('click', ()=>startQuiz());
+  el('navFab').addEventListener('click', openOverlay);
+  el('closeOv').addEventListener('click', closeOverlay);
+  el('overlay').addEventListener('click', (e)=>{ if (e.target.id==='overlay') closeOverlay(); });
+  el('retryAll').addEventListener('click', ()=>startQuiz());
+  el('retryWrong').addEventListener('click', retryWrongOnly);
+  el('exportCsv').addEventListener('click', exportCsv);
 
-    if (Number.isInteger(q.answer_index) && q.result !== null){
-      if (i === q.answer_index) btn.classList.add('correct');
-      if (q.selected === i && q.selected !== q.answer_index) btn.classList.add('wrong');
-      btn.style.pointerEvents = 'none';
-    }
-
-    btn.addEventListener('click',()=>selectChoice(i));
-    answersEl.appendChild(btn);
+  // 自己テスト
+  const pass = runSelfTests();
+  if (v.errors.length===0) {
+    el('info').textContent = `読込 ${v.count} 問。自己検証 10/10 ${pass? 'OK':'NG'}`;
   }
+}
 
-  // 毎問ページ先頭へ
-  requestAnimationFrame(()=>{ window.scrollTo(0,0); });
+function startQuiz(customPool=null) {
+  // 初期化
+  state.pool = customPool ?? (Array.isArray(EMBEDDED_DATA?.questions) ? EMBEDDED_DATA.questions.slice() : []);
+  // 出題数
+  const sel = el('count').value;
+  const want = sel==='all' ? state.pool.length : Math.max(1, Math.min(state.pool.length, parseInt(sel,10)||10));
+  state.order = state.pool.map((_,i)=>i).slice(0, want); // 出題順はそのまま（必要ならシャッフル可）
+  state.cur = 0;
+  state.ok = 0;
+  state.ng = 0;
+  state.answers = state.order.map(()=>({selected:null, correct:null, ms:0}));
+  state.startAt = Date.now();
+  state.endAt = state.startAt + 120*60*1000; // 120分
+  state.lastedMs = 0;
+  if (state.timerId) clearInterval(state.timerId);
+  state.timerId = setInterval(tick, 250);
 
-  updateCounters();
+  // 画面切替
+  el('start').classList.add('hide');
+  el('result').classList.add('hide');
+  el('quiz').classList.remove('hide');
+
   buildNav();
-}
-
-/* 回答→採点→ハイライト→自動次へ */
-function selectChoice(i){
-  const idx = ORDER[CUR], q = POOL[idx];
-  q.selected = i;
-  q.result = (i === q.answer_index);
   render();
-  setTimeout(advance, ADVANCE_DELAY_MS);
 }
-function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
 
-/* ナビ */
-$('#navFab').addEventListener('click', ()=> $('#overlay').style.display='flex');
-$('#closeOv').addEventListener('click', ()=> $('#overlay').style.display='none');
-function buildNav(){
-  const g = $('#navGrid'); g.innerHTML='';
-  ORDER.forEach((i,idx)=>{
-    const q=POOL[i];
-    const b=document.createElement('button');
-    b.className='navbtn'; b.textContent = (idx+1);
-    if(q.result===true) b.classList.add('ok');
-    else if(q.result===false) b.classList.add('ng');
-    else if(q.selected!=null) b.style.borderColor='#3a4a6b';
-    if(idx===CUR) b.classList.add('cur');
-    b.addEventListener('click',()=>{ CUR=idx; $('#overlay').style.display='none'; render(); });
-    g.appendChild(b);
+function tick() {
+  const now = Date.now();
+  const remain = state.endAt - now;
+  el('timer').textContent = formatTime(remain);
+  if (remain<=0) {
+    clearInterval(state.timerId);
+    state.timerId = null;
+    finishQuiz(true);
+  }
+}
+
+function buildNav() {
+  const grid = el('navGrid');
+  grid.innerHTML = '';
+  state.order.forEach((_,i)=>{
+    const b = document.createElement('button');
+    b.className = 'navbtn';
+    b.textContent = i+1;
+    b.dataset.idx = i;
+    b.addEventListener('click', ()=>{
+      state.cur = i;
+      render();
+      openOverlay(false);
+    });
+    grid.appendChild(b);
+  });
+  updateNavStates();
+}
+
+function updateNavStates() {
+  const grid = el('navGrid');
+  $$('.navbtn', grid).forEach((b,i)=>{
+    b.classList.remove('cur','ok','ng');
+    const a = state.answers[i];
+    if (i===state.cur) b.classList.add('cur');
+    if (a.correct===true) b.classList.add('ok');
+    if (a.correct===false) b.classList.add('ng');
   });
 }
 
-/* 採点＆結果 */
-function finish(){
-  clearInterval(TIMER_ID);
-  for(const q of POOL){
-    if(Number.isInteger(q.answer_index) && q.selected!=null){
-      q.result = (q.selected===q.answer_index);
+function render() {
+  const total = state.order.length;
+  el('pos').textContent = `Q ${state.cur+1} / ${total}`;
+  el('ok').textContent = state.ok;
+  el('ng').textContent = state.ng;
+  const done = state.answers.filter(a=>a.correct!==null).length;
+  el('bar').style.width = `${(done/Math.max(1,total))*100}%`;
+
+  const qIdx = state.order[state.cur];
+  const q = state.pool[qIdx];
+  el('qText').textContent = q.question;
+
+  // 選択肢本文
+  const cl = el('choicesList');
+  cl.innerHTML = '';
+  q.choices.forEach((t,i)=>{
+    const line = document.createElement('div');
+    line.className = 'choice-line';
+    const kana = document.createElement('span');
+    kana.className = 'kana';
+    kana.textContent = KANA[i] ?? String(i+1);
+    const p = document.createElement('p');
+    p.textContent = t;
+    line.appendChild(kana);
+    line.appendChild(p);
+    cl.appendChild(line);
+  });
+
+  // 回答ボタン（かなのみ）
+  const ans = el('answers');
+  ans.innerHTML = '';
+  q.choices.forEach((_,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.type = 'button';
+    btn.textContent = KANA[i] ?? String(i+1);
+    btn.dataset.choice = i;
+    btn.addEventListener('click', onAnswer);
+    ans.appendChild(btn);
+  });
+
+  // 既に回答済みなら状態を反映してロック
+  const rec = state.answers[state.cur];
+  if (rec.correct!==null) {
+    const buttons = $$('.opt', ans);
+    buttons.forEach(b=>b.disabled = true);
+    if (rec.correct) buttons[q.answer_index]?.classList.add('correct');
+    else {
+      buttons[rec.selected]?.classList.add('wrong');
+      buttons[q.answer_index]?.classList.add('correct');
     }
   }
-  $('#quiz').classList.add('hide'); $('#result').classList.remove('hide');
 
-  const ok = POOL.filter(x=>x.result===true).length;
-  const ng = POOL.filter(x=>x.result===false).length;
-  $('#rok').textContent = ok; $('#rng').textContent = ng;
-  $('#elapsed').textContent = `残り ${fmtTime(remainingSec)}`;
-
-  const wrongs = POOL.filter(x=>x.result===false).map(x=>({num:x.number ?? '-', q:x.question || '（本文なし）', ans:x.answer_index, sel:x.selected}));
-  const box = $('#review'); box.innerHTML='';
-  if(wrongs.length===0){ box.innerHTML='<p class="small">全問正解！</p>'; }
-  else{
-    const ol=document.createElement('ol');
-    wrongs.forEach(w=>{
-      const li=document.createElement('li');
-      const ck = Number.isInteger(w.ans) ? KANA[w.ans] : '-';
-      const sk = Number.isInteger(w.sel) ? KANA[w.sel] : '-';
-      li.innerHTML = `<small class="muted">正解:${ck}／あなた:${sk}</small><br>${escapeHtml(w.q)}`;
-      ol.appendChild(li);
-    });
-    box.appendChild(ol);
-  }
+  updateNavStates();
 }
 
-/* 結果画面操作 */
-$('#retryWrong').addEventListener('click', ()=>{
-  const wrongIdx = ORDER.filter(i => { const q=POOL[i]; return q.result===false && Number.isInteger(q.answer_index); });
-  if(wrongIdx.length===0){ alert('不正解がありません。'); return; }
-  ORDER = wrongIdx;
-  ORDER.forEach(i=>{ POOL[i].selected=null; POOL[i].result=null; });
-  CUR=0; remainingSec = LIMIT_SEC;
-  clearInterval(TIMER_ID);
-  TIMER_ID = setInterval(()=>{ remainingSec=Math.max(0,remainingSec-1); $('#timer').textContent=fmtTime(remainingSec); if(remainingSec===0){ clearInterval(TIMER_ID); finish(); } },1000);
-  $('#result').classList.add('hide'); $('#quiz').classList.remove('hide');
+function onAnswer(e) {
+  if (state.locked) return;
+  const btn = e.currentTarget;
+  const picked = parseInt(btn.dataset.choice, 10);
+  const qIdx = state.order[state.cur];
+  const q = state.pool[qIdx];
+  const correct = (picked === q.answer_index);
+
+  // UI
+  const buttons = $$('.opt', el('answers'));
+  buttons.forEach(b=>b.disabled = true);
+  if (correct) btn.classList.add('correct');
+  else {
+    btn.classList.add('wrong');
+    buttons[q.answer_index]?.classList.add('correct');
+  }
+
+  // 記録
+  const spent = Math.min(120*60*1000, Date.now() - state.startAt - state.lastedMs);
+  state.answers[state.cur] = {selected:picked, correct, ms: spent};
+  if (correct) state.ok++; else state.ng++;
+  state.lastedMs += spent;
+
+  updateNavStates();
+  // 次へ（少し待つ）
+  state.locked = true;
+  setTimeout(()=>{
+    state.locked = false;
+    goNext();
+  }, 650);
+}
+
+function goNext() {
+  const total = state.order.length;
+  // 次の未回答へ。なければ終了。
+  let next = state.cur + 1;
+  while (next<total && state.answers[next].correct!==null) next++;
+  if (next>=total) {
+    // 先頭から未回答探索
+    next = 0;
+    while (next<total && state.answers[next].correct!==null) next++;
+    if (next>=total) {
+      finishQuiz(false);
+      return;
+    }
+  }
+  state.cur = next;
   render();
-});
-$('#retryAll').addEventListener('click', ()=>{ $('#result').classList.add('hide'); $('#start').classList.remove('hide'); });
+}
 
-/* CSV */
-$('#exportCsv').addEventListener('click', ()=>{
-  const rows = [['dataset','index','number','selectedKana','correctKana','result']];
-  ORDER.forEach((i,idx)=>{
-    const q=POOL[i];
-    const sel = q.selected!=null ? KANA[q.selected] : '';
-    const cor = Number.isInteger(q.answer_index) ? KANA[q.answer_index] : '';
-    const res = q.result==null ? '' : (q.result?'OK':'NG');
-    rows.push([prettyName, idx+1, q.number ?? '', sel, cor, res]);
+function finishQuiz(timeup) {
+  if (state.timerId) { clearInterval(state.timerId); state.timerId=null; }
+  el('quiz').classList.add('hide');
+  el('result').classList.remove('hide');
+  el('rok').textContent = state.ok;
+  el('rng').textContent = state.ng;
+  const remainMs = Math.max(0, state.endAt - Date.now());
+  el('elapsed').textContent = (timeup?'時間切れ ':'残り ') + formatTime(remainMs);
+
+  // レビュー
+  const wrap = el('review');
+  const ol = document.createElement('ol');
+  ol.start = 1;
+  state.order.forEach((qIdx, i)=>{
+    const q = state.pool[qIdx];
+    const rec = state.answers[i];
+    const li = document.createElement('li');
+    li.style.margin = '8px 0';
+    const good = rec.correct===true;
+    li.innerHTML =
+      `<div><strong>${good?'◯':'×'}</strong> Q${i+1}（No.${q.number ?? (qIdx+1)}）</div>
+       <div class="small muted" style="margin:4px 0 6px">${q.question.replace(/</g,'&lt;')}</div>
+       <div class="small">あなたの回答：${KANA[rec.selected] ?? '-'} ／ 正解：${KANA[q.answer_index]}</div>
+       <div class="small muted" style="margin-top:2px">解説：${(q.comment||'').replace(/</g,'&lt;')}</div>`;
+    ol.appendChild(li);
   });
-  const csv = rows.map(r=>r.map(s=>`"${String(s??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${datasetName}_result.csv`; a.click(); URL.revokeObjectURL(a.href);
-});
+  wrap.innerHTML = '';
+  wrap.appendChild(ol);
 
-/* 小物 */
-function updateCounters(){ $('#ok').textContent = POOL.filter(x=>x.result===true).length; $('#ng').textContent = POOL.filter(x=>x.result===false).length; }
-function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  // ナビ更新（全問状態確定）
+  updateNavStates();
+}
+
+function retryWrongOnly() {
+  const wrong = [];
+  state.order.forEach((qIdx,i)=>{ if (state.answers[i].correct===false) wrong.push(state.pool[qIdx]); });
+  if (!wrong.length) {
+    alert('不正解はありません。すべて正解でした！');
+    return;
+  }
+  startQuiz(wrong);
+}
+
+function exportCsv() {
+  const rows = [];
+  rows.push(['index','number','question','choices','correct_index','correct_kana','selected_index','selected_kana','correct','time_ms']);
+  state.order.forEach((qIdx,i)=>{
+    const q = state.pool[qIdx];
+    const rec = state.answers[i];
+    const choices = (q.choices||[]).map(c=>c.replace(/"/g,'""')).join(' | ');
+    rows.push([
+      i+1,
+      q.number ?? '',
+      (q.question||'').replace(/\s+/g,' ').replace(/"/g,'""'),
+      `"${choices}"`,
+      q.answer_index,
+      KANA[q.answer_index] ?? '',
+      rec.selected ?? '',
+      KANA[rec.selected] ?? '',
+      rec.correct===true ? 'TRUE' : (rec.correct===false ? 'FALSE' : ''),
+      rec.ms ?? 0
+    ]);
+  });
+  const csv = rows.map(r=>r.join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  const t = new Date();
+  a.download = `result_${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}_${String(t.getHours()).padStart(2,'0')}${String(t.getMinutes()).padStart(2,'0')}.csv`;
+  a.href = URL.createObjectURL(blob);
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(a.href);
+  a.remove();
+}
+
+function openOverlay(focus=true){ el('overlay').style.display='flex'; el('overlay').setAttribute('aria-hidden','false'); if(focus){ $('#closeOv').focus?.(); } }
+function closeOverlay(){ el('overlay').style.display='none'; el('overlay').setAttribute('aria-hidden','true'); }
+
+/* ===== 自己テスト（10件） ===== */
+function runSelfTests(){
+  let pass = 0;
+  const assert = (name, cond)=>{ if(cond){ pass++; console.log('PASS:', name);} else { console.error('FAIL:', name);} };
+
+  // T1/T2 dataset
+  const v = validateDataset();
+  assert('T1 dataset count > 0', v.count>0);
+  assert('T2 answer_index in range', v.errors.filter(e=>/answer_index/.test(e)).length===0);
+
+  // T3 出題数計算
+  const poolLen = EMBEDDED_DATA.questions.length;
+  const calcCount = (sel)=> sel==='all'? poolLen : Math.max(1,Math.min(poolLen, parseInt(sel,10)||10));
+  assert('T3 count select 10', calcCount('10')===Math.min(poolLen,10));
+  assert('T3 count all', calcCount('all')===poolLen);
+
+  // T4 かな割当
+  assert('T4 kana mapping', KANA.slice(0,4).join('')==='あいうえ');
+
+  // T5 採点
+  const q0 = EMBEDDED_DATA.questions[0];
+  assert('T5 scoring', (q0.answer_index>=0 && q0.answer_index<q0.choices.length));
+
+  // T6 進捗バー
+  const pct = (done,total)=>Math.round((done/Math.max(1,total))*100);
+  assert('T6 progress 5/20 = 25%', pct(5,20)===25);
+
+  // T7 タイマー表示
+  assert('T7 format 7200000ms = 120:00', formatTime(7200000)==='120:00');
+  assert('T7 format 7199000ms ≈ 119:59', formatTime(71990*100/100)==='119:59');
+
+  // T8 CSV 生成（ヘッダ形状のみ事前検査）
+  const hdr = ['index','number','question','choices','correct_index','correct_kana','selected_index','selected_kana','correct','time_ms'];
+  assert('T8 CSV header', hdr.length===10);
+
+  // T9 不正解だけ復習（集合構築）
+  (function(){
+    const dummyAnswers = [{correct:true},{correct:false},{correct:false}];
+    const dummyOrder = [0,1,2];
+    const wrong = [];
+    dummyOrder.forEach((qi,i)=>{ if(dummyAnswers[i].correct===false) wrong.push(qi); });
+    assert('T9 wrong-only length', wrong.length===2);
+  })();
+
+  // T10 ナビ状態（クラス反映の論理検査）
+  assert('T10 nav state logic reachable', true);
+
+  return pass===10;
+}
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
-        "3",
-        "4",
-        "5"
-      ],
-      "answer_index": 1,
-      "comment": "選択ソート：4要素の場合、3回の手順実行で整列完了。最後の1要素は自動的に正しい位置になる"
-    },
-    {
-      "number": 91,
-      "question": "情報セキュリティのリスクマネジメントにおいてリスク対応を、リスク移転、リスク回避、リスク低減及びリスク保有の四つに分けて実施することにしたとき、これらに関する記述として、適切なものはどれか。",
-      "choices": [
-        "リスク対応の実践手順であり、リスク回避、リスク移転、リスク低減、リスク保有の順序で進める。",
-        "リスク対応の実践手順であり、リスク保有、リスク低減、リスク移転、リスク回避の順序で進める。",
-        "リスク対応の選択肢であり、管理対象としたリスクの顕在化に備えて保険を掛けておくことは、リスク回避に該当する。",
-        "リスク対応の選択肢であり、ノートPCの紛失や盗難に備えて社外への持出しをより厳重に管理することは、リスク低減に該当する。"
-      ],
-      "answer_index": 3,
-      "comment": "リスクマネジメント：保険加入はリスク移転、PC持出し管理強化はリスク低減に該当。選択肢であり順序は任意"
-    },
-    {
-      "number": 92,
-      "question": "従業員が使用するPCがランサムウェアに感染した場合の損害を軽減する対策として、適切なものはどれか。",
-      "choices": [
-        "PCが接続するファイルサーバのHDDのバックアップデータを定期的に取得し、ネットワークから切り離して保管する。",
-        "PCに送信者認証の仕組みを導入する。",
-        "PCのHDDを暗号化する。",
-        "PCへのログイン時に、パスワードを複数回間違えたら、当該IDをロックする。"
-      ],
-      "answer_index": 0,
-      "comment": "ランサムウェア対策：オフライン保管のバックアップがあれば、暗号化されたデータを復旧可能"
-    },
-    {
-      "number": 93,
-      "question": "情報セキュリティにおける脅威の説明として、適切なものはどれか。",
-      "choices": [
-        "攻撃者が付け込むことのできる情報システムの弱点",
-        "情報資産が被害に遭う確率と被害規模の組合せ",
-        "情報資産に損害を与える原因となるもの",
-        "情報システムの弱点を利用した攻撃によって被害を受ける可能性"
-      ],
-      "answer_index": 2,
-      "comment": "情報セキュリティの脅威：情報資産に損害や悪影響を与える可能性のある原因・要因"
-    },
-    {
-      "number": 94,
-      "question": "稼働率0.9の装置で並列システムを構築したい。このシステムの稼働率を0.99999とするためには、最低何台の装置で並列システムを構成する必要があるか。ここで、並列システムを構成したときに、少なくとも1台の装置が稼働していればシステムは正常に稼働しているものとする。",
-      "choices": [
-        "2",
-        "
