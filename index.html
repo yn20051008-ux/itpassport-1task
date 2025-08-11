@@ -2,355 +2,84 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>ITパス反復練習</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>ITパス反復練習</title>
   <style>
     :root{
-      --bg:#0f1115;
-      --card:#171a21;
-      --ink:#e8ecf1;
-      --muted:#9aa3af;
-      --accent:#7dd3fc;
-      --ok:#22c55e;
-      --ng:#ef4444;
-      --btn:#0b0e13;
-      --btn2:#222733;
-      --shadow:0 8px 24px rgba(0,0,0,.35);
-      --gap:14px;
-      --radius:14px;
+      --bg:#0f1216; --card:#151a20; --muted:#8aa0b4; --txt:#e9f0f6;
+      --ok:#2ecc71; --ng:#e74c3c; --btn:#202732; --btn-emp:#2d7df6;
+      --chip:#1b2230; --chip-b:#2a3344;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", Arial, sans-serif;
-      color:var(--ink);
-      background:radial-gradient(1200px 800px at 80% -50%, #1f2330 0%, #0f1115 60%) fixed;
-      letter-spacing:.2px;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-    }
-    .wrap{
-      max-width:900px;
-      margin:0 auto;
-      padding:22px 16px 28px;
-    }
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";}
+    .wrap{max-width:980px;margin:0 auto;padding:20px;}
+    h1{font-size:22px;margin:0 0 8px 0}
+    .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0 18px}
+    .chip{background:var(--chip);border:1px solid var(--chip-b);border-radius:999px;padding:6px 10px;font-size:13px}
+    .control{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    select{appearance:none;background:var(--btn);color:var(--txt);border:1px solid #2b3544;border-radius:10px;padding:8px 12px;font-size:14px}
+    button{background:var(--btn);color:var(--txt);border:1px solid #2b3544;border-radius:12px;padding:10px 16px;font-size:15px;cursor:pointer}
+    button.primary{background:var(--btn-emp);border-color:transparent}
+    button:disabled{opacity:.5;cursor:not-allowed}
 
-    /* Top (setup) */
-    .hero{
-      display:grid;
-      gap:var(--gap);
-    }
-    .title{
-      font-weight:700;
-      line-height:1.15;
-      font-size: clamp(22px, 4.6vw, 36px);
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .title .pill{
-      font-size:12px;
-      color:#0b1320;
-      background:linear-gradient(180deg, #a5f3fc, #38bdf8);
-      padding:5px 8px;
-      border-radius:999px;
-      letter-spacing:.4px;
-    }
-    .panel{
-      background:linear-gradient(180deg, #1b202b, #131722);
-      border:1px solid #293042;
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:18px;
-    }
-    .row{
-      display:grid;
-      gap:10px;
-    }
-    @media (min-width:640px){
-      .row{ grid-template-columns: 1fr 1fr; }
-    }
-    .field{display:grid; gap:8px;}
-    label{color:var(--muted); font-size:13px;}
-    select{
-      width:100%;
-      background:var(--btn2);
-      color:var(--ink);
-      border:1px solid #2a3040;
-      border-radius:12px;
-      padding:14px 12px;
-      font-size:16px;
-      outline:none;
-    }
-    .actions{
-      display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:10px;
-    }
-    .btn{
-      appearance:none;
-      background:linear-gradient(180deg,#222938,#1a1f2d);
-      border:1px solid #2c3346;
-      color:#fff;
-      padding:14px 18px;
-      border-radius:12px;
-      font-weight:600;
-      font-size:16px;
-      cursor:pointer;
-      box-shadow:0 6px 14px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.04);
-      transition:transform .06s ease, opacity .2s ease, background .2s ease;
-      width:100%;
-      text-align:center;
-    }
-    .btn:hover{transform:translateY(-1px)}
-    .btn:active{transform:translateY(1px)}
-    .btn-primary{
-      background:linear-gradient(180deg,#2a3246,#1d2333);
-      border-color:#3a465f;
-    }
-
-    /* Quiz bar */
-    .bar{
-      display:none;
-      grid-template-columns:1fr auto auto;
-      gap:10px;
-      align-items:center;
-      margin:8px 0 16px;
-    }
-    .stat{
-      display:flex; gap:8px; align-items:center; font-size:14px; color:var(--muted);
-    }
-    .badge{
-      font-weight:700;
-      padding:4px 8px;
-      border-radius:9px;
-      border:1px solid #2b3244;
-      background:#151826;
-      color:var(--ink);
-      min-width:28px; text-align:center;
-    }
-    .ok{ color:var(--ok); border-color:#1f3b29; background:rgba(34,197,94,.12) }
-    .ng{ color:var(--ng); border-color:#3b1f1f; background:rgba(239,68,68,.12) }
-    .time{
-      font-variant-numeric: tabular-nums;
-      font-weight:700;
-      padding:8px 10px;
-      border-radius:11px;
-      background:linear-gradient(180deg,#1b2130,#141a26);
-      border:1px solid #2b3347;
-      box-shadow:var(--shadow);
-    }
-
-    /* Card */
-    .card{
-      display:none;
-      background:linear-gradient(180deg, #161a24 0%, #0f131c 100%);
-      border:1px solid #283043;
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:18px;
-    }
-    .qhead{
-      display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .qtext{
-      font-size: clamp(16px, 3.8vw, 20px);
-      line-height:1.6;
-      margin: 4px 0 10px;
-      word-break: break-word;
-      white-space: pre-wrap;
-    }
-    .choices{
-      display:grid;
-      gap:10px;
-      margin: 8px 0 12px;
-    }
-    .opt{
-      display:grid;
-      grid-template-columns: 28px 1fr;
-      gap:10px;
-      align-items:flex-start;
-      padding:10px 12px;
-      border:1px dashed #2a3144;
-      border-radius:12px;
-      background:#131826;
-      min-height:44px;
-      user-select:none;
-    }
-    .opt .k{ 
-      width:24px; height:24px; 
-      border-radius:7px; 
-      display:flex; align-items:center; justify-content:center;
-      background:#0f1420; border:1px solid #293044; 
-      font-weight:700; font-size:12.5px; color:var(--muted);
-      margin-top:2px;
-    }
-    .opt .t{ font-size:15px; color:var(--ink); opacity:.92 }
-
-    /* 4-key buttons (ア/イ/ウ/エ) */
-    .keyrow{
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap:10px;
-      margin-top:8px;
-    }
-    .key{
-      appearance:none;
-      border:none;
-      background:linear-gradient(180deg,#22283a,#171c2b);
-      border:1px solid #343b52;
-      color:#ffffff; /* ← 白で固定（「黒くて見えない」問題の再発防止） */
-      padding:14px 0;
-      border-radius:12px;
-      font-weight:800;
-      letter-spacing:.1em;
-      font-size:16px;
-      cursor:pointer;
-      box-shadow:0 6px 14px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.04);
-      transition:transform .06s ease, background .18s ease, border-color .18s ease;
-      user-select:none;
-      -webkit-user-select:none;
-      touch-action: manipulation;
-    }
-    .key:active{ transform: translateY(1px); }
-    .key:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
-
-    /* feedback flash (speedy, unobtrusive) */
-    .flash-ok{ animation:flashOk .45s ease }
-    .flash-ng{ animation:flashNg .45s ease }
-    @keyframes flashOk{
-      0%{ box-shadow:0 0 0 0 rgba(34,197,94,.0); }
-      20%{ box-shadow:0 0 0 8px rgba(34,197,94,.18); }
-      100%{ box-shadow:0 0 0 0 rgba(34,197,94,.0); }
-    }
-    @keyframes flashNg{
-      0%{ box-shadow:0 0 0 0 rgba(239,68,68,.0); }
-      20%{ box-shadow:0 0 0 8px rgba(239,68,68,.18); }
-      100%{ box-shadow:0 0 0 0 rgba(239,68,68,.0); }
-    }
-
-    /* result */
-    .result{
-      display:none;
-      text-align:center;
-      padding:22px 16px;
-    }
-    .result h2{ margin:0 0 8px; font-size:20px }
-    .result .big{
-      font-variant-numeric: tabular-nums;
-      font-size: clamp(24px, 6vw, 36px);
-      font-weight:800;
-      margin:4px 0 14px;
-    }
-
-    /* compact for iPhone – keep one-screen task */
-    @media (max-width:430px){
-      .wrap{ padding-top:16px }
-      .title{ font-size:26px }
-      .opt{ padding:9px 10px }
-      .qtext{ font-size:16px }
-      .key{ padding:12px 0; font-size:15px }
-      .time{ padding:7px 9px }
-    }
+    .card{background:var(--card);border:1px solid #222b36;border-radius:16px;padding:16px 16px 12px}
+    .qheader{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px;margin-bottom:8px}
+    .qtext{white-space:pre-wrap;line-height:1.7;font-size:16px;margin:6px 0 12px}
+    .choices{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+    .choice{background:#0f141b;border:1px solid #222b36;border-radius:12px;padding:10px 12px;font-size:15px}
+    .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .keybtn{padding:12px 0;border-radius:12px;text-align:center;background:var(--btn);border:1px solid #2b3544;font-weight:700}
+    .keybtn.ok{background:#103a27;border-color:#1d7a54}
+    .keybtn.ng{background:#3a1212;border-color:#7a1d1d}
+    .muted{color:var(--muted)}
+    .foot{display:flex;gap:10px;align-items:center;margin-top:16px}
+    .spacer{flex:1}
   </style>
 </head>
 <body>
-<div class="wrap">
+  <div class="wrap">
+    <h1>ITパス反復練習</h1>
 
-  <!-- Setup (トップ画面) -->
-  <div id="setup" class="hero">
-    <div class="title">
-      ITパス反復練習
-      <span class="pill">シンプル × クール × スピード</span>
+    <div class="bar">
+      <span class="chip">正解 <b id="scoreOk">0</b></span>
+      <span class="chip">不正解 <b id="scoreNg">0</b></span>
+      <span class="chip">残り <b id="remain">--:--</b></span>
     </div>
 
-    <div class="panel">
-      <div class="row">
-        <div class="field">
-          <label for="qcount">出題数</label>
-          <select id="qcount">
-            <!-- 規定値 100 -->
-            <option value="5">5問</option>
-            <option value="10">10問</option>
-            <option value="20">20問</option>
-            <option value="50">50問</option>
-            <option value="100" selected>100問（規定）</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="limit">制限時間</label>
-          <select id="limit">
-            <!-- 規定値 120分 -->
-            <option value="5">5分</option>
-            <option value="10">10分</option>
-            <option value="15">15分</option>
-            <option value="30">30分</option>
-            <option value="60">60分</option>
-            <option value="90">90分</option>
-            <option value="120" selected>120分（規定）</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button id="start" class="btn btn-primary">開始</button>
-      </div>
+    <div class="control">
+      <label>出題数：
+        <select id="limitN">
+          <option value="1">1</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+          <option value="100" selected>100</option>
+        </select> 問
+      </label>
+      <label>制限時間：
+        <select id="limitMin">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="45">45</option>
+          <option value="60">60</option>
+          <option value="90">90</option>
+          <option value="120" selected>120</option>
+        </select> 分
+      </label>
+      <button id="start" class="primary">開始する</button>
+      <button id="retry" style="display:none">もう一度</button>
     </div>
 
-    <div class="panel" style="margin-top:10px">
-      <div style="font-size:13px; color:var(--muted); line-height:1.7">
-        問題データはこのファイルの末尾にある
-        <code>&lt;script id="raw-data" type="application/json"&gt;</code> の中に
-        <strong>あなたの手元のデータをそのまま</strong> コピペしてください。
-        <br>配列 <code>[{…},{…}]</code> でも、<code>{…},{…}</code> 連結でもOK。自動で補正して読み込みます。
-      </div>
+    <div id="stage" style="margin-top:16px">
+      <div class="card muted">「開始する」を押すと出題を開始します。</div>
     </div>
   </div>
 
-  <!-- Quiz bar -->
-  <div id="bar" class="bar">
-    <div class="stat">
-      <span class="badge">Q<span id="qq">1</span>/<span id="qt">0</span></span>
-      <span class="badge ok">✔ <span id="ok">0</span></span>
-      <span class="badge ng">✖ <span id="ng">0</span></span>
-    </div>
-    <div class="time" id="timer">--:--</div>
-    <div class="stat" id="progressNote" aria-live="polite"></div>
-  </div>
-
-  <!-- Question card -->
-  <div id="card" class="card" role="group" aria-label="問題">
-    <div class="qhead">
-      <div id="qno">第 1 問</div>
-      <div id="qcat"></div>
-    </div>
-    <div id="qtext" class="qtext"></div>
-
-    <div class="choices" id="choices">
-      <!-- 選択肢の本文（ア/イ/ウ/エ）はここに行として表示。 -->
-    </div>
-
-    <!-- 1行4列の小型ボタン（ア/イ/ウ/エ）。本文はボタンに入れず、上のカード内に表示 -->
-    <div class="keyrow">
-      <button class="key" data-k="0" aria-label="ア">ア</button>
-      <button class="key" data-k="1" aria-label="イ">イ</button>
-      <button class="key" data-k="2" aria-label="ウ">ウ</button>
-      <button class="key" data-k="3" aria-label="エ">エ</button>
-    </div>
-  </div>
-
-  <!-- Result -->
-  <div id="result" class="result panel">
-    <h2>結果</h2>
-    <div class="big"><span id="scoreOk">0</span> / <span id="scoreTotal">0</span></div>
-    <div style="color:var(--muted); margin-bottom:14px">（不正解 <span id="scoreNg">0</span>）</div>
-    <button id="retry" class="btn">もう一度</button>
-  </div>
-
-</div>
-
- {
+  <!-- ▼▼▼ ここに“元データ”：オブジェクトの並びだけを貼る ▼▼▼
+       例： { ... }, { ... }, { ... }   ←角カッコは不要。下のスクリプトが自動で付けます。 -->
+  <script id="raw-data" type="application/json">
+     {
         "number": 1,
         "question": "A社がB社に作業の一部を請負契約で委託している。作業形態a〜cのうち、いわゆる偽装請負とみなされる状態だけを全て挙げたものはどれか。\n\na　B社の従業員が、A社内において、A社の責任者の指揮命令の下で、請負契約で取り決めた作業を行っている。\nb　B社の従業員が、A社内において、B社の責任者の指揮命令の下で、請負契約で取り決めた作業を行っている。\nc　B社の従業員が、B社内において、A社の責任者の指揮命令の下で、請負契約で取り決めた作業を行っている。",
         "choices": [
@@ -1550,266 +1279,149 @@
         "answer_index": 1,
         "comment": "データマイニング：大量データから未知のパターンや有用な知識を自動的に抽出する分析技術"
       }
-<script id="raw-data" type="application/json">
-</script>
-<!-- ↑↑↑ ここまで（空でもOK） ↑↑↑ -->
+  </script>
+  <!-- ▲▲▲ PASTE HERE にあなたの 1〜100問のオブジェクト列をコピペ ▲▲▲ -->
 
-<script>
-/* ==== 小さなユーティリティ ==== */
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
-const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+  <script>
+    // --- iPhoneのダブルタップ拡大を抑制 ---
+    let lastTouch=0;
+    document.addEventListener('touchend',e=>{
+      const now=Date.now();
+      if(now-lastTouch<350){ e.preventDefault(); }
+      lastTouch=now;
+    },{passive:false});
 
-/* ==== データ読込（あなたの生データをそのまま貼ってOK） ==== */
-function parseRawData() {
-  const el = document.getElementById('raw-data');
-  if(!el) return [];
-  let raw = el.textContent || el.innerText || "";
-  raw = raw.trim();
+    // --- データの読み込み（角カッコ自動付与 & エラー表示） ---
+    function loadQuestions(){
+      const node = document.getElementById('raw-data');
+      if(!node) return [];
+      const raw = node.textContent.trim();
+      if(!raw){
+        alert('問題データがありません。<script id="raw-data"> に配列（オブジェクト列）を貼ってください。');
+        return [];
+      }
+      const jsonText = raw.startsWith('[') ? raw : `[${raw}\n]`;
+      try{
+        const arr = JSON.parse(jsonText);
+        if(!Array.isArray(arr)) throw new Error('配列ではありません');
+        return arr;
+      }catch(err){
+        console.error(err);
+        alert('問題データ(JSON)の構文エラー：\n' + err.message + '\n\n※オブジェクトをカンマで区切った列にしてください。末尾カンマ不可。');
+        return [];
+      }
+    }
 
-  if(!raw) return []; // 空なら空配列
+    // --- 状態 ---
+    const state = {
+      all: [],
+      order: [],
+      idx: 0,
+      limit: 100,
+      ok: 0, ng: 0,
+      endAt: 0,
+      timerId: null
+    };
 
-  // 安全側：scriptタグ終端の紛れをエスケープ（念のため）
-  raw = raw.replace(/<\/script>/gi, '<\\/script>');
+    // --- UI ヘルパ ---
+    const $ = sel => document.querySelector(sel);
+    function fmtRemain(ms){
+      if(ms<0) ms=0;
+      const s = Math.floor(ms/1000);
+      const m = Math.floor(s/60);
+      const ss = (s%60).toString().padStart(2,'0');
+      return `${m}:${ss}`;
+    }
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=(Math.random()* (i+1))|0; [a[i],a[j]]=[a[j],a[i]] } return a }
 
-  // 1) すでに JSON オブジェクト {"questions":[...]} なら取り出す
-  try{
-    const j = JSON.parse(raw);
-    if (Array.isArray(j)) return j;
-    if (Array.isArray(j.questions)) return j.questions;
-    if (Array.isArray(j.questions_mixed)) return j.questions_mixed;
-  }catch(_e){
-    // 続行（下の補正ルートで処理）
-  }
+    // --- 出題描画 ---
+    function render(){
+      if(state.idx>=state.order.length){
+        $('#stage').innerHTML = `
+          <div class="card">
+            <div class="qheader"><b>終了</b></div>
+            <div class="qtext">おつかれさまでした。</div>
+            <div class="foot">
+              <span>正解 <b>${state.ok}</b> / 不正解 <b>${state.ng}</b> / 合計 <b>${state.order.length}</b></span>
+              <span class="spacer"></span>
+              <button id="retry2">もう一度</button>
+            </div>
+          </div>`;
+        $('#retry').style.display='inline-block';
+        $('#retry2').onclick=()=>location.reload();
+        return;
+      }
 
-  // 2) "{...},{...}" のような連結 → 配列に包む
-  // 末尾のカンマを除去
-  raw = raw.replace(/,\s*$/,'').trim();
+      const q = state.all[state.order[state.idx]];
+      const labels = ['あ','い','う','え'];
+      const choiceLines = q.choices.map((t,i)=> `${i+1}. ${t}`).join('\n');
+      $('#stage').innerHTML = `
+        <div class="card">
+          <div class="qheader">
+            <div>Q ${state.idx+1} / ${state.order.length}　<span class="muted">（元番号: ${q.number ?? '-' }）</span></div>
+          </div>
+          <div class="qtext">${(q.question||'').replace(/\n/g,'\n')}</div>
+          <div class="choices"><div class="choice"><pre style="margin:0">${choiceLines}</pre></div></div>
+          <div class="keys">
+            ${labels.map((lab,idx)=>`<button class="keybtn" data-i="${idx}">${lab}</button>`).join('')}
+          </div>
+        </div>
+      `;
+      document.querySelectorAll('.keybtn').forEach(btn=>{
+        btn.onclick=()=>{
+          const i = +btn.dataset.i;
+          const correct = (i===q.answer_index);
+          btn.classList.add(correct?'ok':'ng');
+          if(correct) state.ok++; else state.ng++;
+          $('#scoreOk').textContent = state.ok;
+          $('#scoreNg').textContent = state.ng;
+          setTimeout(()=>{ state.idx++; render(); }, 220);
+        };
+      });
+    }
 
-  // 先頭/末尾が [] でなければ足す
-  if(!(raw.startsWith('[') && raw.endsWith(']'))){
-    raw = `[${raw}]`;
-  }
+    // --- タイマー ---
+    function tick(){
+      const remain = state.endAt - Date.now();
+      $('#remain').textContent = fmtRemain(remain);
+      if(remain<=0){
+        clearInterval(state.timerId);
+        state.idx = state.order.length;
+        render();
+      }
+    }
 
-  // "]" の直前に余計なカンマがあるケースを修正
-  raw = raw.replace(/,\s*\]/g,']');
+    // --- 開始 ---
+    $('#start').onclick=()=>{
+      const all = loadQuestions();
+      if(!all.length) return;
 
-  // JSON として最終パース
-  try{
-    const arr = JSON.parse(raw);
-    if (Array.isArray(arr)) return arr;
-  }catch(e){
-    alert('問題データの読み込みに失敗しました。\nJSON の形式（ダブルクォートやカンマ）をご確認ください。\n\nエラー: ' + e.message);
-  }
-  return [];
-}
+      state.limit = parseInt($('#limitN').value,10);
+      const minutes = parseInt($('#limitMin').value,10);
+      const pool = all.slice(0); // 元順でOK（要望）
+      state.all = pool;
+      state.order = Array.from({length: Math.min(state.limit, pool.length)}, (_,i)=>i);
+      state.idx = 0; state.ok=0; state.ng=0;
 
-/* ==== 状態 ==== */
-let all = [];          // 全問題（読み込み後）
-let qs = [];           // 今回出題セット
-let qi = 0;            // 現在のインデックス
-let ok = 0;            // 正解数
-let ng = 0;            // 不正解数
-let timeLeft = 0;      // 秒
-let timerId = null;
-let locked = false;    // 二重タップ対策＆連打防止
+      // UI
+      $('#scoreOk').textContent='0';
+      $('#scoreNg').textContent='0';
+      $('#start').style.display='none';
+      $('#retry').style.display='none';
 
-/* ==== UI エントリ ==== */
-const setup = $('#setup');
-const bar = $('#bar');
-const card = $('#card');
-const result = $('#result');
+      // タイマー開始（120分既定はselectの既定で実現）
+      state.endAt = Date.now() + minutes*60*1000;
+      if(state.timerId) clearInterval(state.timerId);
+      state.timerId = setInterval(tick, 250);
+      tick();
 
-const qq = $('#qq');
-const qt = $('#qt');
-const domOk = $('#ok');
-const domNg = $('#ng');
-const timer = $('#timer');
-const qno = $('#qno');
-const qtext = $('#qtext');
-const choicesBox = $('#choices');
+      render();
+    };
+    $('#retry').onclick=()=>location.reload();
 
-/* ==== ダブルタップ拡大の抑止（iOS） ==== */
-let lastTouchEnd = 0;
-document.addEventListener('touchend', function(e) {
-  const now = Date.now();
-  if (now - lastTouchEnd <= 350) {
-    e.preventDefault();
-  }
-  lastTouchEnd = now;
-}, {passive:false});
-
-/* ==== タイマー ==== */
-function startTimer(totalMin){
-  stopTimer();
-  timeLeft = Math.floor(totalMin * 60);
-  tick(); // すぐ表示
-  timerId = setInterval(tick, 1000);
-}
-function stopTimer(){
-  if(timerId){ clearInterval(timerId); timerId = null; }
-}
-function fmt(sec){
-  const m = Math.floor(sec/60);
-  const s = sec%60;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-function tick(){
-  timer.textContent = fmt(timeLeft);
-  if(timeLeft<=0){
-    stopTimer();
-    finish();
-  }else{
-    timeLeft--;
-  }
-}
-
-/* ==== 出題準備 ==== */
-function shuffle(a){
-  for (let i=a.length-1;i>0;i--){
-    const j = (Math.random()*(i+1))|0;
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
-function normalizeItem(item, idx){
-  // 最低限のプロパティを保証
-  const number = item.number ?? (idx+1);
-  const question = String(item.question ?? '');
-  const choices = Array.isArray(item.choices) ? item.choices.slice(0,4) : [];
-  const answer_index = clamp(Number(item.answer_index ?? 0), 0, 3);
-  const comment = item.comment ?? '';
-  return { number, question, choices, answer_index, comment };
-}
-
-/* ==== 画面制御 ==== */
-function show(el){ el.style.display = ''; }
-function hide(el){ el.style.display = 'none'; }
-
-function startQuiz(){
-  // 設定
-  const count = Number($('#qcount').value);
-  const minutes = Number($('#limit').value);
-
-  // データ読込
-  all = parseRawData().map(normalizeItem);
-  if (all.length === 0){
-    alert('問題データが見つかりません。\nこのファイル末尾の <script id="raw-data"> の中に、あなたの問題データをコピペしてください。');
-    return;
-  }
-
-  // 並び順：number があれば 1→100 にソート（ご要望）
-  all.sort((a,b)=> (a.number||0)-(b.number||0));
-
-  // 出題抽出
-  const pool = all.slice(); // 今は順番維持。ランダムにしたい場合は shuffle(pool)
-  qs = pool.slice(0, Math.min(count, pool.length));
-
-  // 状態初期化
-  qi = 0;
-  ok = 0;
-  ng = 0;
-
-  // UI
-  hide(setup);            // ← 開始ボタンを含むセットアップは非表示（「始まっても残る」問題の解消）
-  show(bar);
-  show(card);
-  hide(result);
-
-  qt.textContent = String(qs.length);
-  domOk.textContent = '0';
-  domNg.textContent = '0';
-
-  // タイマー開始（規定値は 120 分）
-  startTimer(minutes);
-
-  render();
-}
-
-function render(){
-  const it = qs[qi];
-  if (!it){ finish(); return; }
-
-  qq.textContent = String(qi+1);
-  qno.textContent = `第 ${it.number ?? (qi+1)} 問`;
-  qtext.textContent = it.question ?? '';
-
-  // 選択肢本文（ア/イ/ウ/エ）をカード内にテキストとして配置（ボタンには入れない）
-  const kana = ['ア','イ','ウ','エ'];
-  choicesBox.innerHTML = '';
-  (it.choices || []).forEach((t, i)=>{
-    const row = document.createElement('div');
-    row.className = 'opt';
-    row.innerHTML = `<div class="k">${kana[i]}</div><div class="t">${t ?? ''}</div>`;
-    // 行自体もタップで回答（ボタン不要の操作もサポート。ワンタップ想定）
-    row.addEventListener('click', ()=> answer(i));
-    choicesBox.appendChild(row);
-  });
-
-  // フォーカス流し
-  const firstKey = $('.key[data-k="0"]');
-  if(firstKey) firstKey.blur(); // モバイルで不要フォーカスを避ける
-}
-
-function flash(okNG){
-  card.classList.remove('flash-ok','flash-ng');
-  void card.offsetWidth; // reflow してアニメをリスタート
-  card.classList.add(okNG ? 'flash-ok':'flash-ng');
-}
-
-function answer(k){
-  if (locked) return;
-  locked = true;
-
-  const it = qs[qi];
-  const correct = Number(it.answer_index) === Number(k);
-
-  if (correct){
-    ok++;
-    domOk.textContent = String(ok);
-    flash(true);
-  }else{
-    ng++;
-    domNg.textContent = String(ng);
-    flash(false);
-  }
-
-  // 超短い待ちで次へ（前へ/次へボタンは不要）
-  setTimeout(()=>{
-    qi++;
-    if (qi >= qs.length){ finish(); }
-    else { render(); }
-    locked = false;
-  }, 220);
-}
-
-function finish(){
-  hide(bar);
-  hide(card);
-
-  $('#scoreOk').textContent = String(ok);
-  $('#scoreNg').textContent = String(ng);
-  $('#scoreTotal').textContent = String(qs.length);
-
-  show(result);
-  stopTimer();
-}
-
-function resetAll(){
-  stopTimer();
-  show(setup);
-  hide(bar);
-  hide(card);
-  hide(result);
-}
-
-/* ==== イベント ==== */
-$('#start').addEventListener('click', startQuiz);
-$('#retry').addEventListener('click', resetAll);
-
-// 物理キーボードの誤操作防止（ダブルタップ拡大の副作用軽減）
-document.addEventListener('dblclick', e=> e.preventDefault(), {passive:false});
-
-</script>
+    // 既定値反映（100問 / 120分）
+    $('#limitN').value = '100';
+    $('#limitMin').value = '120';
+  </script>
 </body>
 </html>
