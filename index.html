@@ -174,15 +174,127 @@ document.addEventListener('touchend', (e)=>{
 document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
 document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
 
-/* ===== データURL（?data=xxx / 既定は 2025r07） ===== */
+/* ===== 埋め込みデータ（サンプル問題） ===== */
+const EMBEDDED_DATA = {
+  "questions": [
+    {
+      "number": 51,
+      "question": "社内で開発及び運用を行っている経理システムの内部監査を実施するとき、システム監査人として、最も適切なものはどれか。",
+      "choices": [
+        "経理システムの運用担当者",
+        "経理システムの開発を担当した委託会社の従業員",
+        "経理システムの利用者である経理担当者",
+        "経理とITの知識を有する経営者直轄組織の従業員"
+      ],
+      "answer_index": 3,
+      "comment": "内部監査の独立性：監査対象から独立し、専門知識を持つ経営者直轄組織の従業員が適切"
+    },
+    {
+      "number": 89,
+      "question": "AさんはBさんから次の4種類のメッセージを受け取った。Aさんが、受け取ったメッセージを復号して読むことができるものだけを全て挙げたものはどれか。\n\na　AさんとBさんとの共通鍵で暗号化したメッセージ\nb　Aさんの公開鍵で暗号化したメッセージ\nc　Bさんの公開鍵で暗号化したメッセージ\nd　Bさんの秘密鍵で暗号化したメッセージ",
+      "choices": [
+        "a, b, d",
+        "a, c, d",
+        "b, d",
+        "c, d"
+      ],
+      "answer_index": 0,
+      "comment": "暗号化メッセージ復号：a(共通鍵)、b(Aの秘密鍵で復号)、d(Bの公開鍵で復号)が可能。cはBの秘密鍵が必要で不可"
+    },
+    {
+      "number": 90,
+      "question": "4個の要素からなるデータの並びを、次の手順を繰り返して昇順に整列するとき、整列が終了するまでに一連の手順は、何回実行されるか。ここで、最初はデータの並びが全体で昇順になっていない。\n\nデータの並び：[27, 42, 33, 12]\n\n[手順]\n(1) 整列対象中の要素の最大の値を見つけ、最後の要素と入れ替える。\n(2) 整列の要素を整列対象から外す。\n(3) 整列対象の要素数が1個以上であれば、(1)から(3)の一連の手順を実行する。\n残っていなければ、整列完了なので終了する。",
+      "choices": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "answer_index": 3,
+      "comment": "並列システム稼働率：1-(1-0.9)^n ≥ 0.99999を満たすnは5台。5台で稼働率99.999%達成"
+    },
+    {
+      "number": 95,
+      "question": "データベース設計におけるデータ分析で行うこととして、適切なものはどれか。",
+      "choices": [
+        "データウェアハウスから業務ごとに必要な情報を抽出する。",
+        "データ項目の内容が、指定された条件を満足するかどうかを検査する。",
+        "必要なデータ項目を洗い出し、項目間の関連を整理する。",
+        "膨大な情報から統計的手法などを用いて、ビジネスに活用できる情報を探索する。"
+      ],
+      "answer_index": 2,
+      "comment": "データベース設計のデータ分析：必要なデータ項目の洗い出しと項目間関連の整理が基本"
+    },
+    {
+      "number": 96,
+      "question": "クラウドコンピューティングのサービス形態の一つであるSaaSの説明として、最も適切なものはどれか。",
+      "choices": [
+        "アプリケーションソフトウェアの機能をネットワーク経由でサービスとして提供する。",
+        "仮想サーバやストレージなどのITインフラをネットワーク経由でサービスとして提供する。",
+        "OSやミドルウェアなどのプラットフォームをネットワーク経由でサービスとして提供する。",
+        "ネットワーク機器の設定や監視などをネットワーク経由でサービスとして提供する。"
+      ],
+      "answer_index": 0,
+      "comment": "SaaS（Software as a Service）：アプリケーションソフトウェアをクラウド経由で提供するサービス形態"
+    },
+    {
+      "number": 97,
+      "question": "IoTシステムにおいて、センサーで収集したデータを、クラウドに送信する前に、ネットワークの端末やその近くで処理することを何というか。",
+      "choices": [
+        "エッジコンピューティング",
+        "グリッドコンピューティング",
+        "フォグコンピューティング",
+        "ユビキタスコンピューティング"
+      ],
+      "answer_index": 0,
+      "comment": "エッジコンピューティング：IoTデバイスに近い場所（エッジ）でデータ処理を行い、遅延削減と効率化を図る技術"
+    },
+    {
+      "number": 98,
+      "question": "企業において、従業員が個人のスマートフォンやタブレットなどのモバイル端末を業務に利用することを何というか。",
+      "choices": [
+        "BYOD",
+        "MDM",
+        "SIM",
+        "VPN"
+      ],
+      "answer_index": 0,
+      "comment": "BYOD（Bring Your Own Device）：従業員が個人所有のデバイスを業務で利用すること"
+    },
+    {
+      "number": 99,
+      "question": "情報システムの開発において、利用者の要求を分析し、システムが満たすべき機能や制約などを明確にする工程はどれか。",
+      "choices": [
+        "基本設計",
+        "詳細設計",
+        "要件定義",
+        "運用・保守"
+      ],
+      "answer_index": 2,
+      "comment": "要件定義：利用者の要求を分析し、システムが満たすべき機能・性能・制約条件を明確化する工程"
+    },
+    {
+      "number": 100,
+      "question": "データマイニングに関する記述として、最も適切なものはどれか。",
+      "choices": [
+        "あらかじめ設定した仮説を検証するために、統計的な手法を用いてデータを分析する。",
+        "大量のデータから、隠れたパターンや法則を発見するために、様々な手法を用いてデータを分析する。",
+        "データベースから必要なデータを効率的に検索するために、インデックスを作成する。",
+        "データベースの論理設計において、データの正規化を行う。"
+      ],
+      "answer_index": 1,
+      "comment": "データマイニング：大量データから未知のパターンや有用な知識を自動的に抽出する分析技術"
+    }
+  ]
+};
+
+/* ===== データURL解決（外部URLの場合のみ使用） ===== */
 function resolveDataUrl() {
   const p = new URLSearchParams(location.search).get('data');
-  if (!p) return './data/itpassport_2025r07.json';
+  if (!p) return null; // 埋め込みデータを使用
   if (p.startsWith('http')) return p;
-  const name = p.endsWith('.json') ? p : `${p}.json`;
-  return `./data/${name}`;
+  return null; // ローカルファイルは使用しない
 }
-const DATA_URL = resolveDataUrl();
 
 /* ファイル名 → きれい名 */
 function prettifyDatasetName(name){
@@ -197,9 +309,11 @@ function prettifyDatasetName(name){
   }).join(' ');
   return s;
 }
-const datasetFile = DATA_URL.split('/').pop();
-const datasetName = datasetFile.replace(/\.json$/,'');
-const prettyName  = prettifyDatasetName(datasetName);
+
+// データセット名の設定
+const DATA_URL = resolveDataUrl();
+const datasetName = DATA_URL ? DATA_URL.split('/').pop().replace(/\.json$/,'') : 'itpassport_sample';
+const prettyName = DATA_URL ? prettifyDatasetName(datasetName) : 'ITパスポート サンプル問題';
 document.title = `${prettyName} | Trainer Minimal`;
 document.querySelector('#dsTitle').textContent = prettyName;
 
@@ -212,7 +326,7 @@ let CUR=0;
 let TIMER_ID=null, remainingSec=LIMIT_SEC;
 
 const $  = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
+const $ = s => Array.from(document.querySelectorAll(s));
 const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
 const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
@@ -256,12 +370,30 @@ function tidyStem(s=''){ return String(s).replace(/%%/g,'%').replace(/\n{3,}/g,'
 async function loadData(){
   $('#info').textContent = 'データ読込中…';
   try{
-    const r = await fetch(DATA_URL,{cache:'no-store'});
-    if(!r.ok) throw new Error(r.status+' '+r.statusText);
-    const data = await r.json();
+    let data;
+    const externalUrl = resolveDataUrl();
+    
+    if (externalUrl) {
+      // 外部URLが指定されている場合
+      try {
+        const r = await fetch(externalUrl, {cache:'no-store'});
+        if(!r.ok) throw new Error(r.status+' '+r.statusText);
+        data = await r.json();
+      } catch(e) {
+        console.warn('外部データの読み込み失敗。埋め込みデータを使用します。', e);
+        data = EMBEDDED_DATA;
+      }
+    } else {
+      // 埋め込みデータを使用
+      data = EMBEDDED_DATA;
+    }
+    
     RAW = (data.questions||[]).map(q=>({...q, selected:null, result:null, seen:false}));
     const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
-    $('#info').innerHTML = `総数 <strong>${RAW.length}</strong> ／ 出題可能 <strong>${full.length}</strong>`;
+    
+    const statusText = data === EMBEDDED_DATA && externalUrl ? 
+      '<span style="color:#ff9800">サンプルモード</span> ' : '';
+    $('#info').innerHTML = `${statusText}総数 <strong>${RAW.length}</strong> ／ 出題可能 <strong>${full.length}</strong>`;
   }catch(e){
     $('#info').innerHTML = `読み込み失敗：${e.message}`;
   }
@@ -322,7 +454,7 @@ function render(){
     });
   }
 
-  // 4つの“かな”ボタン
+  // 4つの"かな"ボタン
   const answersEl = $('#answers'); answersEl.innerHTML='';
   for(let i=0;i<4;i++){
     const btn=document.createElement('button');
@@ -439,3 +571,52 @@ function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({ '&':'&amp
 </script>
 </body>
 </html>
+        "3",
+        "4",
+        "5"
+      ],
+      "answer_index": 1,
+      "comment": "選択ソート：4要素の場合、3回の手順実行で整列完了。最後の1要素は自動的に正しい位置になる"
+    },
+    {
+      "number": 91,
+      "question": "情報セキュリティのリスクマネジメントにおいてリスク対応を、リスク移転、リスク回避、リスク低減及びリスク保有の四つに分けて実施することにしたとき、これらに関する記述として、適切なものはどれか。",
+      "choices": [
+        "リスク対応の実践手順であり、リスク回避、リスク移転、リスク低減、リスク保有の順序で進める。",
+        "リスク対応の実践手順であり、リスク保有、リスク低減、リスク移転、リスク回避の順序で進める。",
+        "リスク対応の選択肢であり、管理対象としたリスクの顕在化に備えて保険を掛けておくことは、リスク回避に該当する。",
+        "リスク対応の選択肢であり、ノートPCの紛失や盗難に備えて社外への持出しをより厳重に管理することは、リスク低減に該当する。"
+      ],
+      "answer_index": 3,
+      "comment": "リスクマネジメント：保険加入はリスク移転、PC持出し管理強化はリスク低減に該当。選択肢であり順序は任意"
+    },
+    {
+      "number": 92,
+      "question": "従業員が使用するPCがランサムウェアに感染した場合の損害を軽減する対策として、適切なものはどれか。",
+      "choices": [
+        "PCが接続するファイルサーバのHDDのバックアップデータを定期的に取得し、ネットワークから切り離して保管する。",
+        "PCに送信者認証の仕組みを導入する。",
+        "PCのHDDを暗号化する。",
+        "PCへのログイン時に、パスワードを複数回間違えたら、当該IDをロックする。"
+      ],
+      "answer_index": 0,
+      "comment": "ランサムウェア対策：オフライン保管のバックアップがあれば、暗号化されたデータを復旧可能"
+    },
+    {
+      "number": 93,
+      "question": "情報セキュリティにおける脅威の説明として、適切なものはどれか。",
+      "choices": [
+        "攻撃者が付け込むことのできる情報システムの弱点",
+        "情報資産が被害に遭う確率と被害規模の組合せ",
+        "情報資産に損害を与える原因となるもの",
+        "情報システムの弱点を利用した攻撃によって被害を受ける可能性"
+      ],
+      "answer_index": 2,
+      "comment": "情報セキュリティの脅威：情報資産に損害や悪影響を与える可能性のある原因・要因"
+    },
+    {
+      "number": 94,
+      "question": "稼働率0.9の装置で並列システムを構築したい。このシステムの稼働率を0.99999とするためには、最低何台の装置で並列システムを構成する必要があるか。ここで、並列システムを構成したときに、少なくとも1台の装置が稼働していればシステムは正常に稼働しているものとする。",
+      "choices": [
+        "2",
+        "
