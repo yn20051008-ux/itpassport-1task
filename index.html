@@ -1,129 +1,441 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITパスポート問題集</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            text-align: center;
-        }
-        header {
-            background: #007BFF;
-            color: white;
-            padding: 1rem;
-            font-size: 1.5rem;
-        }
-        main {
-            padding: 1rem;
-        }
-        .question-container {
-            background: white;
-            margin: 1rem auto;
-            padding: 1rem;
-            max-width: 800px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .options {
-            list-style: none;
-            padding: 0;
-        }
-        .options li {
-            margin: 0.5rem 0;
-        }
-        button {
-            padding: 0.5rem 1rem;
-            margin-top: 1rem;
-            font-size: 1rem;
-        }
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: auto;
-        }
-    </style>
+<meta charset="utf-8">
+<title>Trainer Minimal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+:root{ --bg:#0b0d14; --panel:#121623; --accent:#52b2ff; --text:#eef3ff; --muted:#91a0bd; --ok:#4caf50; --ng:#ef5350; --line:#20273a; }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:linear-gradient(180deg,#0b0d14,#0a1020);
+  color:var(--text);font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  overscroll-behavior:none; touch-action:manipulation; overflow-x:hidden;
+}
+.app{max-width:960px;margin:0 auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom));min-height:100svh;display:block;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.pad{padding:16px}
+@media(max-width:420px){ .pad{padding:12px} }
+h1,h2,p{margin:0}
+.muted{color:var(--muted)} .small{font-size:12px} .hide{display:none}
+
+/* HUD */
+.top{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.top .left{display:flex;align-items:center;gap:10px}
+.badge{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:#bcd2ff}
+.timer{font-variant-numeric:tabular-nums;padding:0;border:0;background:transparent;}
+.counters{display:flex;gap:10px}
+.counter{font-variant-numeric:tabular-nums}
+.counter.ok{color:#b7ffb7}
+.counter.ng{color:#ffb4b4}
+.bar{height:10px;background:#1a2132;border-radius:999px;overflow:hidden;margin:8px 0 0}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#95d0ff);width:0%}
+
+/* 問題表示（コンパクト） */
+.q{font-size:clamp(15px,3.9vw,18px);line-height:1.6;white-space:pre-wrap}
+.choice-list{margin-top:10px;display:grid;grid-template-columns:1fr;gap:8px}
+.choice-line{display:flex;gap:.6rem;align-items:flex-start}
+.choice-line .kana{flex:0 0 2.2ch;text-align:center;color:#b9c6e6}
+.choice-line p{margin:0;white-space:pre-wrap}
+
+/* ボタン：1行4列・かなのみ */
+.answers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.opt{
+  display:flex;align-items:center;justify-content:center;min-height:44px;
+  padding:10px;border:1px solid #27314a;background:#151c2c;border-radius:12px;
+  cursor:pointer;user-select:none;touch-action:manipulation;box-shadow:0 6px 18px rgba(0,0,0,.22);
+  font-size:18px;letter-spacing:.1em;
+}
+.opt:hover{border-color:#33415f}
+.opt.correct{border-color:var(--ok);background:rgba(76,175,80,.12)}
+.opt.wrong{border-color:var(--ng);background:rgba(239,83,80,.12)}
+
+/* floating nav */
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16213a;border:1px solid #283655;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.35);z-index:50}
+.fab span{font-size:20px;line-height:1}
+
+/* overlay nav */
+.overlay{position:fixed;inset:0;background:rgba(6,10,20,.65);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px;z-index:40}
+.ov-card{width:min(860px,92vw);max-height:80vh;overflow:auto;background:#0f1426;border:1px solid #2b3653;border-radius:14px;padding:14px}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.navbtn{padding:8px;border:1px solid #2a3553;background:#121a33;color:#cdd7f3;border-radius:10px;cursor:pointer}
+.navbtn:hover{border-color:#3c4c75}
+.navbtn.cur{outline:2px solid var(--accent)}
+.navbtn.ok{border-color:#2e7d32;background:rgba(46,125,50,.15)}
+.navbtn.ng{border-color:#b23a3a;background:rgba(178,58,58,.12)}
+.xrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.close{padding:6px 10px;border:1px solid #2a3553;border-radius:999px;background:#121a33;color:#cdd7f3;cursor:pointer}
+
+/* START */
+.center{display:grid;place-items:center;min-height:70vh}
+.hero{text-align:center;padding:20px 14px}
+.title{font-size:28px;letter-spacing:.5px}
+.inline{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.startbtn{margin-top:16px;display:inline-block}
+.tag{border:1px solid #2a3553;padding:4px 8px;border-radius:999px}
+.review{margin-top:10px}
+.review ol{margin:0;padding-left:18px}
+</style>
 </head>
 <body>
-    <header>ITパスポート問題集</header>
-    <main>
-        <div id="start-screen">
-            <h2>問題集を選択してください</h2>
-            <select id="jsonSelect">
-                <option value="">選択してください</option>
-                <option value="https://example.com/data/itpassport_manual_template_100.json">ITパスポート100問</option>
-            </select>
-            <br><br>
-            <button onclick="startQuiz()">開始</button>
+<div class="app">
+  <!-- START -->
+  <div id="start" class="card pad">
+    <div class="hero center">
+      <div>
+        <div class="title" id="dsTitle">Dataset</div>
+        <div class="sub small" id="info" style="margin-top:10px;">データ読込中…</div>
+        <div class="inline small">
+          <label>出題 <select id="count">
+            <option value="10">10</option><option value="20">20</option>
+            <option value="30">30</option><option value="50">50</option>
+            <option value="all" selected>全件</option>
+          </select></label>
         </div>
-        <div id="quiz-container" style="display:none;">
-            <div class="question-container">
-                <div id="question"></div>
-                <ul class="options" id="options"></ul>
-                <button onclick="nextQuestion()">次へ</button>
-            </div>
+        <div class="startbtn">
+          <button id="go" class="btn primary">開始（模試 120分）</button>
+          <button id="reload" class="btn ghost">再読込</button>
         </div>
-    </main>
+      </div>
+    </div>
+  </div>
 
-    <script>
-        let questions = [];
-        let currentQuestionIndex = 0;
+  <!-- QUIZ -->
+  <div id="quiz" class="hide">
+    <!-- HUD -->
+    <div class="card pad" style="margin-bottom:12px">
+      <div class="top">
+        <div class="left">
+          <span class="badge">模試</span>
+          <strong id="pos">Q - / -</strong>
+        </div>
+        <div class="counters">
+          <span class="counter ok">正解 <span id="ok">0</span></span>
+          <span class="counter ng">不正解 <span id="ng">0</span></span>
+          <span class="timer" id="timer">120:00</span>
+        </div>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+    </div>
 
-        function startQuiz() {
-            const jsonUrl = document.getElementById("jsonSelect").value;
-            if (!jsonUrl) {
-                alert("問題集を選択してください。");
-                return;
-            }
-            fetch(jsonUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("データを読み込めませんでした");
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    questions = data;
-                    currentQuestionIndex = 0;
-                    document.getElementById("start-screen").style.display = "none";
-                    document.getElementById("quiz-container").style.display = "block";
-                    showQuestion();
-                })
-                .catch(error => {
-                    console.error(error);
-                    alert("問題データを読み込めませんでした。");
-                });
-        }
+    <!-- 問題 -->
+    <div class="card pad" style="margin-bottom:12px">
+      <div class="q" id="qText"></div>
+      <!-- 選択文はここに出す -->
+      <div id="choicesList" class="choice-list"></div>
+    </div>
 
-        function showQuestion() {
-            const questionElement = document.getElementById("question");
-            const optionsElement = document.getElementById("options");
-            optionsElement.innerHTML = "";
+    <!-- ボタン（1行4列／かなのみ） -->
+    <div class="answers" id="answers"></div>
+  </div>
 
-            const q = questions[currentQuestionIndex];
-            questionElement.innerHTML = q.question;
+  <!-- RESULT -->
+  <div id="result" class="card pad hide" style="margin-top:12px">
+    <div class="top">
+      <h2>結果</h2>
+      <div class="counters">
+        <span class="counter ok">正解 <span id="rok">0</span></span>
+        <span class="counter ng">不正解 <span id="rng">0</span></span>
+        <span class="badge" id="elapsed">残り --:--</span>
+      </div>
+    </div>
+    <div class="review" id="review"></div>
+    <div class="ctrl" style="margin-top:12px">
+      <button id="retryWrong" class="btn primary">不正解だけ復習</button>
+      <div>
+        <button id="retryAll" class="btn">もう一度</button>
+        <button id="exportCsv" class="btn ghost">CSV</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-            q.options.forEach((option, index) => {
-                const li = document.createElement("li");
-                li.innerHTML = `<label><input type="radio" name="option" value="${index}"> ${option}</label>`;
-                optionsElement.appendChild(li);
-            });
-        }
+<!-- floating nav -->
+<button class="fab" id="navFab" title="ナビ"><span>≡</span></button>
+<div class="overlay" id="overlay">
+  <div class="ov-card">
+    <div class="xrow">
+      <strong>ナビ（出題順）</strong>
+      <button class="close" id="closeOv">閉じる</button>
+    </div>
+    <div class="grid" id="navGrid"></div>
+  </div>
+</div>
 
-        function nextQuestion() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                showQuestion();
-            } else {
-                alert("終了です！");
-                location.reload();
-            }
-        }
-    </script>
+<script>
+/* ===== iOSダブルタップ拡大の抑止 ===== */
+let __lastTouchEnd = 0;
+document.addEventListener('touchend', (e)=>{
+  const now = Date.now();
+  if (now - __lastTouchEnd <= 300) { e.preventDefault(); }
+  __lastTouchEnd = now;
+}, {passive:false});
+document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
+document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
+
+/* ===== データURL（?data=xxx / 既定は 2025r07） ===== */
+function resolveDataUrl() {
+  const p = new URLSearchParams(location.search).get('data');
+  if (!p) return './data/itpassport_2025r07.json';
+  if (p.startsWith('http')) return p;
+  const name = p.endsWith('.json') ? p : `${p}.json`;
+  return `./data/${name}`;
+}
+const DATA_URL = resolveDataUrl();
+
+/* ファイル名 → きれい名 */
+function prettifyDatasetName(name){
+  let s = String(name).replace(/\.json$/,'');
+  s = s.replace(/[_\-]+/g,' ').trim();
+  s = s.replace(/(\d{4})\s*r\s*(\d{1,2})/i,(_,y,m)=>`${y}-${String(m).padStart(2,'0')}`);
+  const dict = { itpassport:'ITパスポート', fe:'基本情報', ap:'応用情報' };
+  s = s.split(/\s+/).map(w=>{
+    const k=w.toLowerCase();
+    if(dict[k]) return dict[k];
+    return /^[a-z]/i.test(w) ? w[0].toUpperCase()+w.slice(1) : w;
+  }).join(' ');
+  return s;
+}
+const datasetFile = DATA_URL.split('/').pop();
+const datasetName = datasetFile.replace(/\.json$/,'');
+const prettyName  = prettifyDatasetName(datasetName);
+document.title = `${prettyName} | Trainer Minimal`;
+document.querySelector('#dsTitle').textContent = prettyName;
+
+/* ===== 共通 ===== */
+const KANA = ['ア','イ','ウ','エ'];
+const LIMIT_SEC = 120 * 60;          // 120分
+const ADVANCE_DELAY_MS = 240;        // ハイライト表示時間
+let RAW=[], POOL=[], ORDER=[];
+let CUR=0;
+let TIMER_ID=null, remainingSec=LIMIT_SEC;
+
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const fmtTime = sec => { const s=Math.max(0,Math.floor(sec)); return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; };
+const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+/* ===== プレースホルダ判定＆除去 ===== */
+function isPlaceholderChoice(t=''){ return /本文から読込/.test(String(t)); }
+function stripPlaceholder(t=''){
+  let s = String(t);
+  s = s.replace(/^[（(]\s*本文から読込\s*[)）]\s*/,'');
+  s = s.replace(/本文から読込/g,'');
+  s = s.trim();
+  if(/^[アイウエ]$/.test(s)) s = '';
+  return s;
+}
+
+/* 選択肢頭の「ア/イ/ウ/エ + 記号」を除去 */
+function cleanseChoiceHead(t=''){
+  return String(t).replace(/^\s*[（(]?[アイウエｲｳｴ]\s*[\)\]）．。･・、:：.\-]?\s*/,'').trim();
+}
+/* 本文からア/イ/ウ/エを抽出（複数行連結）し本文から除去 */
+function splitStemAndChoices(text=''){
+  const lines = String(text).split(/\r?\n/);
+  const out = [];
+  const picked = ['','','',''];
+  const map = {'ア':0,'イ':1,'ｲ':1,'ウ':2,'ｳ':2,'エ':3,'ｴ':3};
+  const headRe = /^\s*([アイウエｲｳｴ])\s*[\)\]）．。･・、:：.\-]?\s*(.*)$/;
+  let cur=-1, started=false;
+  for(const raw of lines){
+    const ln = raw.trim();
+    const m = ln.match(headRe);
+    if(m && map[m[1]]!=null){ started=true; cur=map[m[1]]; picked[cur]+=(picked[cur]?' ':'')+m[2].trim(); continue; }
+    if(started && cur>=0){ if(ln==='') continue; picked[cur]+=' '+ln; }
+    else out.push(raw);
+  }
+  const extracted = picked.map(s=>s.trim()).map(s=>s? s:null);
+  return { stem: out.join('\n').replace(/\n{3,}/g,'\n\n').trim(), extracted };
+}
+/* 本文の軽い正規化 */
+function tidyStem(s=''){ return String(s).replace(/%%/g,'%').replace(/\n{3,}/g,'\n\n').trim(); }
+
+/* ===== データロード ===== */
+async function loadData(){
+  $('#info').textContent = 'データ読込中…';
+  try{
+    const r = await fetch(DATA_URL,{cache:'no-store'});
+    if(!r.ok) throw new Error(r.status+' '+r.statusText);
+    const data = await r.json();
+    RAW = (data.questions||[]).map(q=>({...q, selected:null, result:null, seen:false}));
+    const full = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
+    $('#info').innerHTML = `総数 <strong>${RAW.length}</strong> ／ 出題可能 <strong>${full.length}</strong>`;
+  }catch(e){
+    $('#info').innerHTML = `読み込み失敗：${e.message}`;
+  }
+}
+loadData();
+$('#reload').addEventListener('click', loadData);
+
+/* ===== 開始 ===== */
+$('#go').addEventListener('click', () => {
+  const cntSel = $('#count').value;
+  const full  = RAW.filter(q => q.question && q.choices && q.choices.length===4 && Number.isInteger(q.answer_index));
+  POOL = full;
+  if(POOL.length===0){ alert('出題できる問題がありません。'); return; }
+
+  ORDER = [...Array(POOL.length).keys()];
+  shuffle(ORDER);
+  if(cntSel!=='all') ORDER = ORDER.slice(0, Math.min(parseInt(cntSel,10), ORDER.length));
+
+  POOL.forEach(q=>{ q.selected=null; q.result=null; q.seen=false; });
+  CUR=0;
+
+  remainingSec = LIMIT_SEC; $('#timer').textContent = fmtTime(remainingSec);
+  clearInterval(TIMER_ID);
+  TIMER_ID = setInterval(()=>{ remainingSec=Math.max(0,remainingSec-1); $('#timer').textContent=fmtTime(remainingSec); if(remainingSec===0){ clearInterval(TIMER_ID); finish(); } },1000);
+
+  $('#start').classList.add('hide'); $('#quiz').classList.remove('hide');
+  render();
+});
+
+/* ===== レンダリング ===== */
+function render(){
+  const idx = ORDER[CUR], q = POOL[idx];
+  $('#pos').textContent = `Q ${CUR+1} / ${ORDER.length}`;
+  $('#bar').style.width = `${(CUR/Math.max(1,ORDER.length-1))*100}%`;
+
+  // 本文と本文内の抽出
+  const { stem, extracted } = splitStemAndChoices(q.question || '');
+  $('#qText').textContent = tidyStem(stem || (q.question || ''));
+
+  // 選択肢の優先順位：JSON choices優先 → 全てプレースホルダのときだけ抽出に置換
+  let choices = Array.isArray(q.choices) && q.choices.length===4 ? q.choices.slice() : null;
+  const extractedFull = extracted.filter(Boolean).length===4;
+  const allPlaceholder = choices && choices.every(isPlaceholderChoice);
+  if (allPlaceholder && extractedFull) choices = extracted.slice();
+  if (!choices && extractedFull) choices = extracted.slice();
+  if (choices) choices = choices.map(t => stripPlaceholder(cleanseChoiceHead(t)));
+
+  // 設問カード内に選択文を表示（あれば）
+  const list = $('#choicesList'); list.innerHTML='';
+  if (choices){
+    choices.forEach((t,i)=>{
+      const line=document.createElement('div');
+      line.className='choice-line';
+      const k=document.createElement('span'); k.className='kana'; k.textContent=KANA[i];
+      const p=document.createElement('p'); p.textContent = t || '';
+      line.appendChild(k); line.appendChild(p);
+      list.appendChild(line);
+    });
+  }
+
+  // 4つの“かな”ボタン
+  const answersEl = $('#answers'); answersEl.innerHTML='';
+  for(let i=0;i<4;i++){
+    const btn=document.createElement('button');
+    btn.className='opt'; btn.textContent = KANA[i];
+
+    if (Number.isInteger(q.answer_index) && q.result !== null){
+      if (i === q.answer_index) btn.classList.add('correct');
+      if (q.selected === i && q.selected !== q.answer_index) btn.classList.add('wrong');
+      btn.style.pointerEvents = 'none';
+    }
+
+    btn.addEventListener('click',()=>selectChoice(i));
+    answersEl.appendChild(btn);
+  }
+
+  // 毎問ページ先頭へ
+  requestAnimationFrame(()=>{ window.scrollTo(0,0); });
+
+  updateCounters();
+  buildNav();
+}
+
+/* 回答→採点→ハイライト→自動次へ */
+function selectChoice(i){
+  const idx = ORDER[CUR], q = POOL[idx];
+  q.selected = i;
+  q.result = (i === q.answer_index);
+  render();
+  setTimeout(advance, ADVANCE_DELAY_MS);
+}
+function advance(){ (CUR<ORDER.length-1) ? (CUR++,render()) : finish(); }
+
+/* ナビ */
+$('#navFab').addEventListener('click', ()=> $('#overlay').style.display='flex');
+$('#closeOv').addEventListener('click', ()=> $('#overlay').style.display='none');
+function buildNav(){
+  const g = $('#navGrid'); g.innerHTML='';
+  ORDER.forEach((i,idx)=>{
+    const q=POOL[i];
+    const b=document.createElement('button');
+    b.className='navbtn'; b.textContent = (idx+1);
+    if(q.result===true) b.classList.add('ok');
+    else if(q.result===false) b.classList.add('ng');
+    else if(q.selected!=null) b.style.borderColor='#3a4a6b';
+    if(idx===CUR) b.classList.add('cur');
+    b.addEventListener('click',()=>{ CUR=idx; $('#overlay').style.display='none'; render(); });
+    g.appendChild(b);
+  });
+}
+
+/* 採点＆結果 */
+function finish(){
+  clearInterval(TIMER_ID);
+  for(const q of POOL){
+    if(Number.isInteger(q.answer_index) && q.selected!=null){
+      q.result = (q.selected===q.answer_index);
+    }
+  }
+  $('#quiz').classList.add('hide'); $('#result').classList.remove('hide');
+
+  const ok = POOL.filter(x=>x.result===true).length;
+  const ng = POOL.filter(x=>x.result===false).length;
+  $('#rok').textContent = ok; $('#rng').textContent = ng;
+  $('#elapsed').textContent = `残り ${fmtTime(remainingSec)}`;
+
+  const wrongs = POOL.filter(x=>x.result===false).map(x=>({num:x.number ?? '-', q:x.question || '（本文なし）', ans:x.answer_index, sel:x.selected}));
+  const box = $('#review'); box.innerHTML='';
+  if(wrongs.length===0){ box.innerHTML='<p class="small">全問正解！</p>'; }
+  else{
+    const ol=document.createElement('ol');
+    wrongs.forEach(w=>{
+      const li=document.createElement('li');
+      const ck = Number.isInteger(w.ans) ? KANA[w.ans] : '-';
+      const sk = Number.isInteger(w.sel) ? KANA[w.sel] : '-';
+      li.innerHTML = `<small class="muted">正解:${ck}／あなた:${sk}</small><br>${escapeHtml(w.q)}`;
+      ol.appendChild(li);
+    });
+    box.appendChild(ol);
+  }
+}
+
+/* 結果画面操作 */
+$('#retryWrong').addEventListener('click', ()=>{
+  const wrongIdx = ORDER.filter(i => { const q=POOL[i]; return q.result===false && Number.isInteger(q.answer_index); });
+  if(wrongIdx.length===0){ alert('不正解がありません。'); return; }
+  ORDER = wrongIdx;
+  ORDER.forEach(i=>{ POOL[i].selected=null; POOL[i].result=null; });
+  CUR=0; remainingSec = LIMIT_SEC;
+  clearInterval(TIMER_ID);
+  TIMER_ID = setInterval(()=>{ remainingSec=Math.max(0,remainingSec-1); $('#timer').textContent=fmtTime(remainingSec); if(remainingSec===0){ clearInterval(TIMER_ID); finish(); } },1000);
+  $('#result').classList.add('hide'); $('#quiz').classList.remove('hide');
+  render();
+});
+$('#retryAll').addEventListener('click', ()=>{ $('#result').classList.add('hide'); $('#start').classList.remove('hide'); });
+
+/* CSV */
+$('#exportCsv').addEventListener('click', ()=>{
+  const rows = [['dataset','index','number','selectedKana','correctKana','result']];
+  ORDER.forEach((i,idx)=>{
+    const q=POOL[i];
+    const sel = q.selected!=null ? KANA[q.selected] : '';
+    const cor = Number.isInteger(q.answer_index) ? KANA[q.answer_index] : '';
+    const res = q.result==null ? '' : (q.result?'OK':'NG');
+    rows.push([prettyName, idx+1, q.number ?? '', sel, cor, res]);
+  });
+  const csv = rows.map(r=>r.map(s=>`"${String(s??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${datasetName}_result.csv`; a.click(); URL.revokeObjectURL(a.href);
+});
+
+/* 小物 */
+function updateCounters(){ $('#ok').textContent = POOL.filter(x=>x.result===true).length; $('#ng').textContent = POOL.filter(x=>x.result===false).length; }
+function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+</script>
 </body>
 </html>
